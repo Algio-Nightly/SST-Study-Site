@@ -281,6 +281,7 @@ Let:
 - Round-Trip Time (RTT) including repeater delays $\approx 51.2\ \mu\text{s}$.
 
 For a $10\text{ Mbps}$ network:
+
 $$\text{Slot Time} = 51.2\ \mu\text{s}$$
 $$\text{Minimum Bits Transmitted} = 10\text{ Mbps} \times 51.2\ \mu\text{s} = 512\text{ bits} = 64\text{ Bytes}$$
 
@@ -300,8 +301,11 @@ The **MTU** is the maximum size of a Layer 3 packet (including IP header and IP 
 
 ### MSS (Maximum Segment Size)
 The **MSS** is the maximum amount of pure TCP application data that a host can send in a single TCP segment:
+
 $$\text{MSS} = \text{MTU} - (\text{IP Header Size} + \text{TCP Header Size})$$
+
 Assuming standard 20-byte IPv4 header and 20-byte TCP header:
+
 $$\text{MSS} = 1500 - 20 - 20 = 1460\text{ Bytes}$$
 
 ```

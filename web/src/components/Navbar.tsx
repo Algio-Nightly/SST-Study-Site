@@ -1,23 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Network, 
+  Brain,
   Search, 
   Sun, 
-  Moon, 
-  Sparkles,
+  MoonStar,
+  Contrast, 
   BookOpen, 
   CheckCircle2, 
   Menu, 
   X,
   ExternalLink,
   ChevronDown,
-  Palette
+  Palette,
+  LayoutGrid,
+  ChevronRight
 } from 'lucide-react';
 import type { Lecture } from '../data/notesData';
 import type { ThemeMode } from '../types/theme';
 import { AVAILABLE_THEMES } from '../types/theme';
 
 interface NavbarProps {
+  currentView: 'hub' | 'subject';
+  onNavigateToHub: () => void;
+  currentSubjectTitle?: string;
   currentLecture: Lecture;
   activeTab: 'notes' | 'quiz';
   setActiveTab: (tab: 'notes' | 'quiz') => void;
@@ -29,6 +35,9 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
+  currentView,
+  onNavigateToHub,
+  currentSubjectTitle = 'Computer Networks',
   currentLecture,
   activeTab,
   setActiveTab,
@@ -54,82 +63,109 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const getThemeIcon = (t: ThemeMode) => {
     switch (t) {
-      case 'charcoal':
-        return <Moon className="w-4 h-4 text-zinc-100" />;
+      case 'oled-slate':
+        return <MoonStar className="w-4 h-4 text-sky-400" />;
       case 'midnight':
-        return <Sparkles className="w-4 h-4 text-blue-400" />;
+        return <Contrast className="w-4 h-4 text-white" />;
       case 'light':
         return <Sun className="w-4 h-4 text-amber-500" />;
     }
   };
 
-  const isDarkNav = theme === 'charcoal' || theme === 'midnight';
+  const isDarkNav = theme === 'oled-slate' || theme === 'midnight';
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--border-nav)] bg-[var(--bg-nav)]/95 backdrop-blur transition-colors text-[var(--text-nav)]">
       <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         
-        {/* Left: Mobile Toggle & Brand */}
+        {/* Left: Mobile Toggle & Brand / Breadcrumbs */}
         <div className="flex items-center gap-3">
+          {currentView === 'subject' && (
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 text-[var(--text-nav)] hover:bg-[var(--bg-nav-input)] rounded-xl lg:hidden cursor-pointer"
+              title="Toggle Sidebar"
+            >
+              {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          )}
+
+          {/* Hub Home Button */}
           <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 text-[var(--text-nav)] hover:bg-[var(--bg-nav-input)] rounded-xl lg:hidden cursor-pointer"
-            title="Toggle Sidebar"
+            onClick={onNavigateToHub}
+            className={`flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border transition-all cursor-pointer ${
+              currentView === 'hub'
+                ? 'border-[var(--border-island)] bg-[var(--bg-island-subtle)] text-[var(--text-heading)] font-bold shadow-xs'
+                : 'border-[var(--border-nav-input)] bg-[var(--bg-nav-input)] hover:opacity-90 text-[var(--text-nav)]'
+            }`}
+            title="Go to Subjects Hub"
           >
-            {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <LayoutGrid className="w-4 h-4 text-[var(--text-heading)]" />
+            <span className="font-bold text-xs hidden sm:inline">Subjects Hub</span>
           </button>
 
-          <div className="flex items-center gap-2.5">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold shadow-md ${
-              isDarkNav ? 'bg-white text-zinc-950' : 'bg-zinc-900 text-white'
-            }`}>
-              <Network className="w-5 h-5" />
-            </div>
-            <div>
+          {currentView === 'subject' && (
+            <>
+              <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" />
               <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-tight text-base sm:text-lg text-[var(--text-nav)]">
-                  SST Computer Networks
-                </span>
-                <span className="hidden sm:inline-block px-2 py-0.5 text-[11px] font-bold bg-[var(--bg-nav-input)] text-[var(--text-nav)] rounded-full border border-[var(--border-nav-input)]">
-                  Term 5
-                </span>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold shadow-xs ${
+                  isDarkNav ? 'bg-white text-zinc-950' : 'bg-zinc-900 text-white'
+                }`}>
+                  {currentSubjectTitle.toLowerCase().includes('machine learning') ? (
+                    <Brain className="w-4 h-4" />
+                  ) : (
+                    <Network className="w-4 h-4" />
+                  )}
+                </div>
+                <div>
+                  <span className="font-extrabold tracking-tight text-xs sm:text-sm text-[var(--text-nav)]">
+                    {currentSubjectTitle}
+                  </span>
+                  <span className="hidden md:inline-block ml-2 px-1.5 py-0.2 text-[10px] font-bold bg-[var(--bg-nav-input)] text-emerald-400 rounded-md border border-[var(--border-nav-input)]">
+                    Term 5
+                  </span>
+                </div>
               </div>
-              <p className="text-xs text-zinc-400 hidden sm:block">
-                Interactive University Notes & High-Bandwidth Quizzes
-              </p>
-            </div>
-          </div>
+            </>
+          )}
         </div>
 
-        {/* Center: Active Mode Tabs */}
-        <div className="flex items-center bg-[var(--bg-nav-input)] p-1 rounded-xl border border-[var(--border-nav-input)]">
-          <button
-            onClick={() => setActiveTab('notes')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'notes'
-                ? isDarkNav
-                  ? 'bg-white text-zinc-950 shadow-sm font-bold'
-                  : 'bg-zinc-900 text-white shadow-sm font-bold'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Notes (L{currentLecture.number.toString().padStart(2, '0')})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('quiz')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'quiz'
-                ? isDarkNav
-                  ? 'bg-white text-zinc-950 shadow-sm font-bold'
-                  : 'bg-zinc-900 text-white shadow-sm font-bold'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Topic Quiz</span>
-          </button>
-        </div>
+        {/* Center: Mode Tabs or Hub Title */}
+        {currentView === 'subject' ? (
+          <div className="flex items-center bg-[var(--bg-nav-input)] p-1 rounded-xl border border-[var(--border-nav-input)]">
+            <button
+              onClick={() => setActiveTab('notes')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                activeTab === 'notes'
+                  ? isDarkNav
+                    ? 'bg-white text-zinc-950 shadow-sm font-bold'
+                    : 'bg-zinc-900 text-white shadow-sm font-bold'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>Notes (L{currentLecture.number.toString().padStart(2, '0')})</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('quiz')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                activeTab === 'quiz'
+                  ? isDarkNav
+                    ? 'bg-white text-zinc-950 shadow-sm font-bold'
+                    : 'bg-zinc-900 text-white shadow-sm font-bold'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Topic Quiz</span>
+            </button>
+          </div>
+        ) : (
+          <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-zinc-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Scaler School of Technology • Engineering Knowledge Base
+          </div>
+        )}
 
         {/* Right: Search, Theme Selector, External Links */}
         <div className="flex items-center gap-2.5">
@@ -161,8 +197,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {isThemeMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 p-1.5 rounded-2xl bg-[#1c1c21] border border-[#2c2c34] shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 text-white">
-                <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-400 uppercase tracking-wider border-b border-[#282830] mb-1">
+              <div className="absolute right-0 mt-2 w-56 p-1.5 rounded-2xl bg-[var(--bg-island)] border border-[var(--border-island)] shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 text-[var(--text-heading)]">
+                <div className="px-3 py-1.5 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-island)] mb-1">
                   Interswappable Themes
                 </div>
                 {AVAILABLE_THEMES.map((item) => {
@@ -176,8 +212,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-colors cursor-pointer ${
                         isCurrent
-                          ? 'bg-white text-zinc-950 font-bold'
-                          : 'text-zinc-300 hover:bg-[#25252b]'
+                          ? 'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] font-bold'
+                          : 'text-[var(--text-body)] hover:bg-[var(--bg-island-subtle)]'
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -194,12 +230,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
 
-          {/* Quick Toggle Button (Cycles directly: Charcoal -> Midnight -> Light) */}
+          {/* Quick Toggle Button (Cycles: OLED Slate -> Midnight -> Light) */}
           <button
             onClick={() => {
-              if (theme === 'charcoal') setTheme('midnight');
+              if (theme === 'oled-slate') setTheme('midnight');
               else if (theme === 'midnight') setTheme('light');
-              else setTheme('charcoal');
+              else setTheme('oled-slate');
             }}
             className="p-2 bg-[var(--bg-nav-input)] hover:opacity-90 rounded-xl border border-[var(--border-nav-input)] transition-colors cursor-pointer text-[var(--text-nav-input)]"
             title={`Current: ${theme}. Click to quick-cycle theme.`}

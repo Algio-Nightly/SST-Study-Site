@@ -51,6 +51,7 @@ Decimal:     192   .    168   .     1    .     50
 
 - Each octet ranges from `00000000` ($0$) to `11111111` ($255$).
 - Total possible IPv4 addresses:
+
   $$2^{32} = 4,294,967,296 \approx 4.29\text{ billion addresses}$$
 
 ### Binary $\leftrightarrow$ Decimal Conversion Mastery
@@ -134,6 +135,7 @@ Binary:  11111111 . 11111111 . 11111111 . 11000000
 
 ### CIDR Prefix Notation (`/N`)
 Instead of writing out dotted-decimal masks (`255.255.255.192`), CIDR appends a slash followed by the count of active network bits:
+
 $$\text{IP Address} / N \implies \mathbf{192.168.1.50/26}$$
 
 ---
@@ -183,8 +185,10 @@ Every IPv4 subnet contains four mathematically defined boundaries:
    - Bit pattern: All host bits set to `1`.
    - **Purpose**: Sends a frame to every active host residing inside this specific subnet. Never forwarded across outside routers.
 5. **Total Usable Host Formula**:
+
    $$\text{Total Addresses} = 2^H = 2^{(32 - N)}$$
    $$\text{Usable Hosts} = 2^H - 2$$
+
    *(Subtracting 2: one for the Network Address, one for the Broadcast Address)*
 
 ---
@@ -200,7 +204,9 @@ In exams, interviews, and real-world network engineering, you cannot afford to w
    - `/17` to `/24`: 3rd octet
    - `/25` to `/32`: 4th octet
 2. **Calculate the Magic Number (Block Size)**:
+
    $$\text{Magic Number} = 256 - \text{Mask Value of the Interesting Octet}$$
+
    *(Alternatively: $2^{(8 - \text{borrowed bits})}$)*
 3. **Find the Multiples of the Magic Number**:
    - Subnet boundaries in that octet always increment by the Magic Number:
@@ -268,7 +274,9 @@ To prevent immediate depletion of the 4.3 billion address space, the IETF standa
 **Solution**:
 1. Mask `/27` = $24 + 3$ bits = `11111111.11111111.11111111.11100000`
 2. Interesting octet is the 4th octet ($224$).
+
    $$\text{Magic Number} = 256 - 224 = \mathbf{32}$$
+
 3. Subnet multiples: $0, 32, 64, 96, 128, \mathbf{160}, 192, \dots$
    - Target octet is $178$. The largest multiple $\le 178$ is $160$.
    - **Network Address** = `192.168.5.160`
@@ -277,6 +285,7 @@ To prevent immediate depletion of the 4.3 billion address space, the IETF standa
    - **Broadcast Address** = $192 - 1$ = `192.168.5.191`
    - **Last Usable Host** = $191 - 1$ = `192.168.5.190`
 6. Host bits $H = 32 - 27 = 5$.
+
    $$\text{Usable Hosts} = 2^5 - 2 = 32 - 2 = \mathbf{30}\text{ hosts}$$
 
 ---
@@ -288,7 +297,9 @@ To prevent immediate depletion of the 4.3 billion address space, the IETF standa
 1. Prefix `/20`: Network bits span $16 + 4$ bits.
    - Mask: `255.255.240.0`.
 2. Interesting octet is the **3rd octet** ($240$).
+
    $$\text{Magic Number} = 256 - 240 = \mathbf{16}$$
+
 3. Multiples of 16 in the 3rd octet:
    - $0, 16, 32, 48, 64, \mathbf{80}, 96, \dots$
    - IP's 3rd octet is $89$. The largest multiple $\le 89$ is $80$.
@@ -299,6 +310,7 @@ To prevent immediate depletion of the 4.3 billion address space, the IETF standa
    - **Broadcast Address**: `172.16.95.255`
    - **Last Usable Host**: `172.16.95.254`
 5. Usable hosts:
+
    $$H = 32 - 20 = 12 \implies 2^{12} - 2 = 4096 - 2 = \mathbf{4094}\text{ hosts}$$
 
 ---

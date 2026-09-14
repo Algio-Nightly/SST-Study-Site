@@ -18,6 +18,8 @@ export interface QuizQuestion {
   explanation: string;
   difficulty: DifficultyLevel;
   subtopic?: string;
+  isDone?: boolean;
+  isReview?: boolean;
 }
 
 export interface TopicQuiz {

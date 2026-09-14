@@ -50,7 +50,9 @@ In academic algorithms, weights are simple integers. In production computer netw
 1. **Hop Count**: Each link has weight $w = 1$. Minimizes intermediate switches (used in RIP).
 2. **Latency / Propagation Delay**: Physical transit time $t = \frac{d}{v}$ (where $v \approx 2 \times 10^8\text{ m/s}$ in fiber). Critical for algorithmic trading and cloud gaming.
 3. **Bandwidth Inversion (Cisco OSPF Metric)**:
+
    $$\text{Cost} = \frac{\text{Reference Bandwidth}}{\text{Interface Bandwidth}} = \frac{10^8\text{ bps (100 Mbps)}}{\text{Bandwidth in bps}}$$
+
    - 10 Mbps Ethernet: $\text{Cost} = 100 / 10 = 10$
    - 100 Mbps FastEthernet: $\text{Cost} = 100 / 100 = 1$
    - 1 Gbps GigabitEthernet: $\text{Cost} = 1$ (requires changing reference bandwidth to $10^{11}$ in modern 100G networks)
@@ -194,6 +196,7 @@ Dijkstra maintains two sets of vertices:
 
 ### The Edge Relaxation Primitive
 The heart of shortest path algorithms is the **Relaxation Step**:
+
 $$\text{relax}(u, v, w): \quad \mathbf{if\ } dist[v] > dist[u] + w(u, v) \implies dist[v] = dist[u] + w(u, v), \quad pred[v] = u$$
 
 ```
@@ -300,7 +303,9 @@ How does Router $A$ convert this mathematical tree into hardware forwarding logi
 - Interface `eth1`: Connected to Router $C$
 
 When a packet arrives at Router $A$ destined for Router $F$, Router $A$ inspects the predecessor chain:
+
 $$F \leftarrow E \leftarrow D \leftarrow B \leftarrow \mathbf{C} \leftarrow A$$
+
 The first hop out of Router $A$ is **Router $C$** via interface `eth1`.
 
 ### Router A's Forwarding Table:

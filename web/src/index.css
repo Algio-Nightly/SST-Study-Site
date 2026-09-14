@@ -2,73 +2,82 @@
 @import "katex/dist/katex.min.css";
 
 @layer base {
-  /* Clean Light Theme */
-  :root, .theme-light, [data-theme="light"] {
-    --bg-page: #f8fafc;
-    --bg-nav: #ffffff;
-    --border-nav: #e2e8f0;
-    --text-nav: #0f172a;
-    --bg-nav-input: #f1f5f9;
-    --border-nav-input: #cbd5e1;
-    --text-nav-input: #0f172a;
-    --bg-island: #ffffff;
-    --bg-island-subtle: #f8fafc;
-    --border-island: #e2e8f0;
-    --text-heading: #0f172a;
-    --text-body: #334155;
-    --text-muted: #64748b;
-    --btn-primary-bg: #0f172a;
-    --btn-primary-text: #ffffff;
-    --code-inline-bg: #f1f5f9;
-    --code-inline-text: #0f172a;
-    --code-inline-border: #cbd5e1;
-    --code-block-bg: #090d16;
-  }
-
-  /* Charcoal Dark Theme: Navbar is DARK GREY, Space between blocks is PURE WHITE, Blocks are Dark Charcoal */
-  .theme-charcoal, [data-theme="charcoal"] {
-    --bg-page: #ffffff;
-    --bg-nav: #18181b;
-    --border-nav: #2c2c34;
+  /* 1. OLED Slate (Default Theme): Sleek pitch-black background with subtle slate cards & accents */
+  :root, .theme-oled-slate, [data-theme="oled-slate"] {
+    --bg-page: #000000;
+    --bg-nav: #09090b;
+    --border-nav: #27272a;
     --text-nav: #ffffff;
-    --bg-nav-input: #232328;
-    --border-nav-input: #2e2e36;
+    --bg-nav-input: #18181b;
+    --border-nav-input: #27272a;
     --text-nav-input: #f4f4f5;
-    --bg-island: #18181b;
-    --bg-island-subtle: #222226;
-    --border-island: #2c2c34;
+    --bg-island: #09090b;
+    --bg-island-subtle: #141417;
+    --border-island: #27272a;
     --text-heading: #ffffff;
     --text-body: #f4f4f5;
     --text-muted: #a1a1aa;
     --btn-primary-bg: #ffffff;
     --btn-primary-text: #09090b;
-    --code-inline-bg: #27272a;
+    --btn-secondary-bg: #18181b;
+    --btn-secondary-border: #27272a;
+    --btn-secondary-text: #ffffff;
+    --code-inline-bg: #18181b;
     --code-inline-text: #ffffff;
-    --code-inline-border: #3f3f46;
-    --code-block-bg: #121214;
+    --code-inline-border: #27272a;
+    --code-block-bg: #09090b;
   }
 
-  /* Midnight Theme: Space between blocks is PITCH BLACK ("by blacker"), Navbar is black */
+  /* 2. Minimalist Midnight Theme: STRICTLY PURE BLACK & WHITE ONLY */
   .theme-midnight, [data-theme="midnight"] {
     --bg-page: #000000;
     --bg-nav: #000000;
-    --border-nav: #16161c;
+    --border-nav: #27272a;
     --text-nav: #ffffff;
-    --bg-nav-input: #101014;
-    --border-nav-input: #202028;
-    --text-nav-input: #f4f4f5;
-    --bg-island: #070709;
-    --bg-island-subtle: #101014;
-    --border-island: #1a1a22;
+    --bg-nav-input: #000000;
+    --border-nav-input: #ffffff;
+    --text-nav-input: #ffffff;
+    --bg-island: #000000;
+    --bg-island-subtle: #000000;
+    --border-island: #27272a;
     --text-heading: #ffffff;
-    --text-body: #f4f4f5;
-    --text-muted: #71717a;
+    --text-body: #ffffff;
+    --text-muted: #a1a1aa;
     --btn-primary-bg: #ffffff;
     --btn-primary-text: #000000;
-    --code-inline-bg: #141418;
+    --btn-secondary-bg: #000000;
+    --btn-secondary-border: #ffffff;
+    --btn-secondary-text: #ffffff;
+    --code-inline-bg: #000000;
     --code-inline-text: #ffffff;
-    --code-inline-border: #272730;
-    --code-block-bg: #030304;
+    --code-inline-border: #3f3f46;
+    --code-block-bg: #000000;
+  }
+
+  /* 3. Clean Light Theme: Crisp daylight with dark readable typography */
+  .theme-light, [data-theme="light"] {
+    --bg-page: #f4f4f5;
+    --bg-nav: #ffffff;
+    --border-nav: #e4e4e7;
+    --text-nav: #09090b;
+    --bg-nav-input: #f4f4f5;
+    --border-nav-input: #d4d4d8;
+    --text-nav-input: #09090b;
+    --bg-island: #ffffff;
+    --bg-island-subtle: #f8fafc;
+    --border-island: #e4e4e7;
+    --text-heading: #09090b;
+    --text-body: #18181b;
+    --text-muted: #52525b;
+    --btn-primary-bg: #09090b;
+    --btn-primary-text: #ffffff;
+    --btn-secondary-bg: #f4f4f5;
+    --btn-secondary-border: #e4e4e7;
+    --btn-secondary-text: #09090b;
+    --code-inline-bg: #f4f4f5;
+    --code-inline-text: #09090b;
+    --code-inline-border: #e4e4e7;
+    --code-block-bg: #18181b;
   }
 }
 
@@ -92,13 +101,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #27272a;
   border-radius: 9999px;
 }
 
-.theme-charcoal ::-webkit-scrollbar-thumb,
-.theme-midnight ::-webkit-scrollbar-thumb {
-  background: #383842;
+.theme-light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
 }
 
 /* Code block highlight styles */
@@ -132,6 +140,28 @@ pre code.hljs {
   color: #fca5a5;
 }
 
+/* Minimalist Midnight Pure B&W Syntax Override */
+.theme-midnight pre code.hljs {
+  border: 1px solid #27272a;
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.theme-midnight .hljs-keyword, 
+.theme-midnight .hljs-selector-tag, 
+.theme-midnight .hljs-subst,
+.theme-midnight .hljs-string, 
+.theme-midnight .hljs-title, 
+.theme-midnight .hljs-section, 
+.theme-midnight .hljs-number {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.theme-midnight .hljs-comment {
+  color: #71717a !important;
+}
+
 /* Blockquote styling */
 .markdown-body blockquote {
   border-left: 4px solid #3b82f6;
@@ -142,35 +172,64 @@ pre code.hljs {
   color: #1e3a8a;
 }
 
-.theme-charcoal .markdown-body blockquote,
-.theme-midnight .markdown-body blockquote {
-  background-color: #181c26;
+.theme-oled-slate .markdown-body blockquote {
+  background-color: #121217;
   border-color: #60a5fa;
   color: #e2e8f0;
 }
 
-/* Markdown typography in dark islands */
-.theme-charcoal .markdown-body h1,
-.theme-charcoal .markdown-body h2,
-.theme-charcoal .markdown-body h3,
-.theme-charcoal .markdown-body h4,
+.theme-midnight .markdown-body blockquote {
+  background-color: #000000;
+  border-left: 4px solid #ffffff;
+  border-top: 1px solid #27272a;
+  border-right: 1px solid #27272a;
+  border-bottom: 1px solid #27272a;
+  color: #ffffff;
+}
+
+/* Markdown typography in Light Theme */
+.theme-light .markdown-body h1,
+.theme-light .markdown-body h2,
+.theme-light .markdown-body h3,
+.theme-light .markdown-body h4 {
+  color: #09090b !important;
+}
+
+.theme-light .markdown-body p,
+.theme-light .markdown-body li {
+  color: #27272a !important;
+}
+
+.theme-light .markdown-body strong {
+  color: #09090b !important;
+}
+
+.theme-light .markdown-body table {
+  color: #18181b !important;
+}
+
+/* Markdown typography in Dark Themes */
 .theme-midnight .markdown-body h1,
 .theme-midnight .markdown-body h2,
 .theme-midnight .markdown-body h3,
-.theme-midnight .markdown-body h4 {
+.theme-midnight .markdown-body h4,
+.theme-oled-slate .markdown-body h1,
+.theme-oled-slate .markdown-body h2,
+.theme-oled-slate .markdown-body h3,
+.theme-oled-slate .markdown-body h4 {
   color: #ffffff !important;
 }
 
-.theme-charcoal .markdown-body p,
-.theme-charcoal .markdown-body li,
 .theme-midnight .markdown-body p,
-.theme-midnight .markdown-body li {
-  color: #f4f4f5;
+.theme-midnight .markdown-body li,
+.theme-oled-slate .markdown-body p,
+.theme-oled-slate .markdown-body li {
+  color: #f4f4f5 !important;
 }
 
-.theme-charcoal .markdown-body strong,
-.theme-midnight .markdown-body strong {
-  color: #ffffff;
+.theme-midnight .markdown-body strong,
+.theme-oled-slate .markdown-body strong {
+  color: #ffffff !important;
 }
 
 /* Inline code badge */
@@ -186,3 +245,72 @@ pre code.hljs {
   display: inline;
   white-space: nowrap;
 }
+
+/* Enhanced Markdown Prose Typography & Line Spacing */
+.markdown-body {
+  line-height: 1.85 !important;
+  font-size: 0.95rem;
+}
+
+.markdown-body p {
+  line-height: 1.85 !important;
+  margin-top: 1rem !important;
+  margin-bottom: 1.25rem !important;
+}
+
+.markdown-body li {
+  line-height: 1.85 !important;
+  margin-top: 0.35rem !important;
+  margin-bottom: 0.35rem !important;
+}
+
+/* KaTeX Mathematics Styling & Fraction Breathing Room */
+.katex {
+  font-size: 1.05em;
+  text-rendering: geometricPrecision;
+  white-space: normal;
+}
+
+/* Inline KaTeX: Ensure adequate clearance so tall symbols don't collide with adjacent lines */
+.katex:not(.katex-display .katex) {
+  padding: 0 0.15em;
+  vertical-align: -0.05em;
+}
+
+/* Fraction spacing: prevent numerator and denominator from cramping against the vinculum line */
+.katex .mfrac {
+  padding: 0.16em 0.1em !important;
+  margin: 0 0.1em;
+}
+
+.katex .mfrac .frac-line {
+  border-bottom-width: 0.065em !important;
+  margin-top: 0.14em !important;
+  margin-bottom: 0.14em !important;
+}
+
+/* KaTeX vlist vertical spacing */
+.katex .vlist-t {
+  border-collapse: separate;
+}
+
+/* Block / Display Mathematics Container */
+.katex-display {
+  display: block !important;
+  margin: 1.75rem 0 !important;
+  padding: 1rem 1.25rem !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  max-width: 100%;
+  border-radius: 0.75rem;
+  background-color: var(--bg-island-subtle);
+  border: 1px solid var(--border-island);
+  text-align: center;
+}
+
+.katex-display > .katex {
+  display: inline-block;
+  white-space: nowrap;
+  text-align: center;
+}
+

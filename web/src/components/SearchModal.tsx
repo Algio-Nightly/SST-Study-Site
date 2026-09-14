@@ -7,6 +7,7 @@ interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectLecture: (lectureId: string, headingId?: string) => void;
+  lectures?: Lecture[];
 }
 
 interface SearchResult {
@@ -17,7 +18,8 @@ interface SearchResult {
 export const SearchModal: React.FC<SearchModalProps> = ({
   isOpen,
   onClose,
-  onSelectLecture
+  onSelectLecture,
+  lectures
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -52,7 +54,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   const q = query.trim().toLowerCase();
 
   if (q.length > 0) {
-    lecturesData.forEach((lec) => {
+    (lectures || lecturesData).forEach((lec) => {
       // Check title or subtitle
       if (
         lec.title.toLowerCase().includes(q) ||

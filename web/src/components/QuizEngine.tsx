@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle2, 
   XCircle, 
   HelpCircle, 
-  RotateCcw, 
   BookOpen, 
   ChevronRight, 
   CheckSquare, 
@@ -11,22 +10,93 @@ import {
   Sparkles, 
   Layers, 
   Code2, 
-  Info
+  Info, 
+  Trash2, 
+  Check, 
+  AlertTriangle,
+  Bookmark
 } from 'lucide-react';
 import type { TopicQuiz, QuizQuestion, QuizOption } from '../types/quiz';
 import type { Lecture } from '../data/notesData';
+import { 
+  loadQuizProgress, 
+  saveQuizProgress, 
+  clearQuizProgress 
+} from '../utils/quizStorage';
 
 interface QuizEngineProps {
+  subjectId?: string;
   quiz: TopicQuiz | undefined;
   lecture: Lecture;
   onBackToNotes: () => void;
 }
 
-export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToNotes }) => {
+export const QuizEngine: React.FC<QuizEngineProps> = ({ 
+  subjectId = 'computer-networks', 
+  quiz, 
+  lecture, 
+  onBackToNotes 
+}) => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string[]>>({});
   const [submittedQuestions, setSubmittedQuestions] = useState<Record<string, boolean>>({});
+  const [markedDoneQuestions, setMarkedDoneQuestions] = useState<Record<string, boolean>>({});
+  const [markedReviewQuestions, setMarkedReviewQuestions] = useState<Record<string, boolean>>({});
   const [activeQuestionIndex, setActiveQuestionIndex] = useState<number>(0);
   const [demoMode, setDemoMode] = useState<boolean>(false);
+  const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
+
+  // Load saved state from Local Storage on mount and lecture/subject change
+  useEffect(() => {
+    const saved = loadQuizProgress(subjectId, lecture.id);
+    if (saved) {
+      setSelectedAnswers(saved.selectedAnswers || {});
+      setSubmittedQuestions(saved.submittedQuestions || {});
+      setMarkedDoneQuestions(saved.markedDoneQuestions || {});
+      setMarkedReviewQuestions(saved.markedReviewQuestions || {});
+      setActiveQuestionIndex(saved.activeQuestionIndex || 0);
+    } else {
+      setSelectedAnswers({});
+      setSubmittedQuestions({});
+      setMarkedDoneQuestions({});
+      setMarkedReviewQuestions({});
+      setActiveQuestionIndex(0);
+    }
+  }, [subjectId, lecture.id]);
+
+  const persistState = (
+    newAnswers: Record<string, string[]>,
+    newSubmitted: Record<string, boolean>,
+    newIndex: number,
+    newDone: Record<string, boolean> = markedDoneQuestions,
+    newReview: Record<string, boolean> = markedReviewQuestions
+  ) => {
+    saveQuizProgress(subjectId, lecture.id, {
+      selectedAnswers: newAnswers,
+      submittedQuestions: newSubmitted,
+      activeQuestionIndex: newIndex,
+      markedDoneQuestions: newDone,
+      markedReviewQuestions: newReview,
+      lastUpdated: Date.now()
+    });
+  };
+
+  const handleToggleDoneQuestion = (questionId: string) => {
+    const updated = {
+      ...markedDoneQuestions,
+      [questionId]: !markedDoneQuestions[questionId]
+    };
+    setMarkedDoneQuestions(updated);
+    persistState(selectedAnswers, submittedQuestions, activeQuestionIndex, updated, markedReviewQuestions);
+  };
+
+  const handleToggleReviewQuestion = (questionId: string) => {
+    const updated = {
+      ...markedReviewQuestions,
+      [questionId]: !markedReviewQuestions[questionId]
+    };
+    setMarkedReviewQuestions(updated);
+    persistState(selectedAnswers, submittedQuestions, activeQuestionIndex, markedDoneQuestions, updated);
+  };
 
   // Demo fallback questions if current lecture has 0 questions
   const demoQuestions: QuizQuestion[] = [
@@ -74,34 +144,49 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
     if (submittedQuestions[questionId]) return;
 
     if (type === 'single_choice') {
-      setSelectedAnswers((prev) => ({
-        ...prev,
+      const updated = {
+        ...selectedAnswers,
         [questionId]: [optionId]
-      }));
+      };
+      setSelectedAnswers(updated);
+      persistState(updated, submittedQuestions, activeQuestionIndex);
     } else {
       // Multi choice toggle
       const current = selectedAnswers[questionId] || [];
-      const updated = current.includes(optionId)
+      const updatedList = current.includes(optionId)
         ? current.filter(id => id !== optionId)
         : [...current, optionId].sort();
-      setSelectedAnswers((prev) => ({
-        ...prev,
-        [questionId]: updated
-      }));
+      const updated = {
+        ...selectedAnswers,
+        [questionId]: updatedList
+      };
+      setSelectedAnswers(updated);
+      persistState(updated, submittedQuestions, activeQuestionIndex);
     }
   };
 
   const handleVerifyQuestion = (questionId: string) => {
-    setSubmittedQuestions((prev) => ({
-      ...prev,
+    const updatedSubmitted = {
+      ...submittedQuestions,
       [questionId]: true
-    }));
+    };
+    setSubmittedQuestions(updatedSubmitted);
+    persistState(selectedAnswers, updatedSubmitted, activeQuestionIndex);
   };
 
-  const handleResetQuiz = () => {
+  const handleClearAll = () => {
+    clearQuizProgress(subjectId, lecture.id);
     setSelectedAnswers({});
     setSubmittedQuestions({});
+    setMarkedDoneQuestions({});
+    setMarkedReviewQuestions({});
     setActiveQuestionIndex(0);
+    setShowClearConfirm(false);
+  };
+
+  const handleSelectQuestionIndex = (idx: number) => {
+    setActiveQuestionIndex(idx);
+    persistState(selectedAnswers, submittedQuestions, idx);
   };
 
   // Calculate score
@@ -186,37 +271,73 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
 
   // Active Quiz View (Charcoal Theme: Dark Grey & White High Contrast)
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-4 py-8 relative">
       
+      {/* Clear Confirmation Modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md p-6 rounded-2xl bg-white dark:bg-[#1c1c21] border border-zinc-200 dark:border-[#2c2c34] shadow-2xl">
+            <div className="flex items-center gap-3 mb-3 text-rose-500">
+              <div className="p-2 rounded-xl bg-rose-500/10">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
+                Clear All Quiz Answers?
+              </h3>
+            </div>
+            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 mb-6 leading-relaxed">
+              This will erase all selected options and verification statuses for <strong>{lecture.title}</strong> from browser local storage. This cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-[#25252b] transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleClearAll}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-md transition-all cursor-pointer"
+              >
+                Yes, Clear All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Quiz Header */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-[#1c1c21] border border-zinc-200 dark:border-[#2c2c34] shadow-md">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-[var(--bg-island-subtle)] border border-[var(--border-island)] shadow-md">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
               Lecture {quiz?.lectureNumber || lecture.number} Quiz
             </span>
             {demoMode && (
-              <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-semibold bg-[var(--bg-island)] text-[var(--text-muted)] px-2 py-0.5 rounded-full border border-[var(--border-island)]">
                 Simulator Mode
               </span>
             )}
           </div>
-          <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white mt-0.5">
+          <h2 className="text-lg sm:text-xl font-bold text-[var(--text-heading)] mt-0.5">
             {quiz?.title || `${lecture.title} Quiz`}
           </h2>
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--bg-island)] border border-[var(--border-island)] text-[var(--text-muted)] text-[11px] font-medium">
+            <Check className="w-3 h-3 text-[var(--text-heading)]" /> Saved
+          </div>
           <button
-            onClick={handleResetQuiz}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-[#25252b] transition-colors cursor-pointer"
-            title="Reset answers"
+            onClick={() => setShowClearConfirm(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-500 hover:bg-rose-500/10 border border-rose-500/30 transition-all cursor-pointer"
+            title="Clear all answers for this quiz"
           >
-            <RotateCcw className="w-3.5 h-3.5" /> Reset
+            <Trash2 className="w-3.5 h-3.5" /> Clear All
           </button>
           <button
             onClick={onBackToNotes}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-100 dark:bg-[#25252b] hover:bg-zinc-200 dark:hover:bg-[#2f2f38] text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[var(--btn-secondary-bg)] border border-[var(--btn-secondary-border)] text-[var(--btn-secondary-text)] hover:opacity-90 transition-colors cursor-pointer"
           >
             <BookOpen className="w-3.5 h-3.5" /> Back to Notes
           </button>
@@ -231,45 +352,87 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
             const isVerified = submittedQuestions[q.id];
             const isCorrect = isVerified && (selectedAnswers[q.id] || []).slice().sort().join(',') === q.correctOptionIds.slice().sort().join(',');
             const isActive = idx === activeQuestionIndex;
+            const isDoneMarked = markedDoneQuestions[q.id];
+            const isReviewMarked = markedReviewQuestions[q.id];
 
             return (
               <button
                 key={q.id}
-                onClick={() => setActiveQuestionIndex(idx)}
-                className={`w-8 h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
+                onClick={() => handleSelectQuestionIndex(idx)}
+                className={`relative w-8 h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
                   isActive
-                    ? 'ring-2 ring-zinc-400 bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold'
+                    ? 'ring-2 ring-[var(--text-heading)] bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] font-bold'
                     : isVerified
                       ? isCorrect
                         ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
                         : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
                       : isAnswered
-                        ? 'bg-zinc-200 dark:bg-[#2f2f38] text-zinc-900 dark:text-zinc-100'
-                        : 'bg-zinc-100 dark:bg-[#1c1c21] text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 border border-zinc-200 dark:border-[#2c2c34]'
+                        ? 'bg-[var(--bg-island-subtle)] text-[var(--text-heading)] border border-[var(--border-island)]'
+                        : 'bg-[var(--bg-island)] text-[var(--text-muted)] border border-[var(--border-island)] hover:text-[var(--text-heading)]'
                 }`}
               >
                 {idx + 1}
+                {isReviewMarked && (
+                  <span
+                    title="Marked for review"
+                    className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400 ring-2 ring-[var(--bg-page)]"
+                  />
+                )}
+                {isDoneMarked && (
+                  <span
+                    title="Marked as done"
+                    className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[var(--bg-page)]"
+                  />
+                )}
               </button>
             );
           })}
         </div>
 
-        <div className="text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap font-medium">
-          Score: <span className="font-bold text-zinc-900 dark:text-white">{correctCount}</span> / {questionsToRender.length}
+        <div className="text-xs text-[var(--text-muted)] whitespace-nowrap font-medium">
+          Score: <span className="font-bold text-[var(--text-heading)]">{correctCount}</span> / {questionsToRender.length}
         </div>
       </div>
 
       {/* Active Question Card */}
       {currentQ && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#1c1c21] border border-zinc-200 dark:border-[#2c2c34] shadow-2xl">
+        <div className="p-6 sm:p-8 rounded-3xl bg-[var(--bg-island-subtle)] border border-[var(--border-island)] shadow-xl">
           
-          {/* Question Metadata */}
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+          {/* Question Metadata & Status Toggles */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-[var(--border-island)]">
             <span className="text-xs font-mono font-bold text-zinc-400">
               Question {activeQuestionIndex + 1} of {questionsToRender.length}
             </span>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Question Level Mark for Review Toggle */}
+              <button
+                onClick={() => handleToggleReviewQuestion(currentQ.id)}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                  markedReviewQuestions[currentQ.id]
+                    ? 'bg-amber-500/15 text-amber-400 border-amber-500/40 shadow-xs'
+                    : 'bg-[var(--bg-island)] text-[var(--text-muted)] border-[var(--border-island)] hover:text-[var(--text-heading)]'
+                }`}
+                title={markedReviewQuestions[currentQ.id] ? 'Marked for review (click to unmark)' : 'Mark question for review'}
+              >
+                <Bookmark className={`w-3.5 h-3.5 ${markedReviewQuestions[currentQ.id] ? 'fill-current text-amber-400' : ''}`} />
+                <span>{markedReviewQuestions[currentQ.id] ? 'For Review' : 'Mark Review'}</span>
+              </button>
+
+              {/* Question Level Mark as Done Toggle */}
+              <button
+                onClick={() => handleToggleDoneQuestion(currentQ.id)}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                  markedDoneQuestions[currentQ.id]
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-xs'
+                    : 'bg-[var(--bg-island)] text-[var(--text-muted)] border-[var(--border-island)] hover:text-[var(--text-heading)]'
+                }`}
+                title={markedDoneQuestions[currentQ.id] ? 'Marked as done (click to unmark)' : 'Mark question as done'}
+              >
+                <CheckCircle2 className={`w-3.5 h-3.5 ${markedDoneQuestions[currentQ.id] ? 'text-emerald-400' : ''}`} />
+                <span>{markedDoneQuestions[currentQ.id] ? 'Completed' : 'Mark Done'}</span>
+              </button>
+
               <span
                 className={`text-[11px] font-semibold uppercase px-2.5 py-0.5 rounded-full ${
                   currentQ.type === 'multi_choice'
@@ -277,7 +440,7 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
                     : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30'
                 }`}
               >
-                {currentQ.type === 'multi_choice' ? 'Multiple Choice (Select all)' : 'Single Choice'}
+                {currentQ.type === 'multi_choice' ? 'Multi Choice' : 'Single Choice'}
               </span>
 
               <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 capitalize bg-zinc-100 dark:bg-[#25252b] px-2 py-0.5 rounded-md border border-zinc-200 dark:border-[#2e2e36]">
@@ -287,7 +450,7 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
           </div>
 
           {/* Question Title */}
-          <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-snug mb-6">
+          <h3 className="text-base sm:text-lg font-bold text-[var(--text-heading)] leading-snug mb-6">
             {currentQ.question}
           </h3>
 
@@ -299,16 +462,16 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
               const isSubmitted = submittedQuestions[currentQ.id];
               const isCorrectOption = currentQ.correctOptionIds.includes(opt.id);
 
-              let optionStyle = 'border-zinc-200 dark:border-[#2c2c34] hover:border-zinc-400 dark:hover:border-zinc-600 bg-white dark:bg-[#16161a] text-zinc-800 dark:text-zinc-200';
+              let optionStyle = 'border border-[var(--border-island)] hover:border-[var(--text-heading)] bg-[var(--bg-island)] text-[var(--text-body)]';
               if (isSelected) {
-                optionStyle = 'border-zinc-900 dark:border-white bg-zinc-100/80 dark:bg-[#232329] text-zinc-950 dark:text-white shadow-xs';
+                optionStyle = 'border-2 border-[var(--text-heading)] bg-[var(--bg-island-subtle)] text-[var(--text-heading)] shadow-xs';
               }
 
               if (isSubmitted) {
                 if (isCorrectOption) {
-                  optionStyle = 'border-emerald-500 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200';
+                  optionStyle = 'border-2 border-emerald-500 bg-emerald-500/10 text-[var(--text-heading)]';
                 } else if (isSelected && !isCorrectOption) {
-                  optionStyle = 'border-rose-500 bg-rose-500/10 text-rose-900 dark:text-rose-200';
+                  optionStyle = 'border-2 border-rose-500 bg-rose-500/10 text-[var(--text-heading)]';
                 }
               }
 
@@ -317,15 +480,15 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
                   key={opt.id}
                   onClick={() => handleOptionClick(currentQ.id, opt.id, currentQ.type)}
                   disabled={isSubmitted}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all flex items-start gap-3.5 relative cursor-pointer ${optionStyle}`}
+                  className={`w-full text-left p-4 rounded-2xl transition-all flex items-start gap-3.5 relative cursor-pointer ${optionStyle}`}
                 >
                   <div className="mt-0.5 shrink-0">
                     {currentQ.type === 'multi_choice' ? (
                       <div
                         className={`w-5 h-5 rounded-md border flex items-center justify-center text-xs font-bold transition-colors ${
                           isSelected
-                            ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 border-zinc-900 dark:border-white'
-                            : 'border-zinc-400 dark:border-zinc-600 text-transparent'
+                            ? 'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] border-[var(--text-heading)]'
+                            : 'border-[var(--border-island)] text-transparent'
                         }`}
                       >
                         ✓
@@ -334,17 +497,17 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
                       <div
                         className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${
                           isSelected
-                            ? 'border-zinc-900 dark:border-white bg-zinc-900 dark:bg-white'
-                            : 'border-zinc-400 dark:border-zinc-600'
+                            ? 'border-[var(--text-heading)] bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)]'
+                            : 'border-[var(--border-island)]'
                         }`}
                       >
-                        {isSelected && <div className="w-2 h-2 rounded-full bg-white dark:bg-zinc-950" />}
+                        {isSelected && <div className="w-2 h-2 rounded-full bg-[var(--btn-primary-text)]" />}
                       </div>
                     )}
                   </div>
 
                   <div className="flex-1 text-sm sm:text-base leading-relaxed font-medium">
-                    <span className="font-mono font-bold mr-2 text-zinc-400">
+                    <span className="font-mono font-bold mr-2 text-[var(--text-muted)]">
                       {opt.id}.
                     </span>
                     {opt.text}
@@ -362,18 +525,18 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
           </div>
 
           {/* Action Bar: Check Answer & Next */}
-          <div className="flex items-center justify-between pt-4 border-t border-zinc-200 dark:border-[#2c2c34]">
+          <div className="flex items-center justify-between pt-4 border-t border-[var(--border-island)]">
             <div>
               {!submittedQuestions[currentQ.id] ? (
                 <button
                   onClick={() => handleVerifyQuestion(currentQ.id)}
                   disabled={!(selectedAnswers[currentQ.id]?.length)}
-                  className="px-6 py-2.5 rounded-xl font-bold text-sm bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-md hover:scale-[1.02] transition-all cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed shadow-md transition-all cursor-pointer"
                 >
                   Verify Answer
                 </button>
               ) : (
-                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-[var(--text-muted)] flex items-center gap-1.5">
                   <Info className="w-4 h-4 text-emerald-400" /> Explanation revealed below
                 </span>
               )}
@@ -382,8 +545,8 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
             <div className="flex items-center gap-2">
               {activeQuestionIndex > 0 && (
                 <button
-                  onClick={() => setActiveQuestionIndex(prev => prev - 1)}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-[#25252b] transition-colors cursor-pointer"
+                  onClick={() => handleSelectQuestionIndex(activeQuestionIndex - 1)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[var(--btn-secondary-bg)] border border-[var(--btn-secondary-border)] text-[var(--btn-secondary-text)] hover:opacity-90 transition-colors cursor-pointer"
                 >
                   Previous
                 </button>
@@ -391,8 +554,8 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
 
               {activeQuestionIndex < questionsToRender.length - 1 && (
                 <button
-                  onClick={() => setActiveQuestionIndex(prev => prev + 1)}
-                  className="flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-100 dark:bg-[#25252b] hover:bg-zinc-200 dark:hover:bg-[#2e2e36] text-zinc-900 dark:text-white transition-colors cursor-pointer"
+                  onClick={() => handleSelectQuestionIndex(activeQuestionIndex + 1)}
+                  className="flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--btn-secondary-bg)] border border-[var(--btn-secondary-border)] text-[var(--btn-secondary-text)] hover:opacity-90 transition-colors cursor-pointer"
                 >
                   Next <ChevronRight className="w-3.5 h-3.5" />
                 </button>
@@ -402,16 +565,16 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ quiz, lecture, onBackToN
 
           {/* Explanation Accordion Card */}
           {submittedQuestions[currentQ.id] && (
-            <div className="mt-6 p-5 rounded-2xl bg-zinc-50 dark:bg-[#16161a] border border-zinc-200 dark:border-[#2c2c34] animate-in fade-in duration-300">
-              <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">
+            <div className="mt-6 p-5 rounded-2xl bg-[var(--bg-island)] border border-[var(--border-island)] animate-in fade-in duration-300">
+              <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-emerald-500 mb-2">
                 <HelpCircle className="w-4 h-4" /> Explanation & Key Insight
               </div>
-              <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-200 leading-relaxed font-normal">
+              <p className="text-xs sm:text-sm text-[var(--text-body)] leading-relaxed font-normal">
                 {currentQ.explanation}
               </p>
               {currentQ.subtopic && (
-                <div className="mt-3 pt-2 border-t border-zinc-200 dark:border-[#282830] text-[11px] text-zinc-500 dark:text-zinc-400">
-                  Refer to subtopic: <span className="font-semibold text-zinc-900 dark:text-white">{currentQ.subtopic}</span> in lecture notes.
+                <div className="mt-3 pt-2 border-t border-[var(--border-island)] text-[11px] text-[var(--text-muted)]">
+                  Refer to subtopic: <span className="font-semibold text-[var(--text-heading)]">{currentQ.subtopic}</span> in lecture notes.
                 </div>
               )}
             </div>

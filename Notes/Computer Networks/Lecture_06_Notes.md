@@ -63,6 +63,7 @@ While physical latency cannot be negative, logical costs in routing algorithms c
 
 ### Negative Cycles: The Mathematical Undecidability
 If a directed cycle $C = (v_1, v_2, \dots, v_k, v_1)$ has a cumulative negative weight:
+
 $$\sum_{e \in C} w(e) < 0$$
 
 ```
@@ -76,7 +77,9 @@ $$\sum_{e \in C} w(e) < 0$$
 ```
 
 A packet traversing this loop repeatedly decreases its path cost by $-1$ on each revolution.
+
 $$\text{Cost after } 1\text{ loop} = -1, \quad \text{after } 100\text{ loops} = -100, \quad \text{after } \infty\text{ loops} = -\infty$$
+
 **The shortest path problem on a negative cycle is ill-defined and mathematically unbounded.**
 
 ---
@@ -89,6 +92,7 @@ Published independently by Alfonso Shimbel (1955), Richard Bellman (1958), and L
 Let $d^{(k)}(v)$ represent the shortest path distance from source $S$ to vertex $v$ using **at most $k$ edges**.
 
 The Bellman-Ford recurrence relation:
+
 $$d^{(k)}(v) = \min \left( d^{(k-1)}(v), \min_{u \in \text{In}(v)} \left( d^{(k-1)}(u) + w(u, v) \right) \right)$$
 
 ### Why Exactly $|V| - 1$ Relaxation Passes?
@@ -170,7 +174,9 @@ Because **routers on the internet do not possess global knowledge of all topolog
 In a decentralized network, router $x$ only talks to its direct physical neighbors $v \in \text{Neighbors}(x)$. Each neighbor shares its estimated distance vector $D_v$.
 
 Router $x$ calculates its shortest path to any destination $y$ via the **Distributed Bellman-Ford Equation**:
+
 $$D_x(y) = \min_{v \in \text{Neighbors}(x)} \left\{ c(x, v) + D_v(y) \right\}$$
+
 Where:
 - $c(x, v)$ is the physical link cost between router $x$ and neighbor $v$.
 - $D_v(y)$ is neighbor $v$'s advertised distance to destination $y$.

@@ -23,6 +23,7 @@ In a **Distance Vector (DV)** protocol, routers do not possess a global topograp
 1. Maintains an array (vector) of estimated distances to all known destinations.
 2. Periodically transmits its **entire routing table** to its directly connected immediate neighbors.
 3. Updates its local table using the **Distributed Bellman-Ford Equation**:
+
    $$D_x(y) = \min_{v \in \text{Neighbors}(x)} \left\{ c(x, v) + D_v(y) \right\}$$
 
 Because routers blindly accept distance claims from neighbors without independently verifying the path, distance vector protocols are colloquially called **"routing by rumor"**.
@@ -157,7 +158,9 @@ OSPF runs directly on top of raw IP using **Protocol Number 89** (no TCP/UDP ove
 5. **Link State Acknowledgment / LSAck (Type 5)**: Guarantees reliable transport across links.
 
 ### The OSPF Adjacency State Machine:
+
 $$\text{Down} \rightarrow \text{Init} \rightarrow \text{2-Way} \rightarrow \text{ExStart} \rightarrow \text{Exchange} \rightarrow \text{Loading} \rightarrow \mathbf{Full}$$
+
 - **Full State**: Routers have completely synchronized their databases and are fully functional.
 
 ---
@@ -182,13 +185,16 @@ OSPF solves this through **Hierarchical Areas**:
 
 ### DR and BDR in Broadcast Multi-Access Networks
 On a shared Ethernet segment with $N$ routers, establishing direct neighbor adjacencies between every pair would produce:
+
 $$\text{Total Adjacencies} = \frac{N(N - 1)}{2} = O(N^2)$$
+
 For 10 routers, that is 45 redundant adjacencies flooding duplicate LSAs.
 
 OSPF elects:
 - **Designated Router (DR)**: Central hub router that receives all LSAs and redistributes them.
 - **Backup Designated Router (BDR)**: Standby router that immediately assumes DR duties if the DR fails.
 - All other routers (**DROthers**) form adjacencies **ONLY with the DR and BDR** using multicast address `224.0.0.6`:
+
 $$\text{Total Adjacencies Reduced to: } 2N - 3 = O(N)$$
 
 ---

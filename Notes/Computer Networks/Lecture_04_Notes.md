@@ -22,12 +22,15 @@ In real-world network engineering, you do not start with a CIDR prefix; you star
 
 ### The Mathematical Requirement Formula
 To accommodate $H_{\text{req}}$ physical host interfaces on a single subnet:
+
 $$2^N - 2 \ge H_{\text{req}}$$
+
 Where:
 - $N$ is the number of **Host Bits** required.
 - The subtracted $2$ accounts for the unusable **Network ID** and **Directed Broadcast Address**.
 
 Once $N$ is determined:
+
 $$\text{Subnet Mask Prefix Length } P = 32 - N$$
 $$\text{Block Size (Subnet Multiplier)} = 2^N$$
 $$\text{Total Capacity} = 2^N - 2\text{ usable hosts}$$
@@ -108,7 +111,9 @@ In FLSM, every subnet is partitioned with the exact same prefix length.
 ### Why IPv6?
 - **Address Space Depletion**: The global IPv4 free address pool administered by IANA officially ran dry in February 2011.
 - **Scale of IPv6**: IPv6 utilizes a **128-bit address space**:
+
   $$2^{128} \approx 3.4028 \times 10^{38}\text{ unique addresses}$$
+
   This is approximately $6.67 \times 10^{23}$ addresses per square meter of Earth's surface—sufficient to assign an IP address to every grain of sand on the planet.
 
 ### IPv6 Text Format & RFC 5952 Compression Rules
