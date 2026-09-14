@@ -1,0 +1,50 @@
+{
+  "CN_1_Followup (1).pdf": {
+    "page_count": 10,
+    "has_text": false,
+    "text_length": 0,
+    "content": ""
+  },
+  "Graph_Algorithms_for_Networking_.pdf": {
+    "page_count": 7,
+    "has_text": false,
+    "text_length": 0,
+    "content": ""
+  },
+  "Graphs_II.pdf": {
+    "page_count": 7,
+    "has_text": false,
+    "text_length": 0,
+    "content": ""
+  },
+  "IP_1.pdf": {
+    "page_count": 9,
+    "has_text": false,
+    "text_length": 0,
+    "content": ""
+  },
+  "IP_2.pdf": {
+    "page_count": 10,
+    "has_text": true,
+    "text_length": 249,
+    "content": "\n--- Page 7 ---\n⚠ :: can only be used once per address (otherwise ambiguous)\n--- Page 9 ---\n# or ipconfig → \"Default Gateway\"\nroute print\nnetstat -rn | grep default\nip route show\n# macOS\n# Windows\n# Output: \"default via 192.168.1.1 dev eth0\"\n# Linux"
+  },
+  "Network_Packets (1).pdf": {
+    "page_count": 11,
+    "has_text": true,
+    "text_length": 226,
+    "content": "\n--- Page 5 ---\nTransport    <----------------> Transport\nData Link    <----------------> Data Link\nSender                            Receiver\nNetwork      <----------------> Network\nApplication  <----------------> Application"
+  },
+  "RF_I.pdf": {
+    "page_count": 8,
+    "has_text": true,
+    "text_length": 399,
+    "content": "\n--- Page 7 ---\nA network interface is a device's connection to one particular network.\nlo        → Loopback interface\neth0      → Ethernet interface\nwlan0     → Wi-Fi interface\nAn IP address is assigned to a network interface.\n--- Page 8 ---\n[ROUTER]───┤\n               Interface eth1 — 10.0.0.1/30 (WAN to ISP)\n               │\n               Interface eth0 — 192.168.1.1/24 (LAN)\n               │"
+  },
+  "RF_II.pdf": {
+    "page_count": 12,
+    "has_text": true,
+    "text_length": 1010,
+    "content": "\n--- Page 6 ---\nthrough eth1\n172.16.1.0/24\nvia 10.0.0.2\nNext Hop\nDestination Prefix\nOutgoing Interface\n--- Page 8 ---\n| Destination Prefix | Next Hop | Interface |\n| `10.0.0.0/8` | `192.168.1.1` | `eth0` |\n| `10.10.20.128/25` | `192.168.4.1` | `eth3` |\n| `10.10.0.0/16` | `192.168.2.1` | `eth1` |\n| `0.0.0.0/0` | `192.168.5.1` | `eth4` |\n| `10.10.20.0/24` | `192.168.3.1` | `eth2` |\nConsider the following routing table:\n--- Page 9 ---\nNow suppose a packet arrives with:\n| `0.0.0.0/0` | `192.168.5.1` | `eth4` |\nMore network bits\nSmaller destination range\nMore specific route\n        ↓\n        ↓\nWhich route describes this destination most specifically?\nThen:\nFirst:\nIf routing logic has multiple equivalent-prefix candidates,\nother criteria may be used.\n--- Page 10 ---\nA static route is a route manually configured by a network administrator.\n--- Page 12 ---\nip route add 172.16.1.0/24 via 10.0.0.2\nip route add 172.16.1.0/24 via 10.0.0.2 dev eth1\nsudo ip neigh add 10.0.0.2 lladdr aa:bb:cc:dd:ee:ff dev eth1"
+  }
+}

@@ -1,0 +1,136 @@
+"""
+Unified Master Quiz Compiler
+Consolidates all quiz modules (Lectures 02 to 13), validates schema and integrity,
+exports individual backend-ready JSON files to web/src/data/quizzes/
+and generates the production TypeScript registry in web/src/data/quizzesData.ts.
+"""
+
+import json
+import sys
+from pathlib import Path
+from typing import Dict, Any, List
+
+BASE_DIR = Path(__file__).parent.parent
+QUIZZES_JSON_DIR = BASE_DIR / "web" / "src" / "data" / "quizzes"
+TS_OUTPUT_FILE = BASE_DIR / "web" / "src" / "data" / "quizzesData.ts"
+JSON_ALL_FILE = BASE_DIR / "web" / "src" / "data" / "all_quizzes.json"
+
+# Import datasets
+from build_all_quizzes import QUIZZES as LECTURES_02_TO_05
+from quizzes_complete_data import get_additional_quizzes
+from quizzes_lectures_09_to_13 import get_lectures_09_to_13_quizzes
+
+def validate_quiz(topic_id: str, quiz: Dict[str, Any]) -> List[str]:
+    errors = []
+    required_top_keys = ["topicId", "lectureNumber", "title", "description", "estimatedMinutes", "questions"]
+    for k in required_top_keys:
+        if k not in quiz:
+            errors.append(f"Missing top-level key: '{k}'")
+    
+    questions = quiz.get("questions", [])
+    if len(questions) < 20:
+        errors.append(f"Expected at least 20 questions, found {len(questions)}")
+    
+    seen_q_ids = set()
+    for idx, q in enumerate(questions):
+        qid = q.get("id", f"q{idx}")
+        if qid in seen_q_ids:
+            errors.append(f"Duplicate question id: '{qid}'")
+        seen_q_ids.add(qid)
+        
+        q_type = q.get("type")
+        if q_type not in ("single_choice", "multi_choice"):
+            errors.append(f"Question {qid}: invalid type '{q_type}'")
+        
+        options = q.get("options", [])
+        if len(options) < 2:
+            errors.append(f"Question {qid}: fewer than 2 options")
+        
+        opt_ids = {opt.get("id") for opt in options}
+        correct_ids = q.get("correctOptionIds", [])
+        if not correct_ids:
+            errors.append(f"Question {qid}: no correctOptionIds specified")
+        for cid in correct_ids:
+            if cid not in opt_ids:
+                errors.append(f"Question {qid}: correctOptionId '{cid}' not found in options {opt_ids}")
+        
+        if q_type == "single_choice" and len(correct_ids) != 1:
+            errors.append(f"Question {qid}: single_choice must have exactly 1 correctOptionId, found {len(correct_ids)}")
+        
+        if not q.get("explanation"):
+            errors.append(f"Question {qid}: missing explanation")
+    
+    return errors
+
+def main():
+    print("=" * 60)
+    print("Master Quiz Compiler: Lectures 02 through 13")
+    print("=" * 60)
+    
+    all_quizzes: Dict[str, Any] = {}
+    
+    # 1. Merge Lectures 02 - 05
+    all_quizzes.update(LECTURES_02_TO_05)
+    
+    # 2. Merge Lectures 06 - 08
+    lectures_06_to_08 = get_additional_quizzes()
+    all_quizzes.update(lectures_06_to_08)
+    
+    # 3. Merge Lectures 09 - 13
+    lectures_09_to_13 = get_lectures_09_to_13_quizzes()
+    all_quizzes.update(lectures_09_to_13)
+    
+    expected_lectures = [f"lecture-{i:02d}" for i in range(2, 14)]
+    print(f"Total quiz modules collected: {len(all_quizzes)}")
+    
+    total_questions = 0
+    validation_failures = 0
+    
+    QUIZZES_JSON_DIR.mkdir(parents=True, exist_ok=True)
+    
+    for topic_id in expected_lectures:
+        if topic_id not in all_quizzes:
+            print(f"[ERROR] Missing lecture module: {topic_id}")
+            validation_failures += 1
+            continue
+        
+        quiz = all_quizzes[topic_id]
+        errors = validate_quiz(topic_id, quiz)
+        num_q = len(quiz.get("questions", []))
+        total_questions += num_q
+        
+        if errors:
+            print(f"[ERROR] {topic_id} ({quiz.get('title')}): {len(errors)} validation error(s):")
+            for err in errors:
+                print(f"   - {err}")
+            validation_failures += 1
+        else:
+            print(f"[OK] {topic_id}: {num_q} questions verified | '{quiz.get('title')}'")
+            # Save individual JSON file
+            json_file = QUIZZES_JSON_DIR / f"{topic_id}.json"
+            json_file.write_text(json.dumps(quiz, indent=2, ensure_ascii=False), encoding="utf-8")
+    
+    if validation_failures > 0:
+        print(f"\n[ERROR] Validation failed with {validation_failures} errors. Halting.")
+        sys.exit(1)
+        
+    print("-" * 60)
+    print(f"All {len(expected_lectures)} lectures validated successfully!")
+    print(f"Total verified questions across all lectures: {total_questions}")
+    print(f"Average questions per lecture: {total_questions / len(expected_lectures):.1f}")
+    
+    # Write combined JSON file for backend consumption
+    JSON_ALL_FILE.write_text(json.dumps(all_quizzes, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"Exported combined backend JSON to: {JSON_ALL_FILE}")
+    
+    # Export TypeScript registry for React web application
+    ts_code = "// Auto-generated by tooling/compile_all_quizzes.py - DO NOT EDIT DIRECTLY\n"
+    ts_code += "import type { TopicQuiz } from '../types/quiz';\n\n"
+    ts_code += f"export const quizzesRegistry: Record<string, TopicQuiz> = {json.dumps(all_quizzes, indent=2, ensure_ascii=False)};\n"
+    
+    TS_OUTPUT_FILE.write_text(ts_code, encoding="utf-8")
+    print(f"Exported TypeScript registry to: {TS_OUTPUT_FILE}")
+    print("=" * 60)
+
+if __name__ == "__main__":
+    main()
