@@ -1,0 +1,593 @@
+{
+  "topicId": "lecture-11",
+  "lectureNumber": 11,
+  "title": "NAT, DHCP & Local Communication Quiz",
+  "description": "20 questions covering ARP requests/replies, gratuitous ARP, ARP spoofing, DHCP DORA lifecycle, NAT/PAT translation tables, SNAT vs DNAT, and home gateway architecture.",
+  "estimatedMinutes": 25,
+  "questions": [
+    {
+      "id": "l11-q01",
+      "type": "single_choice",
+      "question": "What is the core purpose of the Address Resolution Protocol (ARP) in IPv4 networking?",
+      "options": [
+        {
+          "id": "A",
+          "text": "To translate domain names into 32-bit IP addresses"
+        },
+        {
+          "id": "B",
+          "text": "To dynamically resolve a known Layer 3 IP address to a physical Layer 2 MAC address on the local broadcast link"
+        },
+        {
+          "id": "C",
+          "text": "To route packets across multiple Autonomous Systems"
+        },
+        {
+          "id": "D",
+          "text": "To assign IP addresses to new Wi-Fi devices automatically"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "IP operates at Layer 3, but NICs on local Ethernet/Wi-Fi links communicate strictly via Layer 2 MAC addresses. ARP maps the target IP to its corresponding 48-bit MAC address.",
+      "difficulty": "easy",
+      "subtopic": "ARP Fundamentals"
+    },
+    {
+      "id": "l11-q02",
+      "type": "single_choice",
+      "question": "What are the Layer 2 and Layer 3 destination addresses of an ARP Request frame searching for IP 192.168.1.1?",
+      "options": [
+        {
+          "id": "A",
+          "text": "L2 Dest: FF:FF:FF:FF:FF:FF (Broadcast), Target IP: 192.168.1.1"
+        },
+        {
+          "id": "B",
+          "text": "L2 Dest: 00:00:00:00:00:00, Target IP: 255.255.255.255"
+        },
+        {
+          "id": "C",
+          "text": "L2 Dest: Gateway MAC, Target IP: 0.0.0.0"
+        },
+        {
+          "id": "D",
+          "text": "L2 Dest: 01:00:5E:00:00:01 (Multicast), Target IP: 127.0.0.1"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Because the sender does not know the target's MAC, it broadcasts the frame to `FF:FF:FF:FF:FF:FF`. Every host on the switch receives it, but only the host configured with target IP 192.168.1.1 responds.",
+      "difficulty": "medium",
+      "subtopic": "ARP Request Addressing"
+    },
+    {
+      "id": "l11-q03",
+      "type": "single_choice",
+      "question": "How is an ARP Reply transmitted back to the inquiring host?",
+      "options": [
+        {
+          "id": "A",
+          "text": "As a Layer 2 Broadcast to FF:FF:FF:FF:FF:FF"
+        },
+        {
+          "id": "B",
+          "text": "As a Layer 2 Unicast frame addressed directly to the inquiring host's MAC address"
+        },
+        {
+          "id": "C",
+          "text": "Through a DNS pointer query"
+        },
+        {
+          "id": "D",
+          "text": "Via the default gateway router"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The ARP Request contained the sender's own MAC address. The target machine simply sends a direct unicast Layer 2 Ethernet frame back to that MAC address.",
+      "difficulty": "easy",
+      "subtopic": "ARP Reply"
+    },
+    {
+      "id": "l11-q04",
+      "type": "single_choice",
+      "question": "What Linux command shown in lecture demonstrations manually adds a static ARP mapping to interface `eth1`?",
+      "options": [
+        {
+          "id": "A",
+          "text": "ip route add 10.0.0.2 dev eth1"
+        },
+        {
+          "id": "B",
+          "text": "sudo ip neigh add 10.0.0.2 lladdr aa:bb:cc:dd:ee:ff dev eth1"
+        },
+        {
+          "id": "C",
+          "text": "ifconfig eth1 hw ether aa:bb:cc:dd:ee:ff"
+        },
+        {
+          "id": "D",
+          "text": "ping -c 1 10.0.0.2"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "As covered in handwritten lecture notes, `ip neigh add <IP> lladdr <MAC> dev <interface>` manipulates the kernel neighbor/ARP cache table directly.",
+      "difficulty": "medium",
+      "subtopic": "Linux ip neigh Command"
+    },
+    {
+      "id": "l11-q05",
+      "type": "single_choice",
+      "question": "What is a 'Gratuitous ARP' and what is its primary legitimate network function?",
+      "options": [
+        {
+          "id": "A",
+          "text": "An ARP query sent to hack neighbor routers"
+        },
+        {
+          "id": "B",
+          "text": "An unprompted ARP broadcast where a host announces its own IP-to-MAC mapping, used for IP conflict detection and updating switch MAC tables during failover (CARP/VRRP)"
+        },
+        {
+          "id": "C",
+          "text": "An ARP reply that is rejected due to invalid checksums"
+        },
+        {
+          "id": "D",
+          "text": "A request to renew a DHCP lease"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "A Gratuitous ARP occurs when a host broadcasts an ARP announcement for its own IP. If another host replies, an IP collision is detected. During high-availability failovers (VRRP), backup servers broadcast Gratuitous ARPs so switches immediately point traffic to their port.",
+      "difficulty": "hard",
+      "subtopic": "Gratuitous ARP"
+    },
+    {
+      "id": "l11-q06",
+      "type": "single_choice",
+      "question": "In an ARP Spoofing (Poisoning) attack, what vulnerability in the ARP protocol is exploited by the attacker?",
+      "options": [
+        {
+          "id": "A",
+          "text": "ARP uses 1024-bit RSA keys that are easily factored"
+        },
+        {
+          "id": "B",
+          "text": "ARP is completely stateless and unauthenticated; hosts accept unsolicited ARP replies and overwrite their ARP cache without verification"
+        },
+        {
+          "id": "C",
+          "text": "ARP packets are limited to 64 bytes"
+        },
+        {
+          "id": "D",
+          "text": "ARP operates exclusively over Wi-Fi, never wired cables"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "ARP lacks cryptographic authentication. A malicious host on the LAN can broadcast fake ARP replies claiming the Default Gateway's IP has the attacker's MAC address, intercepting all outbound internet traffic.",
+      "difficulty": "medium",
+      "subtopic": "ARP Spoofing"
+    },
+    {
+      "id": "l11-q07",
+      "type": "single_choice",
+      "question": "What is the correct chronological 4-step sequence of messages in the DHCP address allocation process (DORA)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Discover -> Offer -> Request -> Acknowledge"
+        },
+        {
+          "id": "B",
+          "text": "Dial -> Open -> Receive -> Accept"
+        },
+        {
+          "id": "C",
+          "text": "Determine -> Option -> Route -> Assign"
+        },
+        {
+          "id": "D",
+          "text": "Detect -> Order -> Register -> Authorize"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "DHCP DORA sequence: 1. Discover (Client broadcasts looking for servers), 2. Offer (Server offers IP/subnet/gateway), 3. Request (Client formally requests offered IP), 4. Acknowledge (Server commits lease).",
+      "difficulty": "easy",
+      "subtopic": "DHCP DORA"
+    },
+    {
+      "id": "l11-q08",
+      "type": "single_choice",
+      "question": "When a brand-new host without an IP boots up and sends a DHCP Discover packet, what are its Source IP and Destination IP addresses?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Src IP: 127.0.0.1, Dst IP: 192.168.1.1"
+        },
+        {
+          "id": "B",
+          "text": "Src IP: 0.0.0.0, Dst IP: 255.255.255.255 (Limited Broadcast)"
+        },
+        {
+          "id": "C",
+          "text": "Src IP: 169.254.0.1, Dst IP: 8.8.8.8"
+        },
+        {
+          "id": "D",
+          "text": "Src IP: 0.0.0.0, Dst IP: 224.0.0.1"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Because the host has no assigned IP address yet, it uses `0.0.0.0` as source. To reach any listening DHCP server on the local subnet without knowing their IPs, it broadcasts to `255.255.255.255` on UDP port 67.",
+      "difficulty": "medium",
+      "subtopic": "DHCP Discover Packet"
+    },
+    {
+      "id": "l11-q09",
+      "type": "multi_choice",
+      "question": "Which crucial network configuration parameters are standardly provided to a client computer in a DHCP Acknowledge (ACK) message? (Select ALL that apply)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Assigned Client IPv4 Address and Subnet Mask"
+        },
+        {
+          "id": "B",
+          "text": "Default Gateway (Router) IP Address"
+        },
+        {
+          "id": "C",
+          "text": "DNS Server IP Addresses (e.g. 1.1.1.1, 8.8.8.8)"
+        },
+        {
+          "id": "D",
+          "text": "The client's CPU clock frequency"
+        }
+      ],
+      "correctOptionIds": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "DHCP delivers the complete network setup: client IP, subnet mask, default gateway IP, DNS server IPs, domain search suffixes, and lease duration. (CPU clock is internal hardware).",
+      "difficulty": "easy",
+      "subtopic": "DHCP Configuration Options"
+    },
+    {
+      "id": "l11-q10",
+      "type": "single_choice",
+      "question": "At what point during its lease lifetime does a DHCP client first attempt to renew its IP lease with the issuing DHCP server (Timer T1)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "At 10% of the lease time"
+        },
+        {
+          "id": "B",
+          "text": "At 50% of the lease time (via unicast DHCP Request)"
+        },
+        {
+          "id": "C",
+          "text": "At 87.5% of the lease time"
+        },
+        {
+          "id": "D",
+          "text": "Only after the lease completely reaches 0 seconds"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "At T1 (50% of lease time), the client sends a unicast DHCP Request directly to the server that granted the lease. If no response is received by T2 (87.5%), it falls back to broadcasting to any available DHCP server.",
+      "difficulty": "medium",
+      "subtopic": "DHCP Lease Timers"
+    },
+    {
+      "id": "l11-q11",
+      "type": "single_choice",
+      "question": "If a Windows or macOS client is set to DHCP but fails to contact any DHCP server, what address block does it automatically assign to itself (APIPA)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "10.0.0.0/8"
+        },
+        {
+          "id": "B",
+          "text": "192.168.0.0/16"
+        },
+        {
+          "id": "C",
+          "text": "169.254.0.0/16 (Link-Local)"
+        },
+        {
+          "id": "D",
+          "text": "127.0.0.0/8 (Loopback)"
+        }
+      ],
+      "correctOptionIds": [
+        "C"
+      ],
+      "explanation": "When DHCP fails, the OS falls back to APIPA (Automatic Private IP Addressing) using the RFC 3927 link-local range `169.254.x.x`. This allows ad-hoc LAN communication between hosts, but has no internet connectivity.",
+      "difficulty": "easy",
+      "subtopic": "APIPA Link-Local"
+    },
+    {
+      "id": "l11-q12",
+      "type": "single_choice",
+      "question": "What is the primary distinction between Static NAT and Dynamic PAT (Port Address Translation / NAT Overload)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Static NAT is only for IPv6; PAT is for IPv4"
+        },
+        {
+          "id": "B",
+          "text": "Static NAT maps one private IP to one dedicated public IP (1:1); PAT multiplexes thousands of private IP hosts onto a single shared public IP using unique Layer 4 port numbers (M:1)"
+        },
+        {
+          "id": "C",
+          "text": "PAT requires dedicated hardware fiber cables"
+        },
+        {
+          "id": "D",
+          "text": "Static NAT does not alter the IP header"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Static NAT does a fixed 1:1 mapping (useful for hosting public servers). PAT (Network Address Port Translation / NAT Overload) allows an entire home or corporate office to share a single public IP by tracking ephemeral port numbers.",
+      "difficulty": "easy",
+      "subtopic": "NAT vs PAT"
+    },
+    {
+      "id": "l11-q13",
+      "type": "single_choice",
+      "question": "When Host A (192.168.1.50:52134) sends a packet to a web server (93.184.216.34:80) through a PAT gateway with public IP 203.0.113.1, how does the router rewrite the packet headers?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It leaves Source IP as 192.168.1.50 and changes Destination IP to 203.0.113.1"
+        },
+        {
+          "id": "B",
+          "text": "It replaces Source IP 192.168.1.50 with 203.0.113.1 and maps Source Port 52134 to an allocated translation port (e.g. 40001)"
+        },
+        {
+          "id": "C",
+          "text": "It changes Destination Port to 52134"
+        },
+        {
+          "id": "D",
+          "text": "It strips the IP header completely"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The NAT router replaces the private Inside Local IP:Port (`192.168.1.50:52134`) with its own Inside Global IP and an assigned ephemeral port (`203.0.113.1:40001`), recording this mapping in its active NAT state table.",
+      "difficulty": "medium",
+      "subtopic": "PAT Packet Rewriting"
+    },
+    {
+      "id": "l11-q14",
+      "type": "single_choice",
+      "question": "Why does standard outbound PAT make it fundamentally impossible for external clients on the public internet to initiate an unsolicited direct connection to a private server inside a LAN?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because fiber optic cables are unidirectional"
+        },
+        {
+          "id": "B",
+          "text": "Because the NAT router only forwards inbound packets that match an existing active translation entry created by previous outbound traffic"
+        },
+        {
+          "id": "C",
+          "text": "Because private hosts do not have MAC addresses"
+        },
+        {
+          "id": "D",
+          "text": "Because public IP packets cannot carry TCP headers"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "PAT is stateful: incoming packets from the WAN are dropped unless their destination port matches an active outbound session previously initiated by an internal host. Without an existing entry, the router does not know which internal host should receive the packet.",
+      "difficulty": "medium",
+      "subtopic": "NAT Inbound Blocking"
+    },
+    {
+      "id": "l11-q15",
+      "type": "single_choice",
+      "question": "What configuration technique allows external users on the internet to connect to an internal web server (192.168.1.100:8080) through a home router with a single public IP?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Port Forwarding (Destination NAT / DNAT)"
+        },
+        {
+          "id": "B",
+          "text": "Subnet Mask Inversion"
+        },
+        {
+          "id": "C",
+          "text": "Gratuitous ARP spoofing"
+        },
+        {
+          "id": "D",
+          "text": "Disabling the router's DNS server"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Port Forwarding (DNAT) adds a static rule to the router's NAT table: any incoming packet on public port 80 (or custom port) is automatically translated and forwarded to internal private IP `192.168.1.100:8080`.",
+      "difficulty": "easy",
+      "subtopic": "Port Forwarding / DNAT"
+    },
+    {
+      "id": "l11-q16",
+      "type": "single_choice",
+      "question": "Why does NAT break end-to-end peer-to-peer (P2P) protocols like WebRTC, BitTorrent, and VoIP, requiring protocols like STUN, TURN, and ICE?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because P2P software cannot run over Ethernet"
+        },
+        {
+          "id": "B",
+          "text": "Because neither peer knows its own externally reachable public IP/port, and neither can receive unsolicited incoming connection requests through the other peer's NAT firewall"
+        },
+        {
+          "id": "C",
+          "text": "Because NAT routers throttle all UDP traffic to 1 kbps"
+        },
+        {
+          "id": "D",
+          "text": "Because P2P requires classful Class A IP addresses"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "In P2P, both hosts are behind NATs. Neither host can accept incoming connections from the other because neither NAT table contains a pre-existing entry. STUN/TURN servers help peers discover their public mappings and relay traffic.",
+      "difficulty": "hard",
+      "subtopic": "NAT Traversal & STUN"
+    },
+    {
+      "id": "l11-q17",
+      "type": "multi_choice",
+      "question": "A typical home 'Wi-Fi router' purchased at retail is actually an integrated appliance combining which of the following physical network functions? (Select ALL that apply)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Layer 3 Router & NAT Gateway"
+        },
+        {
+          "id": "B",
+          "text": "Multi-port Layer 2 Ethernet Switch & 802.11 Wireless Access Point"
+        },
+        {
+          "id": "C",
+          "text": "Stateful Firewall & DHCP Server"
+        },
+        {
+          "id": "D",
+          "text": "Autonomous System BGP Tier-1 Transit Core"
+        }
+      ],
+      "correctOptionIds": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "A consumer router integrates: an AP (Wi-Fi), a 4-port switch (L2 LAN), a router (L3 WAN/LAN), a DHCP server, a DNS proxy/caching resolver, and a NAT/SPI firewall. It is NOT a Tier-1 BGP internet backbone transit router.",
+      "difficulty": "easy",
+      "subtopic": "Home Router Architecture"
+    },
+    {
+      "id": "l11-q18",
+      "type": "single_choice",
+      "question": "When a router performs NAT on an IP packet, what additional Layer 3 and Layer 4 header modifications MUST it recalculate?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It only changes the IP; no checksums are affected"
+        },
+        {
+          "id": "B",
+          "text": "It must recalculate the IPv4 Header Checksum AND the TCP/UDP checksum (since TCP/UDP checksums include a pseudo-header containing source and destination IPs)"
+        },
+        {
+          "id": "C",
+          "text": "It must recalculate the TLS cryptographic signature"
+        },
+        {
+          "id": "D",
+          "text": "It must increment the TTL by 5"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Modifying the IP address alters the IPv4 header, requiring a new IPv4 header checksum. Furthermore, TCP and UDP compute their checksums over a 'pseudo-header' that includes the source and destination IP addresses, requiring L4 checksum recomputation.",
+      "difficulty": "hard",
+      "subtopic": "NAT Checksum Invalidation"
+    },
+    {
+      "id": "l11-q19",
+      "type": "single_choice",
+      "question": "What is the purpose of a 'Default Gateway' configured on an office workstation?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It is the router interface on the local subnet to which all non-local outbound traffic (packets with destination IPs outside the local subnet) must be forwarded"
+        },
+        {
+          "id": "B",
+          "text": "It is the DNS server that stores all web passwords"
+        },
+        {
+          "id": "C",
+          "text": "It acts as a physical power supply for the Ethernet switch"
+        },
+        {
+          "id": "D",
+          "text": "It translates IPv4 addresses into ASCII text"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "When a host's subnet mask evaluation reveals that the destination IP is on an external network, the host encapsulates the packet into a frame addressed to the MAC address of its Default Gateway router.",
+      "difficulty": "easy",
+      "subtopic": "Default Gateway Role"
+    },
+    {
+      "id": "l11-q20",
+      "type": "single_choice",
+      "question": "What happens if a DHCP server accidentally assigns an IP address that is already statically configured on another device on the same LAN?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The router reboots automatically"
+        },
+        {
+          "id": "B",
+          "text": "An IP conflict occurs; packets intended for that IP oscillate between the two devices depending on whose ARP reply reaches switches last, causing erratic connection drops"
+        },
+        {
+          "id": "C",
+          "text": "Bandwidth doubles because two machines share the traffic"
+        },
+        {
+          "id": "D",
+          "text": "The switch converts all unicast traffic to fiber optics"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Two devices claiming the same IP will both respond to ARP requests for that IP. Switches and routers will continuously flap their ARP/CAM entries between the two MAC addresses, causing severe packet loss and broken TCP sessions.",
+      "difficulty": "medium",
+      "subtopic": "IP Conflict & ARP Thrashing"
+    }
+  ]
+}

@@ -1,0 +1,593 @@
+{
+  "topicId": "lecture-07",
+  "lectureNumber": 7,
+  "title": "Routing & Forwarding I Quiz",
+  "description": "20 questions covering Control vs Data plane, RIB vs FIB, Longest Prefix Match (LPM), TCAM, and router forwarding lifecycle.",
+  "estimatedMinutes": 25,
+  "questions": [
+    {
+      "id": "l07-q01",
+      "type": "single_choice",
+      "question": "What is the fundamental distinction between Routing and Forwarding in computer networks?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Routing is fast in hardware; Forwarding is slow in software"
+        },
+        {
+          "id": "B",
+          "text": "Routing (Control Plane) determines the end-to-end path; Forwarding (Data Plane) moves packets from input to output interfaces at wire speed"
+        },
+        {
+          "id": "C",
+          "text": "Routing operates at Layer 2; Forwarding operates at Layer 4"
+        },
+        {
+          "id": "D",
+          "text": "Routing is only used on home Wi-Fi routers"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Routing (Control Plane) runs distributed routing protocols on general CPUs to build the map. Forwarding (Data Plane) executes table lookups per packet in hardware ASICs.",
+      "difficulty": "easy",
+      "subtopic": "Control vs Data Plane"
+    },
+    {
+      "id": "l07-q02",
+      "type": "single_choice",
+      "question": "What is the difference between the RIB (Routing Information Base) and the FIB (Forwarding Information Base)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "RIB contains all learned candidate routes in CPU RAM; FIB is the compiled, flattened single-best-path table installed in line card silicon memory"
+        },
+        {
+          "id": "B",
+          "text": "RIB stores MAC addresses; FIB stores IP addresses"
+        },
+        {
+          "id": "C",
+          "text": "RIB is located on the user PC; FIB is located in the cloud"
+        },
+        {
+          "id": "D",
+          "text": "They are identical tables with different names"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "The RIB holds all candidate routes from OSPF, BGP, static configs. The router compiles the best winning next-hop per prefix into the FIB for nanosecond ASIC lookups.",
+      "difficulty": "medium",
+      "subtopic": "RIB vs FIB"
+    },
+    {
+      "id": "l07-q03",
+      "type": "single_choice",
+      "question": "What is the Longest Prefix Match (LPM) rule in IP forwarding?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The router always selects the route with the lowest metric"
+        },
+        {
+          "id": "B",
+          "text": "When a destination IP matches multiple routing table entries, the router ALWAYS selects the entry with the longest prefix length (most specific mask)"
+        },
+        {
+          "id": "C",
+          "text": "The router forwards to the route learned from the oldest protocol"
+        },
+        {
+          "id": "D",
+          "text": "The router selects the default route 0.0.0.0/0 first"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "LPM dictates that the entry matching the greatest number of contiguous network bits (most specific destination range) is selected, overriding metric and administrative distance.",
+      "difficulty": "medium",
+      "subtopic": "Longest Prefix Match"
+    },
+    {
+      "id": "l07-q04",
+      "type": "single_choice",
+      "question": "Consider the routing table from the lecture notes:\n- 10.0.0.0/8 via 192.168.1.1 dev eth0\n- 10.10.0.0/16 via 192.168.2.1 dev eth1\n- 10.10.20.0/24 via 192.168.3.1 dev eth2\n- 10.10.20.128/25 via 192.168.4.1 dev eth3\n- 0.0.0.0/0 via 192.168.5.1 dev eth4\n\nA packet arrives destined for 10.10.20.150. Which interface will the router forward it to?",
+      "options": [
+        {
+          "id": "A",
+          "text": "eth0 (10.0.0.0/8)"
+        },
+        {
+          "id": "B",
+          "text": "eth1 (10.10.0.0/16)"
+        },
+        {
+          "id": "C",
+          "text": "eth2 (10.10.20.0/24)"
+        },
+        {
+          "id": "D",
+          "text": "eth3 (10.10.20.128/25)"
+        }
+      ],
+      "correctOptionIds": [
+        "D"
+      ],
+      "explanation": "10.10.20.150 matches /8, /16, /24, and /25. By Longest Prefix Match, /25 (25 bits) is the longest and most specific prefix. The router forwards out eth3.",
+      "difficulty": "medium",
+      "subtopic": "LPM Table Lookup"
+    },
+    {
+      "id": "l07-q05",
+      "type": "single_choice",
+      "question": "Using the same table from question 4, where is a packet destined for 10.10.20.50 forwarded?",
+      "options": [
+        {
+          "id": "A",
+          "text": "eth2 (10.10.20.0/24)"
+        },
+        {
+          "id": "B",
+          "text": "eth3 (10.10.20.128/25)"
+        },
+        {
+          "id": "C",
+          "text": "eth4 (0.0.0.0/0)"
+        },
+        {
+          "id": "D",
+          "text": "eth0 (10.0.0.0/8)"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "10.10.20.50 falls into .0-.127, so it does NOT match /25 (.128-.255). Among the remaining matching entries (/8, /16, /24), /24 is the longest match (eth2).",
+      "difficulty": "medium",
+      "subtopic": "LPM Table Lookup"
+    },
+    {
+      "id": "l07-q06",
+      "type": "single_choice",
+      "question": "Using the same table from question 4, where is a packet destined for 8.8.8.8 forwarded?",
+      "options": [
+        {
+          "id": "A",
+          "text": "eth0"
+        },
+        {
+          "id": "B",
+          "text": "eth1"
+        },
+        {
+          "id": "C",
+          "text": "eth4 (0.0.0.0/0 Default Route)"
+        },
+        {
+          "id": "D",
+          "text": "The packet is dropped immediately"
+        }
+      ],
+      "correctOptionIds": [
+        "C"
+      ],
+      "explanation": "8.8.8.8 does not match 10.x.x.x. It matches only the default route 0.0.0.0/0, forwarding out eth4 to 192.168.5.1.",
+      "difficulty": "easy",
+      "subtopic": "Default Route"
+    },
+    {
+      "id": "l07-q07",
+      "type": "single_choice",
+      "question": "What is the Linux command to manually add a static route for network 172.16.1.0/24 via gateway 10.0.0.2 out interface eth1 (as highlighted in the handwritten notes)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "route -n 172.16.1.0/24 10.0.0.2"
+        },
+        {
+          "id": "B",
+          "text": "ip route add 172.16.1.0/24 via 10.0.0.2 dev eth1"
+        },
+        {
+          "id": "C",
+          "text": "ifconfig eth1 172.16.1.0 netmask 10.0.0.2"
+        },
+        {
+          "id": "D",
+          "text": "netstat add 172.16.1.0 via eth1"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The modern Linux iproute2 syntax is: 'ip route add <prefix> via <gateway> dev <interface>'.",
+      "difficulty": "medium",
+      "subtopic": "Static Route Commands"
+    },
+    {
+      "id": "l07-q08",
+      "type": "single_choice",
+      "question": "Which Linux command manually inserts a static neighbor MAC address entry into the ARP cache table (from the handwritten notes)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "arp -s 10.0.0.2 aa:bb:cc:dd:ee:ff"
+        },
+        {
+          "id": "B",
+          "text": "sudo ip neigh add 10.0.0.2 lladdr aa:bb:cc:dd:ee:ff dev eth1"
+        },
+        {
+          "id": "C",
+          "text": "ip link set 10.0.0.2 address aa:bb:cc:dd:ee:ff"
+        },
+        {
+          "id": "D",
+          "text": "route add -host 10.0.0.2 lladdr aa:bb"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "'sudo ip neigh add <ip> lladdr <mac> dev <interface>' is the canonical iproute2 command for static neighbor table management.",
+      "difficulty": "hard",
+      "subtopic": "Neighbor Table Commands"
+    },
+    {
+      "id": "l07-q09",
+      "type": "multi_choice",
+      "question": "According to standard Unix/Linux networking conventions (referenced in the handwritten notes), what do the interface names 'lo', 'eth0', and 'wlan0' signify? (Select ALL that apply)",
+      "options": [
+        {
+          "id": "A",
+          "text": "lo represents the software Loopback interface"
+        },
+        {
+          "id": "B",
+          "text": "eth0 represents the first wired physical Ethernet interface"
+        },
+        {
+          "id": "C",
+          "text": "wlan0 represents the first Wireless Local Area Network (Wi-Fi) interface"
+        },
+        {
+          "id": "D",
+          "text": "eth0 is reserved strictly for default gateway routers"
+        }
+      ],
+      "correctOptionIds": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "lo = loopback (127.0.0.1), eth0 = first Ethernet NIC, wlan0 = first Wi-Fi adapter.",
+      "difficulty": "easy",
+      "subtopic": "Interface Nomenclature"
+    },
+    {
+      "id": "l07-q10",
+      "type": "single_choice",
+      "question": "Why is a /30 subnet typically configured on router WAN interfaces connected to an ISP (e.g. eth1 10.0.0.1/30)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because ISPs only support 30 Mbps bandwidth"
+        },
+        {
+          "id": "B",
+          "text": "Because a /30 provides exactly 2 usable host IPs (one for the customer router, one for the ISP gateway) with zero wasted address space"
+        },
+        {
+          "id": "C",
+          "text": "Because it disables ARP"
+        },
+        {
+          "id": "D",
+          "text": "Because 30 is a prime number"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "A /30 contains 4 IP addresses (2^2): 1 network, 2 usable hosts, 1 broadcast. Perfect for point-to-point router links without wasting public IPs.",
+      "difficulty": "medium",
+      "subtopic": "WAN Subnet Design"
+    },
+    {
+      "id": "l07-q11",
+      "type": "single_choice",
+      "question": "What is the third bit state supported by TCAM (Ternary Content Addressable Memory) in router silicon, beyond binary 0 and 1?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Error (E)"
+        },
+        {
+          "id": "B",
+          "text": "Don't Care / Wildcard (X)"
+        },
+        {
+          "id": "C",
+          "text": "High Voltage (H)"
+        },
+        {
+          "id": "D",
+          "text": "Float (F)"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "TCAM supports 0, 1, and X (Don't Care / Masked bits), enabling single-clock-cycle parallel Longest Prefix Match lookups across 1,000,000 entries.",
+      "difficulty": "medium",
+      "subtopic": "TCAM Architecture"
+    },
+    {
+      "id": "l07-q12",
+      "type": "single_choice",
+      "question": "What is the lookup time complexity of a hardware TCAM in an enterprise router line card?",
+      "options": [
+        {
+          "id": "A",
+          "text": "O(1) — constant time in a single hardware clock cycle"
+        },
+        {
+          "id": "B",
+          "text": "O(N) — linear scan of all routes"
+        },
+        {
+          "id": "C",
+          "text": "O(log N)"
+        },
+        {
+          "id": "D",
+          "text": "O(N^2)"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "TCAM circuits compare the incoming destination IP against all routing entries in parallel in a single hardware cycle (typically 2-5 nanoseconds).",
+      "difficulty": "medium",
+      "subtopic": "TCAM Performance"
+    },
+    {
+      "id": "l07-q13",
+      "type": "single_choice",
+      "question": "What data structure is commonly used in software routing engines (like the Linux kernel FIB) to perform Longest Prefix Match lookups efficiently?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Linked List"
+        },
+        {
+          "id": "B",
+          "text": "Patricia / Radix Trie (bit-compressed prefix tree)"
+        },
+        {
+          "id": "C",
+          "text": "Circular Ring Buffer"
+        },
+        {
+          "id": "D",
+          "text": "Binary Search Tree on destination IP"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "A Radix/Patricia Trie branches on bits (0 = left, 1 = right) with path compression, finding the longest matching prefix in at most 32 bit steps (O(32) = O(1)).",
+      "difficulty": "hard",
+      "subtopic": "Radix Trie"
+    },
+    {
+      "id": "l07-q14",
+      "type": "single_choice",
+      "question": "What happens in Step 4 of the router packet forwarding lifecycle when the IPv4 TTL field is decremented to 0?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The router resets TTL to 64 and forwards the packet"
+        },
+        {
+          "id": "B",
+          "text": "The router drops the packet and transmits an ICMP Type 11 (Time-to-Live Exceeded in Transit) message back to the source"
+        },
+        {
+          "id": "C",
+          "text": "The router saves the packet to hard disk"
+        },
+        {
+          "id": "D",
+          "text": "The router broadcasts the packet to all ports"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "TTL decrementing kills looping packets. When TTL reaches 0, the packet is discarded and an ICMP Type 11 Code 0 is returned to the source.",
+      "difficulty": "medium",
+      "subtopic": "TTL Exceeded"
+    },
+    {
+      "id": "l07-q15",
+      "type": "single_choice",
+      "question": "Why MUST a router recalculate the IPv4 Header Checksum at every single forwarding hop?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because the source MAC address changes"
+        },
+        {
+          "id": "B",
+          "text": "Because the TTL field was decremented by 1, changing the arithmetic sum of the header bits"
+        },
+        {
+          "id": "C",
+          "text": "Because the TCP payload changes"
+        },
+        {
+          "id": "D",
+          "text": "Because the router clock is synchronized with NTP"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The IPv4 checksum covers the entire IP header. Because TTL decreases by 1, the checksum is invalid and must be updated.",
+      "difficulty": "easy",
+      "subtopic": "IP Checksum Recalculation"
+    },
+    {
+      "id": "l07-q16",
+      "type": "single_choice",
+      "question": "What is a 'Floating Static Route'?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A route configured without an IP address"
+        },
+        {
+          "id": "B",
+          "text": "A backup static route configured with a higher Administrative Distance that only becomes active if the primary dynamic/static route fails"
+        },
+        {
+          "id": "C",
+          "text": "A route used on cruise ships"
+        },
+        {
+          "id": "D",
+          "text": "A route that moves across interfaces automatically"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "By setting an AD higher than the primary link (e.g. AD 10 vs primary AD 1), the floating static route stays dormant until the primary link drops, achieving automatic failover.",
+      "difficulty": "medium",
+      "subtopic": "Floating Static Routes"
+    },
+    {
+      "id": "l07-q17",
+      "type": "single_choice",
+      "question": "In Cisco IOS routing tables, what does the notation [110/20] beside an OSPF route indicate?",
+      "options": [
+        {
+          "id": "A",
+          "text": "110 seconds remaining before timeout; 20 hops"
+        },
+        {
+          "id": "B",
+          "text": "Administrative Distance = 110 (trustworthiness); Metric/Cost = 20"
+        },
+        {
+          "id": "C",
+          "text": "110 packets forwarded; 20 packets dropped"
+        },
+        {
+          "id": "D",
+          "text": "Port 110 mapped to Port 20"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The first number is Administrative Distance (AD), where lower AD is preferred between protocols. The second number is the internal metric/cost.",
+      "difficulty": "easy",
+      "subtopic": "Routing Table Notation"
+    },
+    {
+      "id": "l07-q18",
+      "type": "multi_choice",
+      "question": "Which of the following actions occur during Step 9 of the router forwarding lifecycle when transmitting a packet onto the egress wire? (Select ALL that apply)",
+      "options": [
+        {
+          "id": "A",
+          "text": "The router sets the destination MAC to the Next-Hop router's MAC address"
+        },
+        {
+          "id": "B",
+          "text": "The router sets the source MAC to its own outgoing interface MAC address"
+        },
+        {
+          "id": "C",
+          "text": "The router recalculates the Layer 2 CRC-32 Frame Check Sequence (FCS)"
+        },
+        {
+          "id": "D",
+          "text": "The router modifies the destination IP address to match the next hop"
+        }
+      ],
+      "correctOptionIds": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "A, B, and C describe Layer 2 encapsulation. D is incorrect: destination IP is never modified by standard routers (only by NAT).",
+      "difficulty": "medium",
+      "subtopic": "Layer 2 Rewrite"
+    },
+    {
+      "id": "l07-q19",
+      "type": "single_choice",
+      "question": "How does the diagnostic utility 'traceroute' exploit router forwarding behavior to discover each hop along an internet path?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It asks the DNS root server for the list of routers"
+        },
+        {
+          "id": "B",
+          "text": "It sends sequential packets starting with TTL=1, TTL=2, TTL=3..., eliciting ICMP Time Exceeded responses from each intermediate router"
+        },
+        {
+          "id": "C",
+          "text": "It inspects the BGP table on the client computer"
+        },
+        {
+          "id": "D",
+          "text": "It forces routers to broadcast their MAC addresses"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Traceroute sends packets with incremental TTLs. The 1st router drops TTL=1 and replies with ICMP Time Exceeded; the 2nd router drops TTL=2, revealing their IP addresses hop-by-hop.",
+      "difficulty": "medium",
+      "subtopic": "Traceroute Mechanics"
+    },
+    {
+      "id": "l07-q20",
+      "type": "single_choice",
+      "question": "If two adjacent routers mistakenly configure static routes pointing to each other for the same destination subnet, what happens to packets sent to that subnet?",
+      "options": [
+        {
+          "id": "A",
+          "text": "They bounce back and forth between the two routers until their TTL reaches 0 and they are dropped"
+        },
+        {
+          "id": "B",
+          "text": "They are automatically forwarded to Google DNS"
+        },
+        {
+          "id": "C",
+          "text": "They are absorbed by the ARP cache"
+        },
+        {
+          "id": "D",
+          "text": "The routers crash immediately"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "This creates a routing loop. Packets bounce between the two routers on the physical link, decrementing TTL by 1 per hop until TTL=0, where they are discarded.",
+      "difficulty": "easy",
+      "subtopic": "Routing Loops"
+    }
+  ]
+}

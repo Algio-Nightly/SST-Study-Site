@@ -1,0 +1,591 @@
+{
+  "topicId": "lecture-06",
+  "lectureNumber": 6,
+  "title": "Graph Algorithms for Networking II Quiz",
+  "description": "20 questions covering Bellman-Ford, negative weights, Minimum Spanning Trees (Kruskal/Prim), and Spanning Tree Protocol (STP).",
+  "estimatedMinutes": 25,
+  "questions": [
+    {
+      "id": "l06-q01",
+      "type": "single_choice",
+      "question": "Why does Dijkstra's algorithm fail to produce optimal paths when a graph contains negative edge weights?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because priority queues cannot store negative numbers"
+        },
+        {
+          "id": "B",
+          "text": "Because its greedy invariant assumes once a node is finalized, its shortest distance cannot be improved by any unexplored path"
+        },
+        {
+          "id": "C",
+          "text": "Because negative numbers cause integer overflow in 32-bit CPUs"
+        },
+        {
+          "id": "D",
+          "text": "Because negative weights turn undirected graphs into directed graphs"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Dijkstra greedily marks the minimum tentative node as permanently optimal. If a negative edge appears later on an alternate path, it could reduce the total cost of an already-finalized node, violating the greedy invariant.",
+      "difficulty": "medium",
+      "subtopic": "Dijkstra Negative Weights"
+    },
+    {
+      "id": "l06-q02",
+      "type": "single_choice",
+      "question": "What occurs when a directed graph contains a negative-weight cycle reachable from the source?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The shortest path distance between nodes becomes mathematically undefined (-infinity)"
+        },
+        {
+          "id": "B",
+          "text": "The graph automatically converts into a tree"
+        },
+        {
+          "id": "C",
+          "text": "The cycle acts as an infinite bandwidth buffer"
+        },
+        {
+          "id": "D",
+          "text": "The shortest path becomes 0"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Traversing a negative cycle repeatedly reduces the total path cost on each revolution, allowing path cost to decrease indefinitely towards -infinity.",
+      "difficulty": "medium",
+      "subtopic": "Negative Cycles"
+    },
+    {
+      "id": "l06-q03",
+      "type": "single_choice",
+      "question": "In the Bellman-Ford algorithm, why are all edges relaxed exactly |V| - 1 times?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because CPU clock cycles are limited to |V| - 1"
+        },
+        {
+          "id": "B",
+          "text": "Because any simple shortest path without cycles in a graph of |V| vertices contains at most |V| - 1 edges"
+        },
+        {
+          "id": "C",
+          "text": "To prevent memory leaks"
+        },
+        {
+          "id": "D",
+          "text": "Because of Ethernet frame padding rules"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "A simple path touching |V| vertices has at most |V| - 1 edges. Each relaxation pass guarantees discovery of shortest paths with one additional edge.",
+      "difficulty": "hard",
+      "subtopic": "Bellman-Ford Invariant"
+    },
+    {
+      "id": "l06-q04",
+      "type": "single_choice",
+      "question": "How does the Bellman-Ford algorithm detect the presence of a reachable negative-weight cycle?",
+      "options": [
+        {
+          "id": "A",
+          "text": "By checking if the source distance becomes negative"
+        },
+        {
+          "id": "B",
+          "text": "By performing a |V|-th relaxation pass; if any distance dist[v] can still be decreased, a negative cycle exists"
+        },
+        {
+          "id": "C",
+          "text": "By running BFS on the graph"
+        },
+        {
+          "id": "D",
+          "text": "By checking if the priority queue is empty"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "If all simple shortest paths are found after |V|-1 passes, a further relaxation on the |V|-th pass can only occur if a negative cycle continues to decrease path costs.",
+      "difficulty": "medium",
+      "subtopic": "Negative Cycle Detection"
+    },
+    {
+      "id": "l06-q05",
+      "type": "single_choice",
+      "question": "What is the time complexity of the Bellman-Ford algorithm on a graph with |V| vertices and |E| edges?",
+      "options": [
+        {
+          "id": "A",
+          "text": "O(V + E)"
+        },
+        {
+          "id": "B",
+          "text": "O(V * E)"
+        },
+        {
+          "id": "C",
+          "text": "O(E log V)"
+        },
+        {
+          "id": "D",
+          "text": "O(V^3)"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Bellman-Ford runs |V| - 1 passes, relaxing all |E| edges in each pass, yielding O(|V| * |E|) time complexity.",
+      "difficulty": "easy",
+      "subtopic": "Bellman-Ford Complexity"
+    },
+    {
+      "id": "l06-q06",
+      "type": "single_choice",
+      "question": "What fundamental routing protocol equation is derived directly from the distributed Bellman-Ford algorithm?",
+      "options": [
+        {
+          "id": "A",
+          "text": "D_x(y) = min_v { c(x, v) + D_v(y) }"
+        },
+        {
+          "id": "B",
+          "text": "Cost = 10^8 / Bandwidth"
+        },
+        {
+          "id": "C",
+          "text": "MTU = MSS + 40"
+        },
+        {
+          "id": "D",
+          "text": "2^N - 2 >= Hosts"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "The Distributed Bellman-Ford equation states that router x reaches destination y with minimum cost by choosing the neighbor v that minimizes the sum of local link cost c(x,v) and v's advertised distance D_v(y).",
+      "difficulty": "hard",
+      "subtopic": "Distributed Bellman-Ford"
+    },
+    {
+      "id": "l06-q07",
+      "type": "single_choice",
+      "question": "What is the definition of a Minimum Spanning Tree (MST)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A tree connecting all |V| vertices using exactly |V| - 1 edges with the minimum possible total edge weight sum"
+        },
+        {
+          "id": "B",
+          "text": "A tree where every node has degree 2"
+        },
+        {
+          "id": "C",
+          "text": "A directed graph with no negative weights"
+        },
+        {
+          "id": "D",
+          "text": "The shortest path tree from a single root node"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "An MST connects all nodes in an undirected graph without cycles (using |V|-1 edges) such that the total sum of edge weights is minimized.",
+      "difficulty": "easy",
+      "subtopic": "MST Definition"
+    },
+    {
+      "id": "l06-q08",
+      "type": "single_choice",
+      "question": "How does Kruskal's algorithm construct a Minimum Spanning Tree?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It explores nodes level-by-level using a FIFO queue"
+        },
+        {
+          "id": "B",
+          "text": "It sorts all edges by weight and greedily adds the cheapest edge that does not form a cycle using Disjoint Set Union (DSU)"
+        },
+        {
+          "id": "C",
+          "text": "It repeatedly relaxes all edges |V| - 1 times"
+        },
+        {
+          "id": "D",
+          "text": "It begins at a random root and grows outward"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Kruskal's is an edge-centric greedy algorithm: edges are sorted in ascending order and added to the forest if their endpoints belong to different disjoint sets.",
+      "difficulty": "medium",
+      "subtopic": "Kruskal Algorithm"
+    },
+    {
+      "id": "l06-q09",
+      "type": "single_choice",
+      "question": "What is the time complexity of Kruskal's algorithm with Disjoint Set Union (path compression and union by rank)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "O(E log E) = O(E log V)"
+        },
+        {
+          "id": "B",
+          "text": "O(V^2)"
+        },
+        {
+          "id": "C",
+          "text": "O(V * E)"
+        },
+        {
+          "id": "D",
+          "text": "O(V^3)"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Sorting |E| edges dominates the time complexity, requiring O(|E| log |E|) = O(|E| log |V|). DSU operations run in near-linear O(E α(V)) time.",
+      "difficulty": "medium",
+      "subtopic": "Kruskal Complexity"
+    },
+    {
+      "id": "l06-q10",
+      "type": "single_choice",
+      "question": "How does Prim's algorithm differ conceptually from Kruskal's algorithm?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Prim's grows a single connected tree vertex by vertex from an initial root, whereas Kruskal's maintains a forest of disconnected components"
+        },
+        {
+          "id": "B",
+          "text": "Prim's only works on directed graphs"
+        },
+        {
+          "id": "C",
+          "text": "Prim's uses Bellman-Ford internally"
+        },
+        {
+          "id": "D",
+          "text": "Prim's requires negative edge weights"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Prim's algorithm is vertex-centric: it grows a continuous tree by greedily adding the cheapest cut-crossing edge connected to the existing tree.",
+      "difficulty": "medium",
+      "subtopic": "Prim vs Kruskal"
+    },
+    {
+      "id": "l06-q11",
+      "type": "single_choice",
+      "question": "Why are physical loops in Layer 2 switched Ethernet networks catastrophic if Spanning Tree Protocol is disabled?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because Ethernet frames lack a Time To Live (TTL) field, causing frames to circulate infinitely and trigger broadcast storms"
+        },
+        {
+          "id": "B",
+          "text": "Because copper wires melt under high voltage"
+        },
+        {
+          "id": "C",
+          "text": "Because IP addresses are automatically deleted"
+        },
+        {
+          "id": "D",
+          "text": "Because DHCP servers stop working"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Unlike Layer 3 IP packets (which are dropped when TTL reaches 0), Layer 2 Ethernet frames have NO TTL field! A looped broadcast circulates forever, crashing the switches.",
+      "difficulty": "hard",
+      "subtopic": "Layer 2 Loops"
+    },
+    {
+      "id": "l06-q12",
+      "type": "single_choice",
+      "question": "What is MAC table flapping (thrashing) caused by a Layer 2 loop?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A physical connector becoming loose"
+        },
+        {
+          "id": "B",
+          "text": "A switch repeatedly overwriting the learned port for a MAC address as duplicate looping frames arrive alternately on different ports"
+        },
+        {
+          "id": "C",
+          "text": "A network card alternating between 10 Mbps and 100 Mbps"
+        },
+        {
+          "id": "D",
+          "text": "A DNS server failing to resolve a domain"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Switches learn MAC locations from the source MAC of incoming frames. When duplicate looping frames hit Port 1 then Port 2, the switch MAC table thrashes constantly, exhausting CPU.",
+      "difficulty": "medium",
+      "subtopic": "MAC Table Thrashing"
+    },
+    {
+      "id": "l06-q13",
+      "type": "single_choice",
+      "question": "In the Spanning Tree Protocol (IEEE 802.1D), what message unit do switches exchange every 2 seconds to elect the Root Bridge and detect loops?",
+      "options": [
+        {
+          "id": "A",
+          "text": "ICMP Echo Requests"
+        },
+        {
+          "id": "B",
+          "text": "Bridge Protocol Data Units (BPDUs)"
+        },
+        {
+          "id": "C",
+          "text": "OSPF Hello Packets"
+        },
+        {
+          "id": "D",
+          "text": "ARP Announcements"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Switches exchange Bridge Protocol Data Units (BPDUs) to negotiate the spanning tree topology.",
+      "difficulty": "easy",
+      "subtopic": "STP BPDUs"
+    },
+    {
+      "id": "l06-q14",
+      "type": "single_choice",
+      "question": "How is the STP Root Bridge elected among competing switches in a LAN?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The switch with the highest IP address wins"
+        },
+        {
+          "id": "B",
+          "text": "The switch with the lowest Bridge ID (Priority + MAC address) wins"
+        },
+        {
+          "id": "C",
+          "text": "The switch connected to the ISP router wins automatically"
+        },
+        {
+          "id": "D",
+          "text": "The switch with the greatest number of physical ports wins"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The switch with the lowest Bridge ID (BID = Priority + MAC) is elected Root Bridge. Default priority is 32768, so lowest MAC breaks ties.",
+      "difficulty": "medium",
+      "subtopic": "Root Bridge Election"
+    },
+    {
+      "id": "l06-q15",
+      "type": "single_choice",
+      "question": "What is a 'Root Port' (RP) on a non-root switch in STP?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The port that connects directly to end-user PCs"
+        },
+        {
+          "id": "B",
+          "text": "The single port on the switch with the lowest cumulative path cost to the Root Bridge"
+        },
+        {
+          "id": "C",
+          "text": "A port that is disabled by the network administrator"
+        },
+        {
+          "id": "D",
+          "text": "A port running optical fiber"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Every non-root switch elects exactly one Root Port: the port offering the lowest total path cost back to the Root Bridge.",
+      "difficulty": "medium",
+      "subtopic": "STP Port Roles"
+    },
+    {
+      "id": "l06-q16",
+      "type": "single_choice",
+      "question": "What happens to a switch port assigned the 'Blocking' (or Alternate) state in STP?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It turns off electrical power to the port"
+        },
+        {
+          "id": "B",
+          "text": "It drops all user data frames but continues to listen to BPDUs to detect network link failures"
+        },
+        {
+          "id": "C",
+          "text": "It forwards only multicast packets"
+        },
+        {
+          "id": "D",
+          "text": "It acts as a DHCP server"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Blocking ports do not forward user data (breaking the loop), but listen for BPDUs so they can transition to forwarding if a primary link fails.",
+      "difficulty": "medium",
+      "subtopic": "STP Port States"
+    },
+    {
+      "id": "l06-q17",
+      "type": "multi_choice",
+      "question": "Which of the following are valid STP port transition states in IEEE 802.1D before a port reaches the active Forwarding state? (Select ALL that apply)",
+      "options": [
+        {
+          "id": "A",
+          "text": "Blocking"
+        },
+        {
+          "id": "B",
+          "text": "Listening"
+        },
+        {
+          "id": "C",
+          "text": "Learning"
+        },
+        {
+          "id": "D",
+          "text": "Snooping"
+        }
+      ],
+      "correctOptionIds": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "Legacy 802.1D transitions through: Blocking -> Listening (15s) -> Learning (15s) -> Forwarding, totaling 30-50s convergence time.",
+      "difficulty": "hard",
+      "subtopic": "STP Convergence"
+    },
+    {
+      "id": "l06-q18",
+      "type": "single_choice",
+      "question": "Under what condition is the Minimum Spanning Tree of a graph guaranteed to be strictly unique?",
+      "options": [
+        {
+          "id": "A",
+          "text": "When the graph is bipartite"
+        },
+        {
+          "id": "B",
+          "text": "When all edge weights in the graph are distinct (unique)"
+        },
+        {
+          "id": "C",
+          "text": "When the graph has an odd number of vertices"
+        },
+        {
+          "id": "D",
+          "text": "When all edge weights are negative"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "If all edge weights in a connected graph are strictly distinct, the MST is mathematically unique.",
+      "difficulty": "hard",
+      "subtopic": "MST Uniqueness"
+    },
+    {
+      "id": "l06-q19",
+      "type": "single_choice",
+      "question": "What is the key difference between a Shortest Path Tree (SPT) computed by Dijkstra and a Minimum Spanning Tree (MST)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "An SPT minimizes the distance from one source to all nodes; an MST minimizes the total weight of all edges across the whole graph"
+        },
+        {
+          "id": "B",
+          "text": "An SPT has cycles, while an MST does not"
+        },
+        {
+          "id": "C",
+          "text": "Dijkstra only works on unweighted graphs"
+        },
+        {
+          "id": "D",
+          "text": "An MST requires a designated source root node"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Dijkstra optimizes point-to-point distances from a specific source. MST optimizes total global infrastructure/wire cost.",
+      "difficulty": "medium",
+      "subtopic": "SPT vs MST"
+    },
+    {
+      "id": "l06-q20",
+      "type": "single_choice",
+      "question": "Switch A has MAC 00:1A:2B:3C:4D:5E and priority 32768. Switch B has MAC 00:1A:2B:3C:4D:5F and priority 4096. Which switch becomes the STP Root Bridge?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Switch A, because its MAC address is numerically smaller"
+        },
+        {
+          "id": "B",
+          "text": "Switch B, because its Bridge Priority (4096) is lower than 32768"
+        },
+        {
+          "id": "C",
+          "text": "Both switches share the Root Bridge duty"
+        },
+        {
+          "id": "D",
+          "text": "Neither, the network will crash"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Bridge ID evaluates Bridge Priority first. Switch B has priority 4096 < 32768, so Switch B wins immediately; MAC addresses are only checked if priorities tie.",
+      "difficulty": "easy",
+      "subtopic": "Root Bridge Calculation"
+    }
+  ]
+}

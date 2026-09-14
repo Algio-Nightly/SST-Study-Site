@@ -1,0 +1,593 @@
+{
+  "topicId": "lecture-09",
+  "lectureNumber": 9,
+  "title": "DNS & Internet Applications Quiz",
+  "description": "20 questions covering DNS hierarchy, query resolution, record types (A, AAAA, CNAME, MX, TXT, PTR), URL parsing, HTTP protocol, status codes, and cookies.",
+  "estimatedMinutes": 25,
+  "questions": [
+    {
+      "id": "l09-q01",
+      "type": "single_choice",
+      "question": "What is the primary motivation for using the Domain Name System (DNS) instead of relying directly on hardcoded IP addresses?",
+      "options": [
+        {
+          "id": "A",
+          "text": "DNS encrypts all web traffic by default using TLS"
+        },
+        {
+          "id": "B",
+          "text": "Domain names decouple service identity from volatile physical IP addresses, enabling load balancing and seamless IP renumbering"
+        },
+        {
+          "id": "C",
+          "text": "IP addresses cannot be routed across continental fiber lines"
+        },
+        {
+          "id": "D",
+          "text": "Domain names eliminate the need for Layer 3 IP routing"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "DNS decouples human-readable identifiers from underlying numeric IP addresses. This allows servers to migrate IPs, distribute traffic across geo-distributed servers (CDNs), and provide failover without breaking bookmarks or client code.",
+      "difficulty": "easy",
+      "subtopic": "DNS Motivation"
+    },
+    {
+      "id": "l09-q02",
+      "type": "single_choice",
+      "question": "In the hierarchical DNS tree structure, which tier is responsible for knowing the authoritative nameservers of Top-Level Domains like .com, .org, and .edu?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Authoritative Nameservers"
+        },
+        {
+          "id": "B",
+          "text": "Root Nameservers (represented by the trailing dot '.')"
+        },
+        {
+          "id": "C",
+          "text": "Local Recursive Resolvers"
+        },
+        {
+          "id": "D",
+          "text": "Client OS Stub Resolvers"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The Root Nameservers sit at the apex of the DNS hierarchy (denoted by the invisible trailing dot in fully qualified domain names like `example.com.`). They maintain delegations to the TLD nameservers.",
+      "difficulty": "easy",
+      "subtopic": "DNS Hierarchy"
+    },
+    {
+      "id": "l09-q03",
+      "type": "single_choice",
+      "question": "How are the 13 logical root server IP addresses (a.root-servers.net through m.root-servers.net) scaled globally to handle billions of queries without collapsing?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Using BGP Anycast routing to broadcast the same 13 IP addresses from hundreds of physical data centers worldwide"
+        },
+        {
+          "id": "B",
+          "text": "By storing all internet domain records on a single quantum supercomputer in Virginia"
+        },
+        {
+          "id": "C",
+          "text": "By forcing client web browsers to execute DNS root queries locally"
+        },
+        {
+          "id": "D",
+          "text": "By assigning each root server a unique 64-bit IPv8 address"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Through BGP Anycast, the same 13 logical IP addresses are announced by over 1,500 physical server instances distributed across the globe. Border routers direct DNS queries to the topologically nearest physical instance.",
+      "difficulty": "medium",
+      "subtopic": "DNS Root & Anycast"
+    },
+    {
+      "id": "l09-q04",
+      "type": "single_choice",
+      "question": "What is the fundamental difference between a 'Recursive Query' and an 'Iterative Query' in DNS resolution?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Recursive queries use TCP; iterative queries use UDP"
+        },
+        {
+          "id": "B",
+          "text": "In a recursive query, the contacted server assumes responsibility to find the final answer; in an iterative query, the server returns the best referral (next nameserver) it knows"
+        },
+        {
+          "id": "C",
+          "text": "Recursive queries only resolve IPv6 addresses; iterative queries resolve IPv4"
+        },
+        {
+          "id": "D",
+          "text": "Iterative queries repeat infinitely until the client manually interrupts them"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "A recursive query asks the resolver: 'Please do whatever work is necessary to bring me the final IP.' An iterative query asks: 'If you don't know the exact answer, give me the IP of the next nameserver down the tree who might know.'",
+      "difficulty": "medium",
+      "subtopic": "Recursive vs Iterative Queries"
+    },
+    {
+      "id": "l09-q05",
+      "type": "single_choice",
+      "question": "Which DNS record type maps an IPv6 host address to a domain name?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A record"
+        },
+        {
+          "id": "B",
+          "text": "AAAA record (Quad-A)"
+        },
+        {
+          "id": "C",
+          "text": "CNAME record"
+        },
+        {
+          "id": "D",
+          "text": "PTR record"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "An 'A' record maps a hostname to a 32-bit IPv4 address, whereas a 'AAAA' (Quad-A) record maps a hostname to a 128-bit IPv6 address.",
+      "difficulty": "easy",
+      "subtopic": "DNS Record Types"
+    },
+    {
+      "id": "l09-q06",
+      "type": "single_choice",
+      "question": "Why is it forbidden by RFC standards to define a CNAME record at the root apex of a domain (e.g. at 'example.com' without a subdomain prefix)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because CNAME records cannot coexist with other essential record types like SOA and NS at the zone apex"
+        },
+        {
+          "id": "B",
+          "text": "Because CNAME records exceed 1500 bytes"
+        },
+        {
+          "id": "C",
+          "text": "Because CNAME records can only point to numeric IP addresses"
+        },
+        {
+          "id": "D",
+          "text": "Because root apex names can only contain letters, not dots"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "RFC 1034 states that if a CNAME record exists for a node, no other data records can exist for that node. Because a zone apex MUST contain SOA and NS records, a CNAME cannot be placed at the naked apex domain.",
+      "difficulty": "hard",
+      "subtopic": "CNAME & Apex Restriction"
+    },
+    {
+      "id": "l09-q07",
+      "type": "single_choice",
+      "question": "Which DNS record type is specifically used by mail transfer agents (MTAs) to route emails to the destination organization's mail servers?",
+      "options": [
+        {
+          "id": "A",
+          "text": "TXT record"
+        },
+        {
+          "id": "B",
+          "text": "MX record"
+        },
+        {
+          "id": "C",
+          "text": "PTR record"
+        },
+        {
+          "id": "D",
+          "text": "SRV record"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "MX (Mail Exchanger) records specify the mail servers responsible for accepting emails for a domain, along with priority values for failover.",
+      "difficulty": "easy",
+      "subtopic": "DNS Record Types"
+    },
+    {
+      "id": "l09-q08",
+      "type": "multi_choice",
+      "question": "For what security and verification purposes are DNS TXT records widely utilized in modern cloud infrastructure? (Select ALL that apply)",
+      "options": [
+        {
+          "id": "A",
+          "text": "SPF (Sender Policy Framework) to prevent email spoofing"
+        },
+        {
+          "id": "B",
+          "text": "DKIM (DomainKeys Identified Mail) public cryptographic key publication"
+        },
+        {
+          "id": "C",
+          "text": "Domain ownership verification for SSL/TLS certificates and Google Search Console"
+        },
+        {
+          "id": "D",
+          "text": "Translating MAC addresses into IPv4 addresses"
+        }
+      ],
+      "correctOptionIds": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "TXT records hold arbitrary text attributes, commonly used for email validation (SPF, DKIM, DMARC) and verifying administrative domain ownership. Translating MAC to IP is handled by ARP/RARP, not DNS TXT.",
+      "difficulty": "medium",
+      "subtopic": "DNS TXT Applications"
+    },
+    {
+      "id": "l09-q09",
+      "type": "single_choice",
+      "question": "What is the function of the TTL (Time to Live) field returned in a DNS resource record?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It specifies the number of router hops the packet can survive before being dropped"
+        },
+        {
+          "id": "B",
+          "text": "It dictates the number of seconds intermediate recursive resolvers and clients may cache the record before querying authoritative servers again"
+        },
+        {
+          "id": "C",
+          "text": "It defines the server's session timeout in minutes"
+        },
+        {
+          "id": "D",
+          "text": "It specifies the lifespan of the domain registration at the registrar"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "DNS TTL tells caching resolvers how long (in seconds) the answer remains fresh. A lower TTL allows faster propagation of IP changes during migrations, while a higher TTL reduces DNS query traffic.",
+      "difficulty": "easy",
+      "subtopic": "DNS Caching & TTL"
+    },
+    {
+      "id": "l09-q10",
+      "type": "single_choice",
+      "question": "In the URL `https://api.scaler.com:8443/v1/students?sort=desc#results`, what constitutes the 'query string' component?",
+      "options": [
+        {
+          "id": "A",
+          "text": "api.scaler.com"
+        },
+        {
+          "id": "B",
+          "text": ":8443"
+        },
+        {
+          "id": "C",
+          "text": "sort=desc"
+        },
+        {
+          "id": "D",
+          "text": "#results"
+        }
+      ],
+      "correctOptionIds": [
+        "C"
+      ],
+      "explanation": "The URL anatomy is: scheme (`https`), host (`api.scaler.com`), port (`8443`), path (`/v1/students`), query string (`sort=desc`, starting after `?`), and fragment identifier (`results`, starting after `#`).",
+      "difficulty": "easy",
+      "subtopic": "URL Decomposition"
+    },
+    {
+      "id": "l09-q11",
+      "type": "single_choice",
+      "question": "Why is the fragment identifier (e.g. `#section2` in `https://example.com/docs#section2`) NEVER transmitted over the wire to the web server in an HTTP GET request?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because HTTP headers cannot contain the '#' character"
+        },
+        {
+          "id": "B",
+          "text": "Because fragments are strictly client-side browser instructions to scroll to or anchor on a specific element after parsing the HTML"
+        },
+        {
+          "id": "C",
+          "text": "Because TLS encryption strips fragment identifiers for security reasons"
+        },
+        {
+          "id": "D",
+          "text": "Because routers drop packets with hashtag symbols"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Fragment identifiers designate internal anchors within a resource. The web browser processes them locally after receiving the full document; hence, the browser omits the fragment when making the HTTP request.",
+      "difficulty": "medium",
+      "subtopic": "URL Fragments"
+    },
+    {
+      "id": "l09-q12",
+      "type": "single_choice",
+      "question": "What is the fundamental difference between an HTTP method being 'Safe' versus being 'Idempotent'?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Safe methods use HTTPS; idempotent methods use HTTP"
+        },
+        {
+          "id": "B",
+          "text": "Safe methods do not alter server state (read-only); Idempotent methods can alter state, but executing them multiple times produces the identical side-effect as executing them once"
+        },
+        {
+          "id": "C",
+          "text": "Idempotent methods are read-only; safe methods can delete records"
+        },
+        {
+          "id": "D",
+          "text": "Safe methods run in O(1) time; idempotent methods run in O(N) time"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Safe methods (like GET, HEAD) do not mutate resource state. Idempotent methods (like PUT, DELETE, GET) can modify state, but repeating identical requests N times leaves the server in the exact same state as 1 request.",
+      "difficulty": "medium",
+      "subtopic": "HTTP Method Semantics"
+    },
+    {
+      "id": "l09-q13",
+      "type": "multi_choice",
+      "question": "Which of the following HTTP methods are classified as Idempotent according to RFC 9110? (Select ALL that apply)",
+      "options": [
+        {
+          "id": "A",
+          "text": "GET"
+        },
+        {
+          "id": "B",
+          "text": "PUT"
+        },
+        {
+          "id": "C",
+          "text": "DELETE"
+        },
+        {
+          "id": "D",
+          "text": "POST"
+        }
+      ],
+      "correctOptionIds": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "GET (safe and idempotent), PUT (replacing a resource repeatedly yields the same resource state), and DELETE (deleting resource X repeatedly leaves it deleted) are idempotent. POST is typically NOT idempotent (e.g. creating new orders).",
+      "difficulty": "medium",
+      "subtopic": "HTTP Idempotence"
+    },
+    {
+      "id": "l09-q14",
+      "type": "single_choice",
+      "question": "What is the key difference between HTTP PUT and HTTP PATCH?",
+      "options": [
+        {
+          "id": "A",
+          "text": "PUT is for web pages; PATCH is for mobile apps"
+        },
+        {
+          "id": "B",
+          "text": "PUT replaces the entire target resource with the uploaded payload; PATCH applies partial modifications/deltas to the existing resource"
+        },
+        {
+          "id": "C",
+          "text": "PUT is non-idempotent; PATCH is strictly idempotent"
+        },
+        {
+          "id": "D",
+          "text": "PUT requires authentication; PATCH is anonymous"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "PUT represents a full replacement: any omitted fields are typically cleared or set to defaults. PATCH provides instructions to partially mutate only specific fields without modifying the rest.",
+      "difficulty": "easy",
+      "subtopic": "PUT vs PATCH"
+    },
+    {
+      "id": "l09-q15",
+      "type": "single_choice",
+      "question": "What does an HTTP 301 Moved Permanently status code instruct a web browser and search engine crawler to do differently compared to a 302 Found?",
+      "options": [
+        {
+          "id": "A",
+          "text": "301 instructs clients and search engines to permanently cache the redirect and update links/SEO rankings to the new URI; 302 is temporary and should not be cached permanently"
+        },
+        {
+          "id": "B",
+          "text": "301 means the page has an error; 302 means the page is successful"
+        },
+        {
+          "id": "C",
+          "text": "301 disables TLS encryption on the new location"
+        },
+        {
+          "id": "D",
+          "text": "301 requires entering a new username and password"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "301 signifies permanent relocation; browsers cache it aggressively and search engines transfer page rank to the new URL. 302 is a temporary redirection, so search engines keep indexing the original URL.",
+      "difficulty": "medium",
+      "subtopic": "HTTP Status Codes"
+    },
+    {
+      "id": "l09-q16",
+      "type": "single_choice",
+      "question": "What is the architectural difference between an HTTP 401 Unauthorized and an HTTP 403 Forbidden status code?",
+      "options": [
+        {
+          "id": "A",
+          "text": "401 means the client must provide authentication credentials (unauthenticated); 403 means the identity is known but the user lacks permission to access the resource (unauthorized)"
+        },
+        {
+          "id": "B",
+          "text": "401 is a server error; 403 is a client error"
+        },
+        {
+          "id": "C",
+          "text": "401 is returned only over HTTP; 403 is returned only over HTTPS"
+        },
+        {
+          "id": "D",
+          "text": "401 indicates that the server's database is offline"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "401 implies 'who are you? Please log in.' 403 implies 'I know who you are, but you do not have permission to touch this resource.'",
+      "difficulty": "medium",
+      "subtopic": "HTTP Status Codes"
+    },
+    {
+      "id": "l09-q17",
+      "type": "single_choice",
+      "question": "What is the critical security vulnerability prevented by setting the 'HttpOnly' flag on a Set-Cookie header?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Man-in-the-middle sniffing of packets over open Wi-Fi"
+        },
+        {
+          "id": "B",
+          "text": "Session hijacking via Cross-Site Scripting (XSS) where malicious JavaScript accesses `document.cookie`"
+        },
+        {
+          "id": "C",
+          "text": "SQL Injection attacks on the backend database"
+        },
+        {
+          "id": "D",
+          "text": "Denial of Service attacks against the web server"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The `HttpOnly` flag prevents client-side scripts (like JavaScript running via XSS) from reading the cookie via `document.cookie`, mitigating cookie theft and session hijacking.",
+      "difficulty": "medium",
+      "subtopic": "Cookie Security Flags"
+    },
+    {
+      "id": "l09-q18",
+      "type": "single_choice",
+      "question": "What is the purpose of the 'SameSite=Strict' cookie attribute?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It forces the cookie to only be transmitted over HTTPS connections"
+        },
+        {
+          "id": "B",
+          "text": "It prevents the browser from sending the cookie on ANY cross-site request (mitigating Cross-Site Request Forgery / CSRF)"
+        },
+        {
+          "id": "C",
+          "text": "It expires the cookie after strictly 5 minutes"
+        },
+        {
+          "id": "D",
+          "text": "It prevents users from logging in on mobile devices"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "`SameSite=Strict` guarantees the cookie is never sent in third-party contexts (e.g. following links from external sites or embedded iframes), eliminating CSRF vulnerabilities for authenticated state.",
+      "difficulty": "hard",
+      "subtopic": "CSRF & SameSite"
+    },
+    {
+      "id": "l09-q19",
+      "type": "single_choice",
+      "question": "In a modern stateless web application using JWT (JSON Web Tokens) for sessions, where is the session state primarily stored?",
+      "options": [
+        {
+          "id": "A",
+          "text": "In a centralized Redis database on the server"
+        },
+        {
+          "id": "B",
+          "text": "Directly inside the cryptographically signed JWT payload held and presented by the client"
+        },
+        {
+          "id": "C",
+          "text": "In the router's ARP table"
+        },
+        {
+          "id": "D",
+          "text": "In the DNS SOA record"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Stateless JWT tokens encode user identity and claims directly in the token payload, signed by the server's private secret. Any backend server can verify the signature without reading a centralized database.",
+      "difficulty": "medium",
+      "subtopic": "Sessions vs JWT"
+    },
+    {
+      "id": "l09-q20",
+      "type": "single_choice",
+      "question": "How does DNS-based Round-Robin Load Balancing distribute client requests among multiple backend web servers?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The authoritative DNS server rotates the ordering of multiple IP addresses in the 'A' record answer set on each query"
+        },
+        {
+          "id": "B",
+          "text": "The client router picks the server with the lowest MAC address"
+        },
+        {
+          "id": "C",
+          "text": "The DNS server opens TCP connections to test each backend server's CPU load"
+        },
+        {
+          "id": "D",
+          "text": "The DNS root servers route packets through a reverse proxy"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "In Round-Robin DNS, multiple A records are configured for the same domain. The DNS server permutes the list on successive responses, distributing incoming connections across multiple IP addresses.",
+      "difficulty": "easy",
+      "subtopic": "DNS Load Balancing"
+    }
+  ]
+}

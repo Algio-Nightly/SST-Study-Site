@@ -1,0 +1,592 @@
+{
+  "topicId": "lecture-13",
+  "lectureNumber": 13,
+  "title": "The Complete Internet Journey Quiz",
+  "description": "20 questions tracing an end-to-end HTTPS request from URL entry, DNS resolution, ARP, routing, TCP handshake, TLS 1.3 encryption, to HTTP response rendering.",
+  "estimatedMinutes": 25,
+  "questions": [
+    {
+      "id": "l13-q01",
+      "type": "single_choice",
+      "question": "When a user types `https://www.example.com` into a web browser address bar and hits Enter, what is the VERY FIRST operation executed by the browser before any network packet is dispatched?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Transmitting an ARP broadcast on the local Ethernet switch"
+        },
+        {
+          "id": "B",
+          "text": "Parsing the URL string, checking the browser's internal HSTS (HTTP Strict Transport Security) preload list, and checking the local browser/OS DNS cache"
+        },
+        {
+          "id": "C",
+          "text": "Opening a TCP socket to root nameserver a.root-servers.net"
+        },
+        {
+          "id": "D",
+          "text": "Sending an HTTP GET request over raw IP"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Before generating packets, the browser validates the URL syntax, checks if HSTS forces HTTPS, and queries local memory caches (browser DNS cache, OS resolver cache, `/etc/hosts`).",
+      "difficulty": "easy",
+      "subtopic": "URL Parsing & Cache Lookup"
+    },
+    {
+      "id": "l13-q02",
+      "type": "single_choice",
+      "question": "If the domain name is NOT found in the browser cache, OS cache, or hosts file, to what network entity does the operating system dispatch its DNS query?",
+      "options": [
+        {
+          "id": "A",
+          "text": "To the Root Nameserver directly"
+        },
+        {
+          "id": "B",
+          "text": "To the Recursive DNS Resolver configured in network settings (typically assigned via DHCP)"
+        },
+        {
+          "id": "C",
+          "text": "To the website's web server"
+        },
+        {
+          "id": "D",
+          "text": "To the local switch's MAC table"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Stub resolvers on client endpoints forward recursive queries to a designated Recursive Resolver (e.g. ISP resolver, 1.1.1.1, 8.8.8.8) that performs the full iterative resolution walk.",
+      "difficulty": "easy",
+      "subtopic": "Resolver Dispatch"
+    },
+    {
+      "id": "l13-q03",
+      "type": "single_choice",
+      "question": "During the recursive resolver's lookup walk for `www.example.com`, which nameserver provides the referral delegation pointing to the `.com` TLD nameservers?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The Authoritative Nameserver for example.com"
+        },
+        {
+          "id": "B",
+          "text": "The DNS Root Nameserver (one of the 13 anycast root clusters)"
+        },
+        {
+          "id": "C",
+          "text": "The local home router"
+        },
+        {
+          "id": "D",
+          "text": "The Google Web Crawler"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The Root Nameservers hold the top of the tree. When asked for `www.example.com`, the root server replies with NS records pointing to the TLD servers responsible for the `.com` zone.",
+      "difficulty": "medium",
+      "subtopic": "DNS Delegation Walk"
+    },
+    {
+      "id": "l13-q04",
+      "type": "single_choice",
+      "question": "Once the client obtains destination IP `93.184.216.34`, how does the OS determine whether to send the frame directly to the web server or to its Default Gateway?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It checks if the server port is 443 or 80"
+        },
+        {
+          "id": "B",
+          "text": "It performs a bitwise AND between destination IP and its own Subnet Mask; if the resulting network ID differs from its own local subnet, it routes via the Default Gateway"
+        },
+        {
+          "id": "C",
+          "text": "It sends a ping to the web server to test distance"
+        },
+        {
+          "id": "D",
+          "text": "It asks the DNS server for routing instructions"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "`Local Subnet Check = (Dest IP & Subnet Mask) == (Host IP & Subnet Mask)`. If false, destination is remote, requiring forwarding to the Default Gateway.",
+      "difficulty": "medium",
+      "subtopic": "Local vs Remote Subnet Decision"
+    },
+    {
+      "id": "l13-q05",
+      "type": "single_choice",
+      "question": "When constructing the Layer 2 Ethernet frame for an outbound packet to `93.184.216.34` via Default Gateway `192.168.1.1`, what is the destination MAC address placed in the frame header?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The MAC address of the remote web server (`93.184.216.34`)"
+        },
+        {
+          "id": "B",
+          "text": "The MAC address of the local Default Gateway router (`192.168.1.1`)"
+        },
+        {
+          "id": "C",
+          "text": "Broadcast MAC (FF:FF:FF:FF:FF:FF)"
+        },
+        {
+          "id": "D",
+          "text": "00:00:00:00:00:00"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "MAC addresses are strictly link-local and hop-by-hop. The packet retains Destination IP = `93.184.216.34`, but the Ethernet frame Destination MAC MUST be the local gateway router's MAC address.",
+      "difficulty": "medium",
+      "subtopic": "L2 vs L3 Addressing in Transit"
+    },
+    {
+      "id": "l13-q06",
+      "type": "single_choice",
+      "question": "If the host does not have the Default Gateway's MAC address in its local memory, what protocol is triggered immediately to discover it?",
+      "options": [
+        {
+          "id": "A",
+          "text": "BGP"
+        },
+        {
+          "id": "B",
+          "text": "ARP (Address Resolution Protocol broadcast)"
+        },
+        {
+          "id": "C",
+          "text": "DHCP"
+        },
+        {
+          "id": "D",
+          "text": "TLS Handshake"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Before the Ethernet frame can be placed onto the wire, the host must resolve the gateway IP to a MAC address using an ARP Request broadcast.",
+      "difficulty": "easy",
+      "subtopic": "ARP Resolution Trigger"
+    },
+    {
+      "id": "l13-q07",
+      "type": "single_choice",
+      "question": "As the Ethernet frame passes through an intermediate Layer 2 Ethernet switch on the LAN, how does the switch determine which output port to forward it to?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It inspects the Destination MAC address and looks up the corresponding port in its MAC Address Table (CAM Table)"
+        },
+        {
+          "id": "B",
+          "text": "It recalculates the IP checksum"
+        },
+        {
+          "id": "C",
+          "text": "It decrypts the TLS application data"
+        },
+        {
+          "id": "D",
+          "text": "It queries the DNS server"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Layer 2 switches operate by inspecting the Destination MAC address and forwarding the frame out the specific port associated with that MAC in the CAM (Content Addressable Memory) table.",
+      "difficulty": "easy",
+      "subtopic": "Switch CAM Forwarding"
+    },
+    {
+      "id": "l13-q08",
+      "type": "multi_choice",
+      "question": "When the packet reaches the Default Gateway router, what modifications are performed on the packet before it is forwarded out the WAN interface? (Select ALL that apply)",
+      "options": [
+        {
+          "id": "A",
+          "text": "The router decrements the IPv4 Time to Live (TTL) by 1"
+        },
+        {
+          "id": "B",
+          "text": "The router recalculates the IPv4 Header Checksum"
+        },
+        {
+          "id": "C",
+          "text": "The router performs NAT/PAT, rewriting the private source IP/port with its public IP/port"
+        },
+        {
+          "id": "D",
+          "text": "The router strips the incoming Layer 2 Ethernet frame and encapsulates the packet in a new Layer 2 frame for the WAN link"
+        }
+      ],
+      "correctOptionIds": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "explanation": "Every routing hop decrements TTL, updates header checksum, strips old L2 framing and encapsulates into new L2 framing. A NAT gateway additionally rewrites source IP/port.",
+      "difficulty": "hard",
+      "subtopic": "Router Forwarding Lifecycle"
+    },
+    {
+      "id": "l13-q09",
+      "type": "single_choice",
+      "question": "In internet transit across ISP backbones, what mechanism do core routers use to perform Longest Prefix Match (LPM) lookups in nanoseconds at line rate?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Binary tree search in main DDR4 RAM"
+        },
+        {
+          "id": "B",
+          "text": "Hardware TCAM (Ternary Content Addressable Memory) in application-specific integrated circuits (ASICs)"
+        },
+        {
+          "id": "C",
+          "text": "Sequential linear search through an ASCII text file"
+        },
+        {
+          "id": "D",
+          "text": "Python dictionaries"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "TCAM allows matching across 0, 1, and 'don't care' wildcard bits in parallel across all FIB entries in a single clock cycle, enabling wire-speed forwarding.",
+      "difficulty": "medium",
+      "subtopic": "TCAM Hardware Forwarding"
+    },
+    {
+      "id": "l13-q10",
+      "type": "single_choice",
+      "question": "Which protocol governs the inter-domain path selection between the user's ISP, transit carriers (Tier-1 providers), and the web server's hosting cloud network?",
+      "options": [
+        {
+          "id": "A",
+          "text": "OSPF"
+        },
+        {
+          "id": "B",
+          "text": "BGP (Border Gateway Protocol)"
+        },
+        {
+          "id": "C",
+          "text": "RIPv2"
+        },
+        {
+          "id": "D",
+          "text": "STP"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "BGP is the de-facto exterior gateway routing protocol connecting autonomous systems (ASNs) across the global internet.",
+      "difficulty": "easy",
+      "subtopic": "BGP Internet Transit"
+    },
+    {
+      "id": "l13-q11",
+      "type": "single_choice",
+      "question": "Once packets reach the web server's network and firewall, what transport layer handshake is executed to establish a reliable connection before any HTTPS data is sent?",
+      "options": [
+        {
+          "id": "A",
+          "text": "DHCP DORA 4-way exchange"
+        },
+        {
+          "id": "B",
+          "text": "TCP 3-Way Handshake (SYN, SYN-ACK, ACK)"
+        },
+        {
+          "id": "C",
+          "text": "BGP Keepalive exchange"
+        },
+        {
+          "id": "D",
+          "text": "ARP Who-has query"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "TCP establishes a full-duplex byte stream via SYN, SYN-ACK, and ACK, establishing sequence numbers and flow control buffers.",
+      "difficulty": "easy",
+      "subtopic": "TCP Connection Setup"
+    },
+    {
+      "id": "l13-q12",
+      "type": "single_choice",
+      "question": "In TLS 1.3, how many round trips (RTT) are required for the cryptographic handshake to establish encryption keys before application data can be sent?",
+      "options": [
+        {
+          "id": "A",
+          "text": "3 RTTs"
+        },
+        {
+          "id": "B",
+          "text": "2 RTTs"
+        },
+        {
+          "id": "C",
+          "text": "1 RTT (Client sends ClientHello with Key Share; Server replies with ServerHello, Certificate, and Finished)"
+        },
+        {
+          "id": "D",
+          "text": "0 RTT is mandatory for all first-time connections"
+        }
+      ],
+      "correctOptionIds": [
+        "C"
+      ],
+      "explanation": "TLS 1.3 reduced the handshake from 2 RTTs (in TLS 1.2) to just 1 RTT by combining the key share (Diffie-Hellman parameters) directly inside the initial `ClientHello` message.",
+      "difficulty": "medium",
+      "subtopic": "TLS 1.3 Handshake Latency"
+    },
+    {
+      "id": "l13-q13",
+      "type": "single_choice",
+      "question": "What is the role of the Public Key Infrastructure (PKI) and Certificate Authorities (CAs) during the TLS handshake?",
+      "options": [
+        {
+          "id": "A",
+          "text": "They assign IP addresses to web servers"
+        },
+        {
+          "id": "B",
+          "text": "They allow the client to cryptographically verify that the server's public key belongs legitimately to `example.com` by validating digital signatures against pre-installed Root CA certificates in the OS/browser trust store"
+        },
+        {
+          "id": "C",
+          "text": "They compress the HTML before sending"
+        },
+        {
+          "id": "D",
+          "text": "They maintain the router's BGP routing table"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The server presents a certificate signed by an intermediate CA, leading up to a trusted Root CA embedded in the client's OS trust store. This prevents Man-in-the-Middle (MITM) impersonation attacks.",
+      "difficulty": "medium",
+      "subtopic": "PKI & Certificate Validation"
+    },
+    {
+      "id": "l13-q14",
+      "type": "single_choice",
+      "question": "Why does TLS use asymmetric public-key cryptography (like ECDHE) ONLY during the initial handshake, switching to symmetric cryptography (like AES-GCM or ChaCha20) for actual HTTP payload data?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Symmetric encryption is orders of magnitude faster and computationally cheaper on CPU hardware than asymmetric public-key operations"
+        },
+        {
+          "id": "B",
+          "text": "Asymmetric encryption cannot encrypt text, only numbers"
+        },
+        {
+          "id": "C",
+          "text": "Symmetric encryption keys are publicly visible on DNS servers"
+        },
+        {
+          "id": "D",
+          "text": "Asymmetric encryption does not work over Wi-Fi"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Asymmetric cryptography involves heavy modular arithmetic, which would overwhelm server CPUs at gigabit speeds. Hence, asymmetric keys are used only to securely negotiate a shared symmetric key, which AES hardware instructions encrypt in nanoseconds.",
+      "difficulty": "medium",
+      "subtopic": "Asymmetric vs Symmetric Encryption"
+    },
+    {
+      "id": "l13-q15",
+      "type": "single_choice",
+      "question": "What is the purpose of the 'Host' header sent in an HTTP/1.1 request (e.g. `Host: www.example.com`)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It tells the router which gateway to use"
+        },
+        {
+          "id": "B",
+          "text": "It allows a single web server with one IP address to host hundreds of different websites (Virtual Hosting), routing requests to the correct virtual host"
+        },
+        {
+          "id": "C",
+          "text": "It specifies the user's MAC address"
+        },
+        {
+          "id": "D",
+          "text": "It disables TLS encryption"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Without the `Host` header, a web server hosting multiple domains on the same IP wouldn't know which website the client wanted. RFC 2616 made `Host` mandatory for virtual hosting.",
+      "difficulty": "easy",
+      "subtopic": "HTTP Virtual Hosting"
+    },
+    {
+      "id": "l13-q16",
+      "type": "single_choice",
+      "question": "What HTTP response header instructs the browser to cache an image asset locally for 1 year without re-requesting it from the origin server?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Cache-Control: public, max-age=31536000, immutable"
+        },
+        {
+          "id": "B",
+          "text": "Set-Cookie: session=active; ttl=31536000"
+        },
+        {
+          "id": "C",
+          "text": "Connection: keep-alive"
+        },
+        {
+          "id": "D",
+          "text": "Content-Encoding: gzip"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "`Cache-Control: max-age=31536000` sets the browser cache expiry to 31,536,000 seconds (1 year). The `immutable` attribute signals that the resource will never change, eliminating conditional revalidation requests.",
+      "difficulty": "medium",
+      "subtopic": "HTTP Caching Headers"
+    },
+    {
+      "id": "l13-q17",
+      "type": "single_choice",
+      "question": "When the browser receives the raw HTML response body, what critical parsing operations occur to turn text into pixels on the user's screen?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Generating the DOM (Document Object Model), CSSOM (CSS Object Model), combining them into a Render Tree, executing Layout (reflow), and Painting pixels to the screen"
+        },
+        {
+          "id": "B",
+          "text": "Writing the HTML directly into the router's ARP cache"
+        },
+        {
+          "id": "C",
+          "text": "Transmitting an ICMP Echo Reply to the DNS root"
+        },
+        {
+          "id": "D",
+          "text": "Converting the HTML into a BGP advertisement"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "The browser parsing pipeline: Tokenize HTML -> DOM Tree; Parse CSS -> CSSOM Tree; Combine -> Render Tree -> Layout (compute geometry) -> Paint (rasterize pixels to GPU).",
+      "difficulty": "easy",
+      "subtopic": "Browser Rendering Pipeline"
+    },
+    {
+      "id": "l13-q18",
+      "type": "single_choice",
+      "question": "What major performance advantage did HTTP/2 introduce over HTTP/1.1 to eliminate Head-of-Line (HoL) blocking at the application layer?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Binary framing and multiplexing of multiple concurrent request/response streams over a single shared TCP connection"
+        },
+        {
+          "id": "B",
+          "text": "Switching from IP to MAC routing"
+        },
+        {
+          "id": "C",
+          "text": "Eliminating all TLS encryption"
+        },
+        {
+          "id": "D",
+          "text": "Increasing maximum packet MTU to 9000 bytes"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "HTTP/1.1 required multiple parallel TCP connections or serial pipelining. HTTP/2 introduces binary streams, interleaving frames of multiple requests and responses concurrently over one TCP pipe.",
+      "difficulty": "medium",
+      "subtopic": "HTTP/2 Multiplexing"
+    },
+    {
+      "id": "l13-q19",
+      "type": "single_choice",
+      "question": "Why did HTTP/3 shift its underlying transport layer from TCP to QUIC (running over UDP)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "To make web pages load without internet access"
+        },
+        {
+          "id": "B",
+          "text": "To eliminate TCP-level Head-of-Line blocking (where one dropped packet stalls all multiplexed streams), and to combine the transport and cryptographic handshake into 0-RTT/1-RTT"
+        },
+        {
+          "id": "C",
+          "text": "Because UDP is more secure than TCP"
+        },
+        {
+          "id": "D",
+          "text": "Because TCP ports are deprecated by ICANN"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "In HTTP/2 over TCP, if a single packet drops, TCP's in-order guarantee freezes all streams until retransmission completes. QUIC solves this by implementing independent stream loss recovery on top of UDP.",
+      "difficulty": "hard",
+      "subtopic": "HTTP/3 & QUIC"
+    },
+    {
+      "id": "l13-q20",
+      "type": "single_choice",
+      "question": "When the browser finishes receiving all assets and the user closes the tab, how is the underlying TCP connection cleanly terminated?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The computer powers off"
+        },
+        {
+          "id": "B",
+          "text": "Via a 4-way handshake (FIN -> ACK, FIN -> ACK), and the socket enters TIME_WAIT to ensure all delayed duplicate packets drain"
+        },
+        {
+          "id": "C",
+          "text": "The switch clears its CAM table"
+        },
+        {
+          "id": "D",
+          "text": "An ARP broadcast is sent to clear DNS records"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The full lifecycle concludes with TCP's full-duplex teardown: both sides independently send FIN and acknowledge with ACK, with the active closer waiting out the TIME_WAIT interval.",
+      "difficulty": "easy",
+      "subtopic": "End-to-End Teardown"
+    }
+  ]
+}

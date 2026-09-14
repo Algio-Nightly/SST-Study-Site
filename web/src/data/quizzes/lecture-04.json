@@ -1,0 +1,593 @@
+{
+  "topicId": "lecture-04",
+  "lectureNumber": 4,
+  "title": "IP Addresses & Subnetting II Quiz",
+  "description": "20 questions covering VLSM partition trees, IPv6 RFC 5952 compression, scopes, Default Gateways, and NAT/PAT.",
+  "estimatedMinutes": 25,
+  "questions": [
+    {
+      "id": "l04-q01",
+      "type": "single_choice",
+      "question": "What is the primary operational advantage of Variable Length Subnet Masking (VLSM) over Fixed Length Subnet Masking (FLSM)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "VLSM allows assigning different subnet mask lengths to different subnets, preventing IP wastage"
+        },
+        {
+          "id": "B",
+          "text": "VLSM allows switches to ignore MAC addresses"
+        },
+        {
+          "id": "C",
+          "text": "VLSM converts IPv4 addresses into IPv6 addresses automatically"
+        },
+        {
+          "id": "D",
+          "text": "VLSM eliminates the need for a default gateway"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "FLSM forces all subnets to have identical sizes. VLSM allows custom prefix sizing per department, drastically reducing wasted host addresses.",
+      "difficulty": "easy",
+      "subtopic": "VLSM Concepts"
+    },
+    {
+      "id": "l04-q02",
+      "type": "single_choice",
+      "question": "What is the Golden Rule of VLSM address allocation?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Allocate the smallest subnet first to conserve the beginning of the block"
+        },
+        {
+          "id": "B",
+          "text": "Always sort host requirements in strictly descending order (Largest -> Smallest) and allocate the largest blocks first"
+        },
+        {
+          "id": "C",
+          "text": "Always assign the default gateway the highest IP in the range"
+        },
+        {
+          "id": "D",
+          "text": "Never use subnet masks longer than /24"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Allocating small subnets first fragments the continuous binary address space, making it impossible to allocate contiguous larger power-of-two subnets later.",
+      "difficulty": "medium",
+      "subtopic": "VLSM Golden Rule"
+    },
+    {
+      "id": "l04-q03",
+      "type": "single_choice",
+      "question": "You need to accommodate 100 hosts in an engineering subnet. What is the smallest valid subnet mask and block size?",
+      "options": [
+        {
+          "id": "A",
+          "text": "/26 (64 addresses, 62 hosts)"
+        },
+        {
+          "id": "B",
+          "text": "/25 (128 addresses, 126 hosts)"
+        },
+        {
+          "id": "C",
+          "text": "/24 (256 addresses, 254 hosts)"
+        },
+        {
+          "id": "D",
+          "text": "/27 (32 addresses, 30 hosts)"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "2^N - 2 >= 100 implies 2^N >= 102 -> N = 7 host bits (2^7 = 128). Prefix = 32 - 7 = /25, offering 126 usable hosts.",
+      "difficulty": "easy",
+      "subtopic": "VLSM Calculation"
+    },
+    {
+      "id": "l04-q04",
+      "type": "single_choice",
+      "question": "How many bits are in an IPv6 address, and how many hexadecimal digits represent it?",
+      "options": [
+        {
+          "id": "A",
+          "text": "64 bits, 16 hex digits"
+        },
+        {
+          "id": "B",
+          "text": "128 bits, 32 hex digits arranged in 8 hextets of 4 hex digits"
+        },
+        {
+          "id": "C",
+          "text": "256 bits, 64 hex digits"
+        },
+        {
+          "id": "D",
+          "text": "48 bits, 12 hex digits"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "IPv6 addresses are 128 bits long, written as 8 groups (hextets) of 4 hexadecimal characters (8 * 16 = 128 bits).",
+      "difficulty": "easy",
+      "subtopic": "IPv6 Architecture"
+    },
+    {
+      "id": "l04-q05",
+      "type": "single_choice",
+      "question": "According to RFC 5952, how should the IPv6 address 2001:0db8:0000:0000:0000:8a2e:0370:7334 be canonically compressed?",
+      "options": [
+        {
+          "id": "A",
+          "text": "2001:db8::8a2e:370:7334"
+        },
+        {
+          "id": "B",
+          "text": "2001:0db8::8a2e:0370:7334"
+        },
+        {
+          "id": "C",
+          "text": "2001:db8:0:0:0:8a2e:370:7334"
+        },
+        {
+          "id": "D",
+          "text": "2001:db8:::8a2e:370:7334"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Leading zeros in each hextet are omitted (0db8 -> db8, 0370 -> 370), and the longest consecutive run of all-zero hextets is replaced with '::'.",
+      "difficulty": "medium",
+      "subtopic": "RFC 5952 Compression"
+    },
+    {
+      "id": "l04-q06",
+      "type": "single_choice",
+      "question": "Why can the double-colon '::' zero-compression symbol be used ONLY ONCE in any IPv6 address?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because RFC standards restrict it for aesthetic reasons"
+        },
+        {
+          "id": "B",
+          "text": "Because multiple double-colons create mathematical ambiguity in reconstructing how many zero hextets belong to each run"
+        },
+        {
+          "id": "C",
+          "text": "Because hardware router ASICs cannot process more than 16 zeros"
+        },
+        {
+          "id": "D",
+          "text": "Because it would conflict with IPv4 dotted decimals"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "If '::' appeared twice (e.g. 2001::db8::1), a parser cannot determine how many zero hextets belong to the first run vs. the second run.",
+      "difficulty": "medium",
+      "subtopic": "RFC 5952 Rules"
+    },
+    {
+      "id": "l04-q07",
+      "type": "single_choice",
+      "question": "What is a major architectural difference between IPv4 and IPv6 regarding one-to-all communication?",
+      "options": [
+        {
+          "id": "A",
+          "text": "IPv6 uses larger broadcast packets"
+        },
+        {
+          "id": "B",
+          "text": "IPv6 completely eliminates Broadcast addresses; all one-to-many operations use targeted Multicast"
+        },
+        {
+          "id": "C",
+          "text": "IPv6 requires all hosts to broadcast their MAC address every 10 seconds"
+        },
+        {
+          "id": "D",
+          "text": "IPv6 disables multicast to conserve fiber spectrum"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "IPv6 has NO broadcast. All one-to-many communications use efficient Multicast groups (e.g. ff02::1 for all nodes, ff02::2 for all routers), preventing broadcast storms.",
+      "difficulty": "hard",
+      "subtopic": "IPv6 Multicast"
+    },
+    {
+      "id": "l04-q08",
+      "type": "single_choice",
+      "question": "Which prefix identifies an IPv6 Link-Local address automatically configured on every interface?",
+      "options": [
+        {
+          "id": "A",
+          "text": "2000::/3"
+        },
+        {
+          "id": "B",
+          "text": "fc00::/7"
+        },
+        {
+          "id": "C",
+          "text": "fe80::/10"
+        },
+        {
+          "id": "D",
+          "text": "ff00::/8"
+        }
+      ],
+      "correctOptionIds": [
+        "C"
+      ],
+      "explanation": "fe80::/10 is reserved for Link-Local addresses, used for single-hop neighbor discovery (NDP) and router advertisements.",
+      "difficulty": "medium",
+      "subtopic": "IPv6 Scopes"
+    },
+    {
+      "id": "l04-q09",
+      "type": "single_choice",
+      "question": "What is the IPv6 equivalent of the IPv4 loopback address 127.0.0.1?",
+      "options": [
+        {
+          "id": "A",
+          "text": "::/128"
+        },
+        {
+          "id": "B",
+          "text": "::1/128"
+        },
+        {
+          "id": "C",
+          "text": "fe80::1"
+        },
+        {
+          "id": "D",
+          "text": "2001::1"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "::1 (or 0000:...:0001) is the IPv6 loopback address.",
+      "difficulty": "easy",
+      "subtopic": "IPv6 Loopback"
+    },
+    {
+      "id": "l04-q10",
+      "type": "single_choice",
+      "question": "How does a host decide whether to deliver a packet directly on the local LAN or forward it to the Default Gateway?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It checks if the destination IP is an even or odd number"
+        },
+        {
+          "id": "B",
+          "text": "It computes (Destination IP AND Host Subnet Mask) and checks if the result equals its local Network ID"
+        },
+        {
+          "id": "C",
+          "text": "It always sends all packets to the Default Gateway regardless of destination"
+        },
+        {
+          "id": "D",
+          "text": "It pings the destination MAC address"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "If Destination IP AND Subnet Mask == Local Network ID, the destination is on the same subnet (direct ARP). Otherwise, it forwards to the gateway router's MAC.",
+      "difficulty": "medium",
+      "subtopic": "Host Forwarding Decision"
+    },
+    {
+      "id": "l04-q11",
+      "type": "multi_choice",
+      "question": "Which commands can be run on Windows and Linux respectively to display the configured Default Gateway? (Select ALL that apply)",
+      "options": [
+        {
+          "id": "A",
+          "text": "route print (Windows)"
+        },
+        {
+          "id": "B",
+          "text": "ip route show (Linux)"
+        },
+        {
+          "id": "C",
+          "text": "netstat -rn (macOS / Linux)"
+        },
+        {
+          "id": "D",
+          "text": "arp -d (Windows)"
+        }
+      ],
+      "correctOptionIds": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "'route print' (Windows), 'ip route show' (Linux), and 'netstat -rn' display the kernel routing table and default gateway. 'arp -d' purges the ARP cache.",
+      "difficulty": "easy",
+      "subtopic": "Host Routing Commands"
+    },
+    {
+      "id": "l04-q12",
+      "type": "single_choice",
+      "question": "What primary problem does Network Address Translation (NAT / NAPT) solve for home and enterprise networks?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It speeds up light transmission in fiber optic cables"
+        },
+        {
+          "id": "B",
+          "text": "It enables hundreds of private devices to share a single public IPv4 address"
+        },
+        {
+          "id": "C",
+          "text": "It automatically assigns domain names to computers"
+        },
+        {
+          "id": "D",
+          "text": "It encrypts all DNS lookups"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "NAT maps private RFC 1918 IPs and transport port numbers to a single public IP, alleviating immediate IPv4 address depletion.",
+      "difficulty": "easy",
+      "subtopic": "NAT Fundamentals"
+    },
+    {
+      "id": "l04-q13",
+      "type": "single_choice",
+      "question": "In Port Address Translation (PAT / NAPT), how does the router distinguish returning packets destined for two different internal devices that connected to the same external server?",
+      "options": [
+        {
+          "id": "A",
+          "text": "By the color of the Ethernet cable"
+        },
+        {
+          "id": "B",
+          "text": "By mapping unique translated public transport-layer Port Numbers in its NAT state table"
+        },
+        {
+          "id": "C",
+          "text": "By inspecting internal MAC addresses stored in the packet payload"
+        },
+        {
+          "id": "D",
+          "text": "By broadcasting the reply to all LAN hosts"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "PAT tracks (Private IP, Private Port) <-> (Public IP, Translated Port). The unique translated port in incoming packets indexes the correct internal host.",
+      "difficulty": "medium",
+      "subtopic": "PAT Mechanics"
+    },
+    {
+      "id": "l04-q14",
+      "type": "single_choice",
+      "question": "What is Port Forwarding (Destination NAT / DNAT) primarily used for?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Allowing internal devices to browse external websites"
+        },
+        {
+          "id": "B",
+          "text": "Allowing external internet clients to initiate connections to a server hosted inside a private NAT network"
+        },
+        {
+          "id": "C",
+          "text": "Speeding up local Wi-Fi transmission rates"
+        },
+        {
+          "id": "D",
+          "text": "Preventing ARP cache poisoning"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Because NAT blocks unsolicited inbound packets by default, port forwarding maps a specific external public port permanently to an internal private host:port.",
+      "difficulty": "medium",
+      "subtopic": "Port Forwarding (DNAT)"
+    },
+    {
+      "id": "l04-q15",
+      "type": "single_choice",
+      "question": "Why do peer-to-peer applications like WebRTC, Discord voice, and multiplayer games struggle when devices are behind NAT?",
+      "options": [
+        {
+          "id": "A",
+          "text": "NAT routers drop all UDP packets"
+        },
+        {
+          "id": "B",
+          "text": "Devices behind NAT do not know their external public IP and cannot accept direct inbound connection requests without hole punching"
+        },
+        {
+          "id": "C",
+          "text": "NAT breaks TLS encryption keys"
+        },
+        {
+          "id": "D",
+          "text": "NAT changes the speed of light"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "NAT prevents direct inbound connections. P2P protocols must use traversal frameworks (STUN/TURN/ICE) to discover external endpoints and punch holes.",
+      "difficulty": "hard",
+      "subtopic": "NAT Traversal"
+    },
+    {
+      "id": "l04-q16",
+      "type": "single_choice",
+      "question": "What is the specific role of a STUN (Session Traversal Utilities for NAT) server?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It relays all voice and video packets between peers"
+        },
+        {
+          "id": "B",
+          "text": "It allows a client behind NAT to discover its public IP address and NAT port mapping as seen by the outside world"
+        },
+        {
+          "id": "C",
+          "text": "It replaces the DNS root servers"
+        },
+        {
+          "id": "D",
+          "text": "It generates SSL certificates"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "STUN acts as an external mirror: a client queries the STUN server, which responds with the client's public IP and translated port.",
+      "difficulty": "medium",
+      "subtopic": "STUN Protocol"
+    },
+    {
+      "id": "l04-q17",
+      "type": "single_choice",
+      "question": "When does WebRTC fall back to using a TURN (Traversal Using Relays around NAT) server?",
+      "options": [
+        {
+          "id": "A",
+          "text": "When the connection speed is faster than 100 Mbps"
+        },
+        {
+          "id": "B",
+          "text": "When direct peer-to-peer hole punching fails due to Symmetric NAT or restrictive firewalls"
+        },
+        {
+          "id": "C",
+          "text": "When the client uses an Ethernet cable instead of Wi-Fi"
+        },
+        {
+          "id": "D",
+          "text": "When IPv6 is disabled"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "TURN servers act as costly media relays when direct P2P connections cannot be established through symmetric NAT or corporate firewalls.",
+      "difficulty": "hard",
+      "subtopic": "TURN Relays"
+    },
+    {
+      "id": "l04-q18",
+      "type": "single_choice",
+      "question": "Given the base network 10.0.0.0/16, how many /20 subnets can be created from this block?",
+      "options": [
+        {
+          "id": "A",
+          "text": "4"
+        },
+        {
+          "id": "B",
+          "text": "8"
+        },
+        {
+          "id": "C",
+          "text": "16"
+        },
+        {
+          "id": "D",
+          "text": "32"
+        }
+      ],
+      "correctOptionIds": [
+        "C"
+      ],
+      "explanation": "Borrowed bits = 20 - 16 = 4 bits. Number of subnets = 2^4 = 16 subnets.",
+      "difficulty": "medium",
+      "subtopic": "Subnetting Arithmetic"
+    },
+    {
+      "id": "l04-q19",
+      "type": "multi_choice",
+      "question": "Which of the following are inherent architectural drawbacks or limitations of NAT? (Select ALL that apply)",
+      "options": [
+        {
+          "id": "A",
+          "text": "It violates the pure end-to-end principle of the original Internet architecture"
+        },
+        {
+          "id": "B",
+          "text": "It requires the router to maintain stateful connection tables in memory"
+        },
+        {
+          "id": "C",
+          "text": "Protocols that embed IP addresses inside their application payload (e.g. FTP, SIP) require complex Application Layer Gateways (ALGs)"
+        },
+        {
+          "id": "D",
+          "text": "It increases the size of the physical Ethernet frame beyond 1518 bytes"
+        }
+      ],
+      "correctOptionIds": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "A, B, and C are major drawbacks of NAT (RFC 2993). NAT does not increase the physical Ethernet frame size.",
+      "difficulty": "hard",
+      "subtopic": "NAT Drawbacks"
+    },
+    {
+      "id": "l04-q20",
+      "type": "single_choice",
+      "question": "What protocol replaces ARP in IPv6 networks for resolving Layer 3 IPv6 addresses to Layer 2 MAC addresses?",
+      "options": [
+        {
+          "id": "A",
+          "text": "DHCPv6"
+        },
+        {
+          "id": "B",
+          "text": "Neighbor Discovery Protocol (NDP / ICMPv6)"
+        },
+        {
+          "id": "C",
+          "text": "BGP-4"
+        },
+        {
+          "id": "D",
+          "text": "Reverse ARP (RARP)"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "IPv6 replaces broadcast ARP with Neighbor Discovery Protocol (NDP), utilizing ICMPv6 Neighbor Solicitation and Neighbor Advertisement multicast messages.",
+      "difficulty": "medium",
+      "subtopic": "IPv6 NDP"
+    }
+  ]
+}

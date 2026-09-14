@@ -1,0 +1,591 @@
+{
+  "topicId": "lecture-10",
+  "lectureNumber": 10,
+  "title": "TCP, UDP & Socket Programming Quiz",
+  "description": "20 questions covering transport layer multiplexing, ports, TCP 3-way handshake, 4-way teardown, TIME_WAIT, sliding window, congestion control, and Python socket programming.",
+  "estimatedMinutes": 25,
+  "questions": [
+    {
+      "id": "l10-q01",
+      "type": "single_choice",
+      "question": "While the Network Layer (IP) provides host-to-host packet delivery, what essential abstraction does the Transport Layer (Layer 4) provide?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Hop-by-hop framing across fiber cables"
+        },
+        {
+          "id": "B",
+          "text": "Process-to-process communication using port numbers (demultiplexing)"
+        },
+        {
+          "id": "C",
+          "text": "Global path computation using BGP"
+        },
+        {
+          "id": "D",
+          "text": "Translating domain names into 32-bit integers"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The transport layer introduces port numbers, enabling multiple independent application processes on the same host to send and receive traffic concurrently over a shared network connection.",
+      "difficulty": "easy",
+      "subtopic": "Transport Layer Purpose"
+    },
+    {
+      "id": "l10-q02",
+      "type": "single_choice",
+      "question": "What 5-tuple uniquely identifies a TCP connection on an operating system?",
+      "options": [
+        {
+          "id": "A",
+          "text": "(Source MAC, Dest MAC, VLAN ID, TTL, Checksum)"
+        },
+        {
+          "id": "B",
+          "text": "(Source IP, Source Port, Destination IP, Destination Port, Protocol/TCP)"
+        },
+        {
+          "id": "C",
+          "text": "(Domain Name, URL Path, HTTP Method, User-Agent, Cookie)"
+        },
+        {
+          "id": "D",
+          "text": "(Window Size, Sequence Number, Ack Number, Flags, MSS)"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "A TCP socket connection is uniquely identified by its 5-tuple: `(Source IP, Source Port, Destination IP, Destination Port, Protocol)`. This allows a web server on port 80 to handle thousands of concurrent client connections simultaneously.",
+      "difficulty": "easy",
+      "subtopic": "Socket 5-Tuple"
+    },
+    {
+      "id": "l10-q03",
+      "type": "single_choice",
+      "question": "Why does DNS primarily use UDP on port 53 for standard name queries instead of TCP?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because UDP encrypts queries to prevent eavesdropping"
+        },
+        {
+          "id": "B",
+          "text": "Because UDP has zero connection establishment overhead (1 RTT total: query and reply), minimizing latency and server memory overhead"
+        },
+        {
+          "id": "C",
+          "text": "Because TCP packets cannot cross internet backbones"
+        },
+        {
+          "id": "D",
+          "text": "Because UDP supports packet sizes up to 1 gigabyte"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "A typical DNS query fits in a single packet. UDP avoids the 3-way handshake round-trip delay and consumes no state/memory on DNS servers, making it exceptionally fast and scalable.",
+      "difficulty": "easy",
+      "subtopic": "UDP vs TCP Tradeoffs"
+    },
+    {
+      "id": "l10-q04",
+      "type": "single_choice",
+      "question": "What is the primary function of the TCP 3-Way Handshake?",
+      "options": [
+        {
+          "id": "A",
+          "text": "To negotiate the symmetric encryption keys for TLS"
+        },
+        {
+          "id": "B",
+          "text": "To synchronize Initial Sequence Numbers (ISNs) in both directions and exchange buffer parameters (MSS, window scale)"
+        },
+        {
+          "id": "C",
+          "text": "To verify the client's email address and password"
+        },
+        {
+          "id": "D",
+          "text": "To calculate the shortest path across the internet using Dijkstra"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The 3-way handshake (SYN, SYN-ACK, ACK) ensures that both endpoints agree to communicate, synchronize their initial byte sequence numbers (ISNs), and agree on options like Maximum Segment Size (MSS).",
+      "difficulty": "medium",
+      "subtopic": "3-Way Handshake"
+    },
+    {
+      "id": "l10-q05",
+      "type": "single_choice",
+      "question": "Why does a modern TCP implementation initialize sequence numbers with pseudo-random Initial Sequence Numbers (ISNs) rather than starting every connection at sequence number 0?",
+      "options": [
+        {
+          "id": "A",
+          "text": "To prevent delayed duplicate packets from old, terminated connections from corrupting a new connection on the same 5-tuple, and to prevent sequence number prediction attacks"
+        },
+        {
+          "id": "B",
+          "text": "Because sequence number 0 is reserved for broadcast packets"
+        },
+        {
+          "id": "C",
+          "text": "To speed up CRC checksum calculations"
+        },
+        {
+          "id": "D",
+          "text": "Because 64-bit systems cannot represent the integer zero"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Randomized ISNs protect against TCP sequence number spoofing/session hijacking attacks and prevent stray packets delayed in internet buffers from being mistakenly accepted by subsequent connections reusing the same ports.",
+      "difficulty": "hard",
+      "subtopic": "TCP ISN Randomization"
+    },
+    {
+      "id": "l10-q06",
+      "type": "single_choice",
+      "question": "In a SYN Flood denial-of-service attack, how does the 'SYN Cookies' technique allow a server to defend itself without exhausting memory on half-open connections?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It blocks all IP addresses that send SYN packets"
+        },
+        {
+          "id": "B",
+          "text": "It avoids allocating any kernel memory for the TCB (Transmission Control Block); instead, it encodes the connection state into the server's Initial Sequence Number (ISN) and reconstructs state upon receiving the client's final ACK"
+        },
+        {
+          "id": "C",
+          "text": "It automatically shifts the server from port 80 to port 443"
+        },
+        {
+          "id": "D",
+          "text": "It delegates connection handling to the client's gateway router"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "SYN cookies encode cryptographic state (MSS, timestamp, secret key) into the 32-bit ISN of the SYN-ACK packet. The server allocates zero state in RAM until the client sends a valid ACK containing that cookie incremented by 1.",
+      "difficulty": "hard",
+      "subtopic": "SYN Flood & SYN Cookies"
+    },
+    {
+      "id": "l10-q07",
+      "type": "single_choice",
+      "question": "Why does closing a TCP connection typically require a 4-Way Handshake (FIN, ACK, FIN, ACK) rather than a 3-way exchange?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Because TCP connections are full-duplex; one endpoint can finish transmitting data (sending FIN) while still receiving data from the peer (half-closed state)"
+        },
+        {
+          "id": "B",
+          "text": "Because Ethernet requires 4 frames to compute CRC"
+        },
+        {
+          "id": "C",
+          "text": "Because routers must acknowledge every disconnection"
+        },
+        {
+          "id": "D",
+          "text": "Because the client and server must exchange TLS certificates again"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "TCP is bidirectional (full-duplex). When host A sends a FIN, it only closes its own sending half-stream. Host B acknowledges with an ACK, but may continue sending pending data until it independently issues its own FIN.",
+      "difficulty": "medium",
+      "subtopic": "TCP 4-Way Teardown"
+    },
+    {
+      "id": "l10-q08",
+      "type": "single_choice",
+      "question": "Why must the active closer of a TCP connection remain in the `TIME_WAIT` state for a duration of 2 * MSL (Maximum Segment Lifetime, typically 60-120 seconds)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "To allow the CPU to cool down after high throughput"
+        },
+        {
+          "id": "B",
+          "text": "To guarantee that the final ACK was received by the peer (and retransmit it if a stray FIN arrives), and to ensure all delayed duplicate segments from the old connection drain from the network"
+        },
+        {
+          "id": "C",
+          "text": "To keep the port locked permanently so nobody can reuse it"
+        },
+        {
+          "id": "D",
+          "text": "To wait for DNS caches to expire"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "If the final ACK is lost, the peer will retransmit its FIN. Being in TIME_WAIT allows the host to resend the ACK. Furthermore, 2*MSL ensures all phantom segments in flight dissipate before the socket 5-tuple can be safely reopened.",
+      "difficulty": "hard",
+      "subtopic": "TIME_WAIT Justification"
+    },
+    {
+      "id": "l10-q09",
+      "type": "single_choice",
+      "question": "What does a Cumulative Acknowledgment number of `ACK = 5001` signify in TCP?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Byte 5001 has been received with an error"
+        },
+        {
+          "id": "B",
+          "text": "All contiguous bytes up to byte 5000 have been successfully received, and the receiver expects byte 5001 next"
+        },
+        {
+          "id": "C",
+          "text": "Only byte 5001 has been received"
+        },
+        {
+          "id": "D",
+          "text": "The sender must reset the window to 5001 bytes"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "TCP acknowledgments are cumulative: an ACK value of N indicates that all bytes up to N - 1 have been received in order, and the receiver is anticipating byte N.",
+      "difficulty": "easy",
+      "subtopic": "Cumulative ACK"
+    },
+    {
+      "id": "l10-q10",
+      "type": "single_choice",
+      "question": "What major inefficiency of basic cumulative ACKs does Selective Acknowledgment (SACK, RFC 2018) solve?",
+      "options": [
+        {
+          "id": "A",
+          "text": "It eliminates the need for sequence numbers entirely"
+        },
+        {
+          "id": "B",
+          "text": "When a single segment is lost in a large burst, SACK explicitly informs the sender which non-contiguous blocks arrived, avoiding retransmission of already received data"
+        },
+        {
+          "id": "C",
+          "text": "It converts TCP into UDP when packets are lost"
+        },
+        {
+          "id": "D",
+          "text": "It increases maximum packet payload to 64 KB"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Without SACK, if segment 2 is lost in a train of 10 segments, the sender might have to retransmit all segments from 2 through 10 (Go-Back-N). SACK allows the receiver to specify exact discontinuous ranges (e.g. 3-10 received), retransmitting only segment 2.",
+      "difficulty": "medium",
+      "subtopic": "TCP SACK"
+    },
+    {
+      "id": "l10-q11",
+      "type": "single_choice",
+      "question": "What is the difference between TCP Flow Control and TCP Congestion Control?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Flow control protects the receiving host from being overwhelmed; Congestion control protects the intermediate network routers/links from being overloaded"
+        },
+        {
+          "id": "B",
+          "text": "Flow control operates in hardware; congestion control operates in software"
+        },
+        {
+          "id": "C",
+          "text": "Flow control uses cwnd; congestion control uses rwnd"
+        },
+        {
+          "id": "D",
+          "text": "Flow control is for UDP; congestion control is for TCP"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "Flow Control is end-to-end: the receiver advertises `rwnd` to prevent buffer overflow on its own NIC/RAM. Congestion Control is sender-driven: the sender throttles `cwnd` based on packet loss or latency to prevent choking intermediate routers.",
+      "difficulty": "medium",
+      "subtopic": "Flow Control vs Congestion Control"
+    },
+    {
+      "id": "l10-q12",
+      "type": "single_choice",
+      "question": "At any given instant, what is the maximum number of unacknowledged in-flight bytes a TCP sender is permitted to transmit?",
+      "options": [
+        {
+          "id": "A",
+          "text": "cwnd + rwnd"
+        },
+        {
+          "id": "B",
+          "text": "min(cwnd, rwnd)"
+        },
+        {
+          "id": "C",
+          "text": "max(cwnd, rwnd)"
+        },
+        {
+          "id": "D",
+          "text": "MSS * 65535"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "The effective transmission window is the minimum of the receiver's advertised buffer window (`rwnd`) and the network's estimated congestion window (`cwnd`): `Effective Window = min(cwnd, rwnd)`.",
+      "difficulty": "easy",
+      "subtopic": "Effective Window Equation"
+    },
+    {
+      "id": "l10-q13",
+      "type": "single_choice",
+      "question": "During the TCP Slow Start phase, how does the Congestion Window (cwnd) grow upon receiving ACKs?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Linearly: cwnd += 1 MSS per Round Trip Time (RTT)"
+        },
+        {
+          "id": "B",
+          "text": "Exponentially: cwnd doubles every RTT (increasing by 1 MSS for every valid ACK received)"
+        },
+        {
+          "id": "C",
+          "text": "It remains strictly constant until timeout"
+        },
+        {
+          "id": "D",
+          "text": "It halves every RTT"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Despite its misleading name, 'Slow Start' ramps up aggressively: for each ACK received, cwnd increases by 1 MSS, effectively doubling the congestion window every Round Trip Time (RTT) until reaching `ssthresh`.",
+      "difficulty": "medium",
+      "subtopic": "TCP Slow Start"
+    },
+    {
+      "id": "l10-q14",
+      "type": "single_choice",
+      "question": "What triggers TCP Fast Retransmit without waiting for the full retransmission timeout (RTO) timer to expire?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Arrival of 3 duplicate ACKs for the same sequence number"
+        },
+        {
+          "id": "B",
+          "text": "Receipt of an ICMP Destination Unreachable message"
+        },
+        {
+          "id": "C",
+          "text": "A manual keyboard interrupt by the user"
+        },
+        {
+          "id": "D",
+          "text": "A decrease in the receiver's window size to zero"
+        }
+      ],
+      "correctOptionIds": [
+        "A"
+      ],
+      "explanation": "When three duplicate ACKs (4 identical ACKs total) arrive at the sender, it deduces that later packets reached the receiver and only one segment was dropped in between, triggering an immediate Fast Retransmit without waiting for the slow RTO timer.",
+      "difficulty": "medium",
+      "subtopic": "Fast Retransmit"
+    },
+    {
+      "id": "l10-q15",
+      "type": "single_choice",
+      "question": "What is the primary operational difference between loss-based congestion control (like TCP Reno/CUBIC) and modern delay-based/model-based congestion control like Google's BBR?",
+      "options": [
+        {
+          "id": "A",
+          "text": "BBR only runs over UDP"
+        },
+        {
+          "id": "B",
+          "text": "Loss-based algorithms intentionally fill router queue buffers until packets drop (causing bufferbloat); BBR measures bottleneck bandwidth and min-RTT to operate at optimal queue capacity without filling buffers"
+        },
+        {
+          "id": "C",
+          "text": "Loss-based algorithms require hardware router modifications"
+        },
+        {
+          "id": "D",
+          "text": "BBR disables retransmissions completely"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "Reno and CUBIC treat packet loss as the congestion signal, which fills up intermediate router buffers (bufferbloat) and inflates latency. BBR (Bottleneck Bandwidth and RTT) models the physical pipe to keep queues empty and throughput maximum.",
+      "difficulty": "hard",
+      "subtopic": "BBR Congestion Control"
+    },
+    {
+      "id": "l10-q16",
+      "type": "single_choice",
+      "question": "In Python's `socket` module, what is the correct socket family and type to create a streaming TCP socket over IPv4?",
+      "options": [
+        {
+          "id": "A",
+          "text": "socket.socket(socket.AF_INET, socket.SOCK_DGRAM)"
+        },
+        {
+          "id": "B",
+          "text": "socket.socket(socket.AF_INET, socket.SOCK_STREAM)"
+        },
+        {
+          "id": "C",
+          "text": "socket.socket(socket.AF_INET6, socket.SOCK_RAW)"
+        },
+        {
+          "id": "D",
+          "text": "socket.socket(socket.AF_PACKET, socket.SOCK_STREAM)"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "`AF_INET` designates IPv4 addressing, and `SOCK_STREAM` specifies a reliable, ordered, two-way byte stream (TCP). (`SOCK_DGRAM` creates a UDP socket).",
+      "difficulty": "easy",
+      "subtopic": "Python Socket API"
+    },
+    {
+      "id": "l10-q17",
+      "type": "single_choice",
+      "question": "In a Python TCP server, what does `server_socket.accept()` return when a client connects?",
+      "options": [
+        {
+          "id": "A",
+          "text": "An integer representing the client's PID"
+        },
+        {
+          "id": "B",
+          "text": "A tuple of `(conn, address)` where `conn` is a brand-new socket object dedicated to communicating with that specific client, and `address` is `(ip, port)`"
+        },
+        {
+          "id": "C",
+          "text": "The raw bytes received from the client"
+        },
+        {
+          "id": "D",
+          "text": "The server's own IP address"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "`accept()` blocks until a client connects, then returns a new dedicated connection socket for that client's stream and a tuple containing the client's remote `(ip, port)`. The listening socket continues accepting other incoming connections.",
+      "difficulty": "medium",
+      "subtopic": "Socket accept() Lifecycle"
+    },
+    {
+      "id": "l10-q18",
+      "type": "single_choice",
+      "question": "Why is it recommended in Python network code to use `conn.sendall(data)` instead of `conn.send(data)` when transmitting large payloads?",
+      "options": [
+        {
+          "id": "A",
+          "text": "`send()` compresses data; `sendall()` does not"
+        },
+        {
+          "id": "B",
+          "text": "`send()` may transmit only a partial slice of the byte buffer if the socket send buffer is full; `sendall()` loops internally until the entire buffer has been transmitted or an error occurs"
+        },
+        {
+          "id": "C",
+          "text": "`send()` is only for UDP; `sendall()` is for TCP"
+        },
+        {
+          "id": "D",
+          "text": "`send()` requires root privileges"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "`send()` returns the number of bytes actually sent, which may be less than `len(data)` if kernel buffers are constrained. `sendall()` continues sending data from the buffer until all bytes are delivered.",
+      "difficulty": "medium",
+      "subtopic": "send() vs sendall()"
+    },
+    {
+      "id": "l10-q19",
+      "type": "single_choice",
+      "question": "What socket option must be configured with `setsockopt` to prevent the common `OSError: [Errno 98] Address already in use` error when restarting a development server?",
+      "options": [
+        {
+          "id": "A",
+          "text": "socket.SO_KEEPALIVE"
+        },
+        {
+          "id": "B",
+          "text": "socket.SO_REUSEADDR"
+        },
+        {
+          "id": "C",
+          "text": "socket.SO_BROADCAST"
+        },
+        {
+          "id": "D",
+          "text": "socket.TCP_NODELAY"
+        }
+      ],
+      "correctOptionIds": [
+        "B"
+      ],
+      "explanation": "`SO_REUSEADDR` allows the socket to forcibly bind to a local port that is currently in the `TIME_WAIT` state from a recently closed connection.",
+      "difficulty": "medium",
+      "subtopic": "SO_REUSEADDR Socket Option"
+    },
+    {
+      "id": "l10-q20",
+      "type": "multi_choice",
+      "question": "Why is TCP described as a 'Byte Stream' protocol rather than a 'Message/Packet' protocol? (Select ALL that apply)",
+      "options": [
+        {
+          "id": "A",
+          "text": "TCP does not preserve application message boundaries; two separate `send()` calls can be merged into a single segment by Nagle's algorithm"
+        },
+        {
+          "id": "B",
+          "text": "A single large `send()` call can be fragmented across multiple TCP segments"
+        },
+        {
+          "id": "C",
+          "text": "The application must implement its own framing (delimiters like `\\n` or length prefixes) to parse discrete messages"
+        },
+        {
+          "id": "D",
+          "text": "TCP sends raw machine instructions directly to the router CPU"
+        }
+      ],
+      "correctOptionIds": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "TCP is a continuous unstructured pipe of bytes. It does not know or care where application messages begin or end. It can coalesce small packets or split large ones arbitrarily. Applications must frame their messages explicitly.",
+      "difficulty": "hard",
+      "subtopic": "TCP Stream Semantics"
+    }
+  ]
+}
