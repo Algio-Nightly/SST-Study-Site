@@ -4,6 +4,7 @@ import { classicalMachineLearningMeta } from './classical-machine-learning/meta'
 import { lecturesData as cnLectures } from '../notesData';
 import { lecturesData as cmlLectures } from './classical-machine-learning/notesData';
 import { quizzesRegistry as cnQuizzes } from '../quizzesData';
+import { quizzesRegistry as cmlQuizzes } from './classical-machine-learning/quizzesData';
 
 export const allSubjectsMeta: SubjectMetadata[] = [
   computerNetworksMeta,
@@ -89,7 +90,7 @@ export function getSubjectData(subjectId: string): SubjectData | null {
     return {
       meta: classicalMachineLearningMeta,
       lectures: cmlLectures,
-      quizzes: {}
+      quizzes: cmlQuizzes
     };
   }
   return null;
