@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { TopicQuiz, QuizQuestion, QuizOption } from '../types/quiz';
 import type { Lecture } from '../data/notesData';
+import { QuizMarkdown } from './QuizMarkdown';
 import { 
   loadQuizProgress, 
   saveQuizProgress, 
@@ -450,9 +451,17 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
           </div>
 
           {/* Question Title */}
-          <h3 className="text-base sm:text-lg font-bold text-[var(--text-heading)] leading-snug mb-6">
-            {currentQ.question}
-          </h3>
+          <div className="text-base sm:text-lg font-bold text-[var(--text-heading)] leading-snug mb-6">
+            <QuizMarkdown content={currentQ.question} asSpan />
+          </div>
+
+          {currentQ.codeSnippet && (
+            <div className="mb-6 rounded-2xl overflow-hidden border border-zinc-200 dark:border-[#2c2c34] bg-zinc-950 shadow-md">
+              <pre className="p-4 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed text-zinc-100 m-0">
+                <code>{currentQ.codeSnippet}</code>
+              </pre>
+            </div>
+          )}
 
           {/* Options Group */}
           <div className="space-y-3 mb-6">
@@ -507,10 +516,10 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
                   </div>
 
                   <div className="flex-1 text-sm sm:text-base leading-relaxed font-medium">
-                    <span className="font-mono font-bold mr-2 text-[var(--text-muted)]">
+                    <span className="font-mono font-bold mr-2 text-[var(--text-muted)] inline-block">
                       {opt.id}.
                     </span>
-                    {opt.text}
+                    <QuizMarkdown content={opt.text} asSpan className="inline" />
                   </div>
 
                   {isSubmitted && isCorrectOption && (
@@ -569,9 +578,9 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
               <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-emerald-500 mb-2">
                 <HelpCircle className="w-4 h-4" /> Explanation & Key Insight
               </div>
-              <p className="text-xs sm:text-sm text-[var(--text-body)] leading-relaxed font-normal">
-                {currentQ.explanation}
-              </p>
+              <div className="text-xs sm:text-sm text-[var(--text-body)] leading-relaxed font-normal">
+                <QuizMarkdown content={currentQ.explanation} />
+              </div>
               {currentQ.subtopic && (
                 <div className="mt-3 pt-2 border-t border-[var(--border-island)] text-[11px] text-[var(--text-muted)]">
                   Refer to subtopic: <span className="font-semibold text-[var(--text-heading)]">{currentQ.subtopic}</span> in lecture notes.

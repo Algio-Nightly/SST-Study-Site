@@ -517,7 +517,7 @@ QUIZ_L01 = {
         },
         {
           "id": "C",
-          "text": "Coefficient of Determination (R^2)"
+          "text": "Coefficient of Determination ($R^2$)"
         },
         {
           "id": "D",
@@ -529,7 +529,7 @@ QUIZ_L01 = {
         "B",
         "C"
       ],
-      "explanation": "MAE, RMSE, and R^2 are standard continuous regression metrics. Accuracy is an evaluation metric exclusively designed for discrete classification.",
+      "explanation": "MAE, RMSE, and $R^2$ are standard continuous regression metrics. Accuracy is an evaluation metric exclusively designed for discrete classification.",
       "difficulty": "easy",
       "subtopic": "Mitchell's ETP Framework"
     },

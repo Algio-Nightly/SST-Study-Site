@@ -186,25 +186,25 @@ QUIZ_L02 = {
       "options": [
         {
           "id": "A",
-          "text": "z = (x_j - x_{min}) / (x_{max} - x_{min})"
+          "text": "$z = \\frac{x_j - x_{\\min}}{x_{\\max} - x_{\\min}}$"
         },
         {
           "id": "B",
-          "text": "z = (x_j - \\mu_j) / \\sigma_j, where \\mu_j is the sample mean and \\sigma_j is the sample standard deviation."
+          "text": "$z = \\frac{x_j - \\mu_j}{\\sigma_j}$, where $\\mu_j$ is the sample mean and $\\sigma_j$ is the sample standard deviation."
         },
         {
           "id": "C",
-          "text": "z = \\log(x_j + 1)"
+          "text": "$z = \\log(x_j + 1)$"
         },
         {
           "id": "D",
-          "text": "z = (x_j - \\text{median}) / \\text{IQR}"
+          "text": "$z = \\frac{x_j - \\text{median}}{\\text{IQR}}$"
         }
       ],
       "correctOptionIds": [
         "B"
       ],
-      "explanation": "StandardScaler computes the Z-score transformation: z = (x - \\mu) / \\sigma, resulting in a rescaled feature with mean = 0 and unit variance (std = 1). Option A is MinMaxScaler, C is Log1p, and D is RobustScaler.",
+      "explanation": "StandardScaler computes the Z-score transformation: $z = \\frac{x - \\mu}{\\sigma}$, resulting in a rescaled feature with mean = 0 and unit variance (std = 1). Option A is MinMaxScaler, C is Log1p, and D is RobustScaler.",
       "difficulty": "easy",
       "subtopic": "Feature Scaling"
     },
@@ -320,7 +320,7 @@ QUIZ_L02 = {
       "correctOptionIds": [
         "B"
       ],
-      "explanation": "Unscaled Euclidean distance sums squared coordinate differences: \\sqrt{\\Delta \\text{Age}^2 + \\Delta \\text{Income}^2}. Features with large raw numerical scales (thousands of dollars) overwhelm features with small units (decades of age), rendering distance-based algorithms blind to smaller-scale variables.",
+      "explanation": "Unscaled Euclidean distance sums squared coordinate differences: $\\sqrt{(\\Delta \\text{Age})^2 + (\\Delta \\text{Income})^2}$. Features with large raw numerical scales (thousands of dollars) overwhelm features with small units (decades of age), rendering distance-based algorithms blind to smaller-scale variables.",
       "difficulty": "medium",
       "subtopic": "Feature Scaling"
     },
@@ -378,7 +378,7 @@ QUIZ_L02 = {
       "correctOptionIds": [
         "A"
       ],
-      "explanation": "If a categorical feature has K levels, creating K one-hot binary columns introduces perfect collinearity because \\sum_{k=1}^K d_k = 1 = x_0 (the bias column). This makes the Gram matrix X^T X singular. It is solved by setting drop='first' in OneHotEncoder.",
+      "explanation": "If a categorical feature has K levels, creating K one-hot binary columns introduces perfect collinearity because $\\sum_{k=1}^K D_k = \\mathbf{1} = x_0$ (the bias column). This makes the Gram matrix $$X^T X$$ singular. It is solved by setting drop='first' in OneHotEncoder.",
       "difficulty": "medium",
       "subtopic": "Categorical Encoding"
     },
@@ -534,7 +534,7 @@ QUIZ_L02 = {
       "options": [
         {
           "id": "A",
-          "text": "StandardScaler (calculating mean \\mu and standard deviation \\sigma)"
+          "text": "StandardScaler (calculating mean $\\mu$ and standard deviation $\\sigma$)"
         },
         {
           "id": "B",
