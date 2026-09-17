@@ -176,10 +176,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 : 'bg-[var(--bg-island-subtle)] text-[var(--text-muted)] border border-[var(--border-island)]'
                             }`}
                           >
-                            L{lecture.number.toString().padStart(2, '0')}
+                            L{typeof lecture.number === 'number' && lecture.number % 1 !== 0 
+                              ? lecture.number.toFixed(1).padStart(4, '0') 
+                              : lecture.number.toString().padStart(2, '0')}
                           </span>
                           <span className="text-xs font-semibold truncate leading-tight">
-                            {lecture.title.replace(/^Lecture\s+\d+:\s*/, '')}
+                            {lecture.title.replace(/^Lecture\s+[\d\.]+:\s*/, '')}
                           </span>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">

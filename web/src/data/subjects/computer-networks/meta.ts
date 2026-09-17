@@ -10,7 +10,7 @@ export const computerNetworksMeta: SubjectMetadata = {
   iconName: 'Network',
   accentColor: 'emerald',
   status: 'active',
-  lecturesCount: 12,
+  lecturesCount: 13,
   questionsCount: 240,
   featuredTopics: [
     'OSI 7-Layer & TCP/IP Protocol Stack',

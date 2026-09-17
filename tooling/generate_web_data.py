@@ -20,6 +20,7 @@ CATEGORIES_MAP = {
         3: "IP Addressing & Subnetting",
         4: "IP Addressing & Subnetting",
         5: "Graph Algorithms",
+        5.5: "Graph Algorithms",
         6: "Graph Algorithms",
         7: "Routing & Forwarding",
         8: "Routing & Forwarding",
@@ -52,9 +53,17 @@ def slugify(text: str) -> str:
 def parse_markdown_note(file_path: Path, subject_id: str, index: int):
     content = file_path.read_text(encoding="utf-8", errors="replace")
     
-    # Try extracting lecture number from filename (e.g. Lecture_02_Notes.md or 01_intro.md)
-    num_match = re.search(r"(?:Lecture_|[Ll]ec_?|[Nn]ote_?)?(\d+)", file_path.name)
-    lec_num = int(num_match.group(1)) if num_match else index
+    # Try extracting lecture number from filename (e.g. Lecture_02_Notes.md, Lecture_05.5_Notes.md)
+    num_match = re.search(r"(?:Lecture_|[Ll]ec_?|[Nn]ote_?)?(\d+(?:[\._]\d+)?)", file_path.name)
+    if num_match:
+        raw_num = num_match.group(1).replace('_', '.')
+        try:
+            val = float(raw_num)
+            lec_num = int(val) if val.is_integer() else val
+        except ValueError:
+            lec_num = index
+    else:
+        lec_num = index
     
     lines = content.splitlines()
     title = f"Lecture {lec_num}"
@@ -87,7 +96,10 @@ def parse_markdown_note(file_path: Path, subject_id: str, index: int):
     subj_categories = CATEGORIES_MAP.get(subject_id, {})
     category = subj_categories.get(lec_num, "General")
     
-    file_id = f"lecture-{lec_num:02d}" if lec_num > 0 else slugify(file_path.stem)
+    if isinstance(lec_num, float):
+        file_id = f"lecture-{int(lec_num):02d}-{int(round((lec_num % 1) * 10))}"
+    else:
+        file_id = f"lecture-{lec_num:02d}" if lec_num > 0 else slugify(file_path.stem)
 
     return {
         "id": file_id,
@@ -104,10 +116,20 @@ def parse_markdown_note(file_path: Path, subject_id: str, index: int):
 
 def process_subject_folder(folder_path: Path):
     subject_id = slugify(folder_path.name)
+    def sort_key(f: Path):
+        m = re.search(r'(\d+(?:[\._]\d+)?)', f.name)
+        if m:
+            val = m.group(1).replace('_', '.')
+            try:
+                return float(val)
+            except ValueError:
+                pass
+        return 999.0
+
     # Strictly filter ONLY Markdown files (.md or .markdown). Ignore all PDFs, JSON, images.
     md_files = sorted(
         [f for f in folder_path.iterdir() if f.is_file() and f.suffix.lower() in ('.md', '.markdown')],
-        key=lambda x: [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', x.name)]
+        key=sort_key
     )
     
     lectures = [parse_markdown_note(f, subject_id, idx + 1) for idx, f in enumerate(md_files)]

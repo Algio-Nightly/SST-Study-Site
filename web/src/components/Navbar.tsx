@@ -144,7 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <BookOpen className="w-4 h-4" />
-              <span>Notes (L{currentLecture.number.toString().padStart(2, '0')})</span>
+              <span>Notes (L{typeof currentLecture.number === 'number' && currentLecture.number % 1 !== 0 ? currentLecture.number.toFixed(1).padStart(4, '0') : currentLecture.number.toString().padStart(2, '0')})</span>
             </button>
             <button
               onClick={() => setActiveTab('quiz')}

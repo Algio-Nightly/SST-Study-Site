@@ -800,9 +800,9 @@
           }
         ],
         "correctOptionIds": [
-          "C"
+          "B"
         ],
-        "explanation": "In the 4th octet, mask 224 has block size 256 - 224 = 32. Multiples of 32: 0, 32, 64, 96, 128, 160, 192. For 157, the highest multiple <= 157 is 128? Wait! 128 <= 157 < 160, so 192.168.10.128! For 157: 157 / 32 = 4 (4 * 32 = 128). Broadcast is 159. Thus 192.168.10.128.",
+        "explanation": "In the 4th octet, mask 255.255.255.224 (/27) has block size 256 - 224 = 32. Multiples of 32 are 0, 32, 64, 96, 128, 160, 192. For IP 192.168.10.157, the largest multiple <= 157 is 128 (since 128 <= 157 < 160). Alternatively, bitwise AND of 157 (10011101_2) & 224 (11100000_2) = 128 (10000000_2). Hence, the Network Address is 192.168.10.128.",
         "difficulty": "medium",
         "subtopic": "Subnetting Math"
       },
