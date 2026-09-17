@@ -141,3 +141,27 @@ export function getSubjectProgressSummary(subjectId: string, lectureIds: string[
     submittedQuestions: submitted
   };
 }
+
+/**
+ * Calculates aggregate lecture notes progress (completed & review) across all lectures in a subject
+ */
+export function getSubjectNotesProgressSummary(subjectId: string, lectureIds: string[]): {
+  doneCount: number;
+  reviewCount: number;
+  totalLectures: number;
+} {
+  const statuses = loadAllSubjectLectureStatuses(subjectId);
+  let done = 0;
+  let review = 0;
+
+  for (const id of lectureIds) {
+    if (statuses[id]?.isDone) done++;
+    if (statuses[id]?.isReview) review++;
+  }
+
+  return {
+    doneCount: done,
+    reviewCount: review,
+    totalLectures: lectureIds.length
+  };
+}

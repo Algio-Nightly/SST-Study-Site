@@ -11,10 +11,10 @@ import {
   Layers, 
   Code2, 
   Info, 
-  Trash2, 
   Check, 
   AlertTriangle,
-  Bookmark
+  Bookmark,
+  RotateCcw
 } from 'lucide-react';
 import type { TopicQuiz, QuizQuestion, QuizOption } from '../types/quiz';
 import type { Lecture } from '../data/notesData';
@@ -175,6 +175,18 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
     persistState(selectedAnswers, updatedSubmitted, activeQuestionIndex);
   };
 
+  const handleClearQuestionAnswer = (questionId: string) => {
+    const updatedAnswers = { ...selectedAnswers };
+    delete updatedAnswers[questionId];
+
+    const updatedSubmitted = { ...submittedQuestions };
+    delete updatedSubmitted[questionId];
+
+    setSelectedAnswers(updatedAnswers);
+    setSubmittedQuestions(updatedSubmitted);
+    persistState(updatedAnswers, updatedSubmitted, activeQuestionIndex);
+  };
+
   const handleClearAll = () => {
     clearQuizProgress(subjectId, lecture.id);
     setSelectedAnswers({});
@@ -283,11 +295,11 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
-                Clear All Quiz Answers?
+                Reset All Quiz Answers?
               </h3>
             </div>
             <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 mb-6 leading-relaxed">
-              This will erase all selected options and verification statuses for <strong>{lecture.title}</strong> from browser local storage. This cannot be undone.
+              This will erase all selected options and verification statuses for <strong>{lecture.title}</strong> so you can retry the entire quiz from the beginning.
             </p>
             <div className="flex items-center justify-end gap-3">
               <button
@@ -300,7 +312,7 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
                 onClick={handleClearAll}
                 className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-md transition-all cursor-pointer"
               >
-                Yes, Clear All
+                Yes, Reset & Retry
               </button>
             </div>
           </div>
@@ -332,9 +344,9 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
           <button
             onClick={() => setShowClearConfirm(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-500 hover:bg-rose-500/10 border border-rose-500/30 transition-all cursor-pointer"
-            title="Clear all answers for this quiz"
+            title="Reset and clear all answers for this quiz to retry from the beginning"
           >
-            <Trash2 className="w-3.5 h-3.5" /> Clear All
+            <RotateCcw className="w-3.5 h-3.5" /> Clear All Answers
           </button>
           <button
             onClick={onBackToNotes}
@@ -533,21 +545,43 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
             })}
           </div>
 
-          {/* Action Bar: Check Answer & Next */}
-          <div className="flex items-center justify-between pt-4 border-t border-[var(--border-island)]">
-            <div>
+          {/* Action Bar: Check Answer, Retry & Navigation */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[var(--border-island)]">
+            <div className="flex flex-wrap items-center gap-3">
               {!submittedQuestions[currentQ.id] ? (
-                <button
-                  onClick={() => handleVerifyQuestion(currentQ.id)}
-                  disabled={!(selectedAnswers[currentQ.id]?.length)}
-                  className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed shadow-md transition-all cursor-pointer"
-                >
-                  Verify Answer
-                </button>
+                <>
+                  <button
+                    onClick={() => handleVerifyQuestion(currentQ.id)}
+                    disabled={!(selectedAnswers[currentQ.id]?.length)}
+                    className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed shadow-md transition-all cursor-pointer"
+                  >
+                    Verify Answer
+                  </button>
+
+                  {Boolean(selectedAnswers[currentQ.id]?.length) && (
+                    <button
+                      onClick={() => handleClearQuestionAnswer(currentQ.id)}
+                      className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-[var(--text-muted)] hover:text-rose-400 hover:bg-rose-500/10 border border-[var(--border-island)] hover:border-rose-500/30 transition-all cursor-pointer"
+                      title="Clear selected option"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" /> Clear Answer
+                    </button>
+                  )}
+                </>
               ) : (
-                <span className="text-xs font-semibold text-[var(--text-muted)] flex items-center gap-1.5">
-                  <Info className="w-4 h-4 text-emerald-400" /> Explanation revealed below
-                </span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={() => handleClearQuestionAnswer(currentQ.id)}
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs bg-[var(--btn-secondary-bg)] border border-[var(--btn-secondary-border)] text-[var(--btn-secondary-text)] hover:border-rose-500/40 hover:text-rose-400 hover:bg-rose-500/10 shadow-xs transition-all cursor-pointer"
+                    title="Clear your answer to retry this question"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-rose-400" /> Clear Answer & Retry
+                  </button>
+
+                  <span className="text-xs font-semibold text-[var(--text-muted)] flex items-center gap-1.5">
+                    <Info className="w-4 h-4 text-emerald-400" /> Explanation revealed below
+                  </span>
+                </div>
               )}
             </div>
 
@@ -575,8 +609,17 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
           {/* Explanation Accordion Card */}
           {submittedQuestions[currentQ.id] && (
             <div className="mt-6 p-5 rounded-2xl bg-[var(--bg-island)] border border-[var(--border-island)] animate-in fade-in duration-300">
-              <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-emerald-500 mb-2">
-                <HelpCircle className="w-4 h-4" /> Explanation & Key Insight
+              <div className="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-[var(--border-island)]">
+                <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-emerald-500">
+                  <HelpCircle className="w-4 h-4" /> Explanation & Key Insight
+                </div>
+                <button
+                  onClick={() => handleClearQuestionAnswer(currentQ.id)}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 transition-all cursor-pointer"
+                  title="Clear answer and retry this question"
+                >
+                  <RotateCcw className="w-3 h-3" /> Retry Question
+                </button>
               </div>
               <div className="text-xs sm:text-sm text-[var(--text-body)] leading-relaxed font-normal">
                 <QuizMarkdown content={currentQ.explanation} />

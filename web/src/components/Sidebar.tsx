@@ -7,7 +7,8 @@ import {
   Filter,
   X,
   Bookmark,
-  CheckCircle2
+  CheckCircle2,
+  BookOpen
 } from 'lucide-react';
 import type { Lecture } from '../data/notesData';
 import { lecturesData } from '../data/notesData';
@@ -50,6 +51,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 
   const categories = Array.from(new Set(activeLectures.map(l => l.category)));
+
+  const completedNotesCount = activeLectures.filter(l => lectureStatuses?.[l.id]?.isDone).length;
+  const reviewNotesCount = activeLectures.filter(l => lectureStatuses?.[l.id]?.isReview).length;
+  const notesCompletionPercent = activeLectures.length > 0
+    ? Math.min(100, Math.round((completedNotesCount / activeLectures.length) * 100))
+    : 0;
 
   return (
     <>
@@ -95,6 +102,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="w-full text-xs px-3 py-2 pl-8 rounded-xl bg-[var(--bg-island-subtle)] border border-[var(--border-island)] text-[var(--text-heading)] placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400/40 font-medium"
             />
             <Filter className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-2.5" />
+          </div>
+        </div>
+
+        {/* Lecture Notes Progress Bar */}
+        <div className="px-4 py-3 bg-[var(--bg-island-subtle)] border-b border-[var(--border-island)] space-y-1.5 shrink-0">
+          <div className="flex items-center justify-between text-xs font-semibold">
+            <span className="text-[var(--text-muted)] flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5 text-emerald-400" /> Notes Progress
+            </span>
+            <span className="font-mono font-bold text-[var(--text-heading)]">
+              {completedNotesCount} / {activeLectures.length} ({notesCompletionPercent}%)
+            </span>
+          </div>
+          <div className="w-full h-1.5 rounded-full bg-[var(--border-island)] overflow-hidden">
+            <div 
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${notesCompletionPercent}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between text-[10px] text-[var(--text-muted)]">
+            <span>
+              {completedNotesCount === activeLectures.length && activeLectures.length > 0
+                ? '🎉 All notes completed!'
+                : `${activeLectures.length - completedNotesCount} remaining`}
+            </span>
+            {reviewNotesCount > 0 && (
+              <span className="flex items-center gap-1 text-amber-400 font-medium">
+                <Bookmark className="w-3 h-3 fill-current" /> {reviewNotesCount} review
+              </span>
+            )}
           </div>
         </div>
 
@@ -214,7 +251,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Island Footer */}
         <div className="p-3 border-t border-[var(--border-island)] text-[11px] text-[var(--text-muted)] text-center font-medium">
-          SST Term 5 • Computer Networks
+          SST Term 5 • {subjectTitle || 'Computer Networks'}
         </div>
       </aside>
     </>
