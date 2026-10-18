@@ -89,7 +89,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   onToggleDone,
   onToggleReview
 }) => {
-  const isExtended = lecture.number >= 2 && lecture.number <= 8;
+  const isExtended = lecture.number >= 2 && lecture.number <= 13;
 
   return (
     <div className="w-full">

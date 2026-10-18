@@ -149,7 +149,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {catLectures.map((lecture) => {
                   const isSelected = lecture.id === currentLectureId;
-                  const isExtended = lecture.number >= 2 && lecture.number <= 8;
+                  const isExtended = lecture.number >= 2 && lecture.number <= 13;
                   const quizInfo = activeQuizzes[lecture.id];
                   const qCount = quizInfo?.questions?.length || 0;
                   const lecStatus = lectureStatuses?.[lecture.id];
