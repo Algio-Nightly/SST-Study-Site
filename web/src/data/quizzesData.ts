@@ -4156,2601 +4156,142 @@ export const quizzesRegistry: Record<string, TopicQuiz> = {
   "lecture-09": {
     "topicId": "lecture-09",
     "lectureNumber": 9,
-    "title": "DNS & Internet Applications Quiz",
-    "description": "20 questions covering DNS hierarchy, query resolution, record types (A, AAAA, CNAME, MX, TXT, PTR), URL parsing, HTTP protocol, status codes, and cookies.",
-    "estimatedMinutes": 25,
+    "title": "DNS & Internet Applications Master Quiz",
+    "description": "20 rigorous multi-correct questions covering DNS binary headers, zone apex CNAME constraints, Kaminsky cache poisoning, DNSSEC cryptographic chains, DoT/DoH, EDNS0, HTTP/1.1 vs HTTP/2 vs HTTP/3, and web security headers.",
+    "estimatedMinutes": 35,
     "questions": [
       {
         "id": "l09-q01",
-        "type": "single_choice",
-        "question": "What is the primary motivation for using the Domain Name System (DNS) instead of relying directly on hardcoded IP addresses?",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding the global DNS root architecture and query resolution models are correct?",
         "options": [
           {
             "id": "A",
-            "text": "DNS encrypts all web traffic by default using TLS"
+            "text": "The 13 logical root server identities (a.root-servers.net to m.root-servers.net) are announced via BGP Anycast from over 1,700 physical instances across the globe."
           },
           {
             "id": "B",
-            "text": "Domain names decouple service identity from volatile physical IP addresses, enabling load balancing and seamless IP renumbering"
+            "text": "In a recursive query, the contacted server assumes the burden of iteratively walking the DNS hierarchy until the final answer or an error is returned to the client."
           },
           {
             "id": "C",
-            "text": "IP addresses cannot be routed across continental fiber lines"
+            "text": "If a recursive resolver at 8.8.8.8 becomes unreachable, the client OS stub resolver automatically assumes the iterative resolution burden and walks root servers directly."
           },
           {
             "id": "D",
-            "text": "Domain names eliminate the need for Layer 3 IP routing"
+            "text": "Root nameservers do not hold authoritative records for second-level domain names like scaler.com; they return referrals to the appropriate Top-Level Domain (TLD) nameservers."
+          },
+          {
+            "id": "E",
+            "text": "In an iterative query, if the queried server does not know the answer, it returns a delegation pointing to another nameserver lower in the hierarchy."
           }
         ],
         "correctOptionIds": [
-          "B"
+          "A",
+          "B",
+          "D",
+          "E"
         ],
-        "explanation": "DNS decouples human-readable identifiers from underlying numeric IP addresses. This allows servers to migrate IPs, distribute traffic across geo-distributed servers (CDNs), and provide failover without breaking bookmarks or client code.",
-        "difficulty": "easy",
-        "subtopic": "DNS Motivation"
+        "explanation": "Statements A, B, D, and E are correct. A: BGP Anycast broadcasts the 13 logical IP addresses from hundreds of locations. B: A recursive query delegates full resolution to the resolver. D: Root servers only maintain delegations to TLD nameservers (and glue records). E: Iterative queries return referrals (delegations). C is false: Standard OS stub resolvers (like Linux getaddrinfo or Windows DNS Client) lack iterative walk logic; if their configured recursive resolver fails, resolution fails unless an alternative resolver IP is configured.",
+        "difficulty": "hard",
+        "subtopic": "DNS Hierarchy & Resolution"
       },
       {
         "id": "l09-q02",
-        "type": "single_choice",
-        "question": "In the hierarchical DNS tree structure, which tier is responsible for knowing the authoritative nameservers of Top-Level Domains like .com, .org, and .edu?",
+        "type": "multi_choice",
+        "question": "In the 12-byte fixed binary DNS message header (RFC 1035), which of the following bitfields and their interpretations are correct?",
         "options": [
           {
             "id": "A",
-            "text": "Authoritative Nameservers"
+            "text": "The `QR` (Query/Response) bit is set to 0 for a query and set to 1 for a response."
           },
           {
             "id": "B",
-            "text": "Root Nameservers (represented by the trailing dot '.')"
+            "text": "The `AA` (Authoritative Answer) bit is only valid in responses and indicates that the responding server is authoritative for the queried domain zone."
           },
           {
             "id": "C",
-            "text": "Local Recursive Resolvers"
+            "text": "The `TC` (Truncation) bit is set when the response length exceeds the transport limit (512 bytes for classical UDP), prompting the client to retry over TCP."
           },
           {
             "id": "D",
-            "text": "Client OS Stub Resolvers"
+            "text": "The `RD` (Recursion Desired) bit is set by the authoritative nameserver to indicate that it resolved the query recursively on behalf of the client."
+          },
+          {
+            "id": "E",
+            "text": "An `RCODE` of 3 indicates `NXDOMAIN` (Non-Existent Domain), signifying that the domain name does not exist according to the authoritative server."
           }
         ],
         "correctOptionIds": [
-          "B"
+          "A",
+          "B",
+          "C",
+          "E"
         ],
-        "explanation": "The Root Nameservers sit at the apex of the DNS hierarchy (denoted by the invisible trailing dot in fully qualified domain names like `example.com.`). They maintain delegations to the TLD nameservers.",
-        "difficulty": "easy",
-        "subtopic": "DNS Hierarchy"
+        "explanation": "Statements A, B, C, and E are correct. A: QR=0 query, QR=1 response. B: AA=1 proves the answer came from an authoritative source, not a cached relay. C: TC=1 signals UDP packet truncation (>512 bytes without EDNS0), instructing the client to fall back to TCP port 53. E: RCODE 3 is NXDOMAIN. D is false: The RD bit is set by the *client* in the query to request recursion; the server indicates whether recursion was provided using the `RA` (Recursion Available) bit.",
+        "difficulty": "hard",
+        "subtopic": "DNS Header Anatomy"
       },
       {
         "id": "l09-q03",
-        "type": "single_choice",
-        "question": "How are the 13 logical root server IP addresses (a.root-servers.net through m.root-servers.net) scaled globally to handle billions of queries without collapsing?",
+        "type": "multi_choice",
+        "question": "According to RFC 1034 / RFC 2181, why can a CNAME record NOT coexist with other record types at the zone apex (`scaler.com`), and how do modern DNS providers work around this limitation?",
         "options": [
           {
             "id": "A",
-            "text": "Using BGP Anycast routing to broadcast the same 13 IP addresses from hundreds of physical data centers worldwide"
+            "text": "A CNAME record mandates that no other record type (such as SOA, NS, or MX) can exist for that exact node name."
           },
           {
             "id": "B",
-            "text": "By storing all internet domain records on a single quantum supercomputer in Virginia"
+            "text": "Because the zone apex must contain SOA and NS records to be a valid DNS zone, placing a CNAME at the apex violates RFC specifications."
           },
           {
             "id": "C",
-            "text": "By forcing client web browsers to execute DNS root queries locally"
+            "text": "Cloudflare and Route 53 implement synthetic proprietary records (e.g., CNAME Flattening, ANAME, or ALIAS) that resolve the target dynamically and serve synthesized A/AAAA records at the apex."
           },
           {
             "id": "D",
-            "text": "By assigning each root server a unique 64-bit IPv8 address"
+            "text": "CNAME records at the apex are forbidden because BGP routers cannot parse text strings during FIB lookup."
+          },
+          {
+            "id": "E",
+            "text": "If an apex had a CNAME and an MX record, mail delivery servers might look up the CNAME target and deliver mail to the wrong host entirely."
           }
         ],
         "correctOptionIds": [
-          "A"
+          "A",
+          "B",
+          "C",
+          "E"
         ],
-        "explanation": "Through BGP Anycast, the same 13 logical IP addresses are announced by over 1,500 physical server instances distributed across the globe. Border routers direct DNS queries to the topologically nearest physical instance.",
-        "difficulty": "medium",
-        "subtopic": "DNS Root & Anycast"
+        "explanation": "Statements A, B, C, and E are correct. RFC 1034 Section 3.6.2 dictates that if a CNAME exists at a node, no other data may exist at that node. Because every zone apex MUST have SOA and NS records, a standard CNAME cannot legally exist at the apex (A and B). Modern DNS providers bypass this using CNAME Flattening / ALIAS records, where the nameserver queries the canonical alias on the backend and returns synthesized A/AAAA records to the client (C). Without this, mail lookups for the apex would follow the CNAME instead of evaluating MX records (E). D is false because BGP operates at Layer 3 and does not process DNS records.",
+        "difficulty": "hard",
+        "subtopic": "Zone Apex & CNAME Mechanics"
       },
       {
         "id": "l09-q04",
-        "type": "single_choice",
-        "question": "What is the fundamental difference between a 'Recursive Query' and an 'Iterative Query' in DNS resolution?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Recursive queries use TCP; iterative queries use UDP"
-          },
-          {
-            "id": "B",
-            "text": "In a recursive query, the contacted server assumes responsibility to find the final answer; in an iterative query, the server returns the best referral (next nameserver) it knows"
-          },
-          {
-            "id": "C",
-            "text": "Recursive queries only resolve IPv6 addresses; iterative queries resolve IPv4"
-          },
-          {
-            "id": "D",
-            "text": "Iterative queries repeat infinitely until the client manually interrupts them"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "A recursive query asks the resolver: 'Please do whatever work is necessary to bring me the final IP.' An iterative query asks: 'If you don't know the exact answer, give me the IP of the next nameserver down the tree who might know.'",
-        "difficulty": "medium",
-        "subtopic": "Recursive vs Iterative Queries"
-      },
-      {
-        "id": "l09-q05",
-        "type": "single_choice",
-        "question": "Which DNS record type maps an IPv6 host address to a domain name?",
-        "options": [
-          {
-            "id": "A",
-            "text": "A record"
-          },
-          {
-            "id": "B",
-            "text": "AAAA record (Quad-A)"
-          },
-          {
-            "id": "C",
-            "text": "CNAME record"
-          },
-          {
-            "id": "D",
-            "text": "PTR record"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "An 'A' record maps a hostname to a 32-bit IPv4 address, whereas a 'AAAA' (Quad-A) record maps a hostname to a 128-bit IPv6 address.",
-        "difficulty": "easy",
-        "subtopic": "DNS Record Types"
-      },
-      {
-        "id": "l09-q06",
-        "type": "single_choice",
-        "question": "Why is it forbidden by RFC standards to define a CNAME record at the root apex of a domain (e.g. at 'example.com' without a subdomain prefix)?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Because CNAME records cannot coexist with other essential record types like SOA and NS at the zone apex"
-          },
-          {
-            "id": "B",
-            "text": "Because CNAME records exceed 1500 bytes"
-          },
-          {
-            "id": "C",
-            "text": "Because CNAME records can only point to numeric IP addresses"
-          },
-          {
-            "id": "D",
-            "text": "Because root apex names can only contain letters, not dots"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "RFC 1034 states that if a CNAME record exists for a node, no other data records can exist for that node. Because a zone apex MUST contain SOA and NS records, a CNAME cannot be placed at the naked apex domain.",
-        "difficulty": "hard",
-        "subtopic": "CNAME & Apex Restriction"
-      },
-      {
-        "id": "l09-q07",
-        "type": "single_choice",
-        "question": "Which DNS record type is specifically used by mail transfer agents (MTAs) to route emails to the destination organization's mail servers?",
-        "options": [
-          {
-            "id": "A",
-            "text": "TXT record"
-          },
-          {
-            "id": "B",
-            "text": "MX record"
-          },
-          {
-            "id": "C",
-            "text": "PTR record"
-          },
-          {
-            "id": "D",
-            "text": "SRV record"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "MX (Mail Exchanger) records specify the mail servers responsible for accepting emails for a domain, along with priority values for failover.",
-        "difficulty": "easy",
-        "subtopic": "DNS Record Types"
-      },
-      {
-        "id": "l09-q08",
         "type": "multi_choice",
-        "question": "For what security and verification purposes are DNS TXT records widely utilized in modern cloud infrastructure? (Select ALL that apply)",
+        "question": "Which of the following are technically accurate regarding reverse DNS lookups and PTR records?",
         "options": [
           {
             "id": "A",
-            "text": "SPF (Sender Policy Framework) to prevent email spoofing"
+            "text": "For IPv4 address `192.0.2.45`, the corresponding reverse DNS query domain is `45.2.0.192.in-addr.arpa`."
           },
           {
             "id": "B",
-            "text": "DKIM (DomainKeys Identified Mail) public cryptographic key publication"
+            "text": "The octets are reversed because DNS trees are evaluated from right to left (broadest to narrowest), whereas IP addresses are written from left to right (network to host)."
           },
           {
             "id": "C",
-            "text": "Domain ownership verification for SSL/TLS certificates and Google Search Console"
+            "text": "For IPv6 addresses, PTR lookups reverse every individual hexadecimal nibble (separated by dots) under the `ip6.arpa` domain."
           },
           {
             "id": "D",
-            "text": "Translating MAC addresses into IPv4 addresses"
-          }
-        ],
-        "correctOptionIds": [
-          "A",
-          "B",
-          "C"
-        ],
-        "explanation": "TXT records hold arbitrary text attributes, commonly used for email validation (SPF, DKIM, DMARC) and verifying administrative domain ownership. Translating MAC to IP is handled by ARP/RARP, not DNS TXT.",
-        "difficulty": "medium",
-        "subtopic": "DNS TXT Applications"
-      },
-      {
-        "id": "l09-q09",
-        "type": "single_choice",
-        "question": "What is the function of the TTL (Time to Live) field returned in a DNS resource record?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It specifies the number of router hops the packet can survive before being dropped"
-          },
-          {
-            "id": "B",
-            "text": "It dictates the number of seconds intermediate recursive resolvers and clients may cache the record before querying authoritative servers again"
-          },
-          {
-            "id": "C",
-            "text": "It defines the server's session timeout in minutes"
-          },
-          {
-            "id": "D",
-            "text": "It specifies the lifespan of the domain registration at the registrar"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "DNS TTL tells caching resolvers how long (in seconds) the answer remains fresh. A lower TTL allows faster propagation of IP changes during migrations, while a higher TTL reduces DNS query traffic.",
-        "difficulty": "easy",
-        "subtopic": "DNS Caching & TTL"
-      },
-      {
-        "id": "l09-q10",
-        "type": "single_choice",
-        "question": "In the URL `https://api.scaler.com:8443/v1/students?sort=desc#results`, what constitutes the 'query string' component?",
-        "options": [
-          {
-            "id": "A",
-            "text": "api.scaler.com"
-          },
-          {
-            "id": "B",
-            "text": ":8443"
-          },
-          {
-            "id": "C",
-            "text": "sort=desc"
-          },
-          {
-            "id": "D",
-            "text": "#results"
-          }
-        ],
-        "correctOptionIds": [
-          "C"
-        ],
-        "explanation": "The URL anatomy is: scheme (`https`), host (`api.scaler.com`), port (`8443`), path (`/v1/students`), query string (`sort=desc`, starting after `?`), and fragment identifier (`results`, starting after `#`).",
-        "difficulty": "easy",
-        "subtopic": "URL Decomposition"
-      },
-      {
-        "id": "l09-q11",
-        "type": "single_choice",
-        "question": "Why is the fragment identifier (e.g. `#section2` in `https://example.com/docs#section2`) NEVER transmitted over the wire to the web server in an HTTP GET request?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Because HTTP headers cannot contain the '#' character"
-          },
-          {
-            "id": "B",
-            "text": "Because fragments are strictly client-side browser instructions to scroll to or anchor on a specific element after parsing the HTML"
-          },
-          {
-            "id": "C",
-            "text": "Because TLS encryption strips fragment identifiers for security reasons"
-          },
-          {
-            "id": "D",
-            "text": "Because routers drop packets with hashtag symbols"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Fragment identifiers designate internal anchors within a resource. The web browser processes them locally after receiving the full document; hence, the browser omits the fragment when making the HTTP request.",
-        "difficulty": "medium",
-        "subtopic": "URL Fragments"
-      },
-      {
-        "id": "l09-q12",
-        "type": "single_choice",
-        "question": "What is the fundamental difference between an HTTP method being 'Safe' versus being 'Idempotent'?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Safe methods use HTTPS; idempotent methods use HTTP"
-          },
-          {
-            "id": "B",
-            "text": "Safe methods do not alter server state (read-only); Idempotent methods can alter state, but executing them multiple times produces the identical side-effect as executing them once"
-          },
-          {
-            "id": "C",
-            "text": "Idempotent methods are read-only; safe methods can delete records"
-          },
-          {
-            "id": "D",
-            "text": "Safe methods run in O(1) time; idempotent methods run in O(N) time"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Safe methods (like GET, HEAD) do not mutate resource state. Idempotent methods (like PUT, DELETE, GET) can modify state, but repeating identical requests N times leaves the server in the exact same state as 1 request.",
-        "difficulty": "medium",
-        "subtopic": "HTTP Method Semantics"
-      },
-      {
-        "id": "l09-q13",
-        "type": "multi_choice",
-        "question": "Which of the following HTTP methods are classified as Idempotent according to RFC 9110? (Select ALL that apply)",
-        "options": [
-          {
-            "id": "A",
-            "text": "GET"
-          },
-          {
-            "id": "B",
-            "text": "PUT"
-          },
-          {
-            "id": "C",
-            "text": "DELETE"
-          },
-          {
-            "id": "D",
-            "text": "POST"
-          }
-        ],
-        "correctOptionIds": [
-          "A",
-          "B",
-          "C"
-        ],
-        "explanation": "GET (safe and idempotent), PUT (replacing a resource repeatedly yields the same resource state), and DELETE (deleting resource X repeatedly leaves it deleted) are idempotent. POST is typically NOT idempotent (e.g. creating new orders).",
-        "difficulty": "medium",
-        "subtopic": "HTTP Idempotence"
-      },
-      {
-        "id": "l09-q14",
-        "type": "single_choice",
-        "question": "What is the key difference between HTTP PUT and HTTP PATCH?",
-        "options": [
-          {
-            "id": "A",
-            "text": "PUT is for web pages; PATCH is for mobile apps"
-          },
-          {
-            "id": "B",
-            "text": "PUT replaces the entire target resource with the uploaded payload; PATCH applies partial modifications/deltas to the existing resource"
-          },
-          {
-            "id": "C",
-            "text": "PUT is non-idempotent; PATCH is strictly idempotent"
-          },
-          {
-            "id": "D",
-            "text": "PUT requires authentication; PATCH is anonymous"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "PUT represents a full replacement: any omitted fields are typically cleared or set to defaults. PATCH provides instructions to partially mutate only specific fields without modifying the rest.",
-        "difficulty": "easy",
-        "subtopic": "PUT vs PATCH"
-      },
-      {
-        "id": "l09-q15",
-        "type": "single_choice",
-        "question": "What does an HTTP 301 Moved Permanently status code instruct a web browser and search engine crawler to do differently compared to a 302 Found?",
-        "options": [
-          {
-            "id": "A",
-            "text": "301 instructs clients and search engines to permanently cache the redirect and update links/SEO rankings to the new URI; 302 is temporary and should not be cached permanently"
-          },
-          {
-            "id": "B",
-            "text": "301 means the page has an error; 302 means the page is successful"
-          },
-          {
-            "id": "C",
-            "text": "301 disables TLS encryption on the new location"
-          },
-          {
-            "id": "D",
-            "text": "301 requires entering a new username and password"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "301 signifies permanent relocation; browsers cache it aggressively and search engines transfer page rank to the new URL. 302 is a temporary redirection, so search engines keep indexing the original URL.",
-        "difficulty": "medium",
-        "subtopic": "HTTP Status Codes"
-      },
-      {
-        "id": "l09-q16",
-        "type": "single_choice",
-        "question": "What is the architectural difference between an HTTP 401 Unauthorized and an HTTP 403 Forbidden status code?",
-        "options": [
-          {
-            "id": "A",
-            "text": "401 means the client must provide authentication credentials (unauthenticated); 403 means the identity is known but the user lacks permission to access the resource (unauthorized)"
-          },
-          {
-            "id": "B",
-            "text": "401 is a server error; 403 is a client error"
-          },
-          {
-            "id": "C",
-            "text": "401 is returned only over HTTP; 403 is returned only over HTTPS"
-          },
-          {
-            "id": "D",
-            "text": "401 indicates that the server's database is offline"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "401 implies 'who are you? Please log in.' 403 implies 'I know who you are, but you do not have permission to touch this resource.'",
-        "difficulty": "medium",
-        "subtopic": "HTTP Status Codes"
-      },
-      {
-        "id": "l09-q17",
-        "type": "single_choice",
-        "question": "What is the critical security vulnerability prevented by setting the 'HttpOnly' flag on a Set-Cookie header?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Man-in-the-middle sniffing of packets over open Wi-Fi"
-          },
-          {
-            "id": "B",
-            "text": "Session hijacking via Cross-Site Scripting (XSS) where malicious JavaScript accesses `document.cookie`"
-          },
-          {
-            "id": "C",
-            "text": "SQL Injection attacks on the backend database"
-          },
-          {
-            "id": "D",
-            "text": "Denial of Service attacks against the web server"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "The `HttpOnly` flag prevents client-side scripts (like JavaScript running via XSS) from reading the cookie via `document.cookie`, mitigating cookie theft and session hijacking.",
-        "difficulty": "medium",
-        "subtopic": "Cookie Security Flags"
-      },
-      {
-        "id": "l09-q18",
-        "type": "single_choice",
-        "question": "What is the purpose of the 'SameSite=Strict' cookie attribute?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It forces the cookie to only be transmitted over HTTPS connections"
-          },
-          {
-            "id": "B",
-            "text": "It prevents the browser from sending the cookie on ANY cross-site request (mitigating Cross-Site Request Forgery / CSRF)"
-          },
-          {
-            "id": "C",
-            "text": "It expires the cookie after strictly 5 minutes"
-          },
-          {
-            "id": "D",
-            "text": "It prevents users from logging in on mobile devices"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "`SameSite=Strict` guarantees the cookie is never sent in third-party contexts (e.g. following links from external sites or embedded iframes), eliminating CSRF vulnerabilities for authenticated state.",
-        "difficulty": "hard",
-        "subtopic": "CSRF & SameSite"
-      },
-      {
-        "id": "l09-q19",
-        "type": "single_choice",
-        "question": "In a modern stateless web application using JWT (JSON Web Tokens) for sessions, where is the session state primarily stored?",
-        "options": [
-          {
-            "id": "A",
-            "text": "In a centralized Redis database on the server"
-          },
-          {
-            "id": "B",
-            "text": "Directly inside the cryptographically signed JWT payload held and presented by the client"
-          },
-          {
-            "id": "C",
-            "text": "In the router's ARP table"
-          },
-          {
-            "id": "D",
-            "text": "In the DNS SOA record"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Stateless JWT tokens encode user identity and claims directly in the token payload, signed by the server's private secret. Any backend server can verify the signature without reading a centralized database.",
-        "difficulty": "medium",
-        "subtopic": "Sessions vs JWT"
-      },
-      {
-        "id": "l09-q20",
-        "type": "single_choice",
-        "question": "How does DNS-based Round-Robin Load Balancing distribute client requests among multiple backend web servers?",
-        "options": [
-          {
-            "id": "A",
-            "text": "The authoritative DNS server rotates the ordering of multiple IP addresses in the 'A' record answer set on each query"
-          },
-          {
-            "id": "B",
-            "text": "The client router picks the server with the lowest MAC address"
-          },
-          {
-            "id": "C",
-            "text": "The DNS server opens TCP connections to test each backend server's CPU load"
-          },
-          {
-            "id": "D",
-            "text": "The DNS root servers route packets through a reverse proxy"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "In Round-Robin DNS, multiple A records are configured for the same domain. The DNS server permutes the list on successive responses, distributing incoming connections across multiple IP addresses.",
-        "difficulty": "easy",
-        "subtopic": "DNS Load Balancing"
-      }
-    ]
-  },
-  "lecture-10": {
-    "topicId": "lecture-10",
-    "lectureNumber": 10,
-    "title": "TCP, UDP & Socket Programming Quiz",
-    "description": "20 questions covering transport layer multiplexing, ports, TCP 3-way handshake, 4-way teardown, TIME_WAIT, sliding window, congestion control, and Python socket programming.",
-    "estimatedMinutes": 25,
-    "questions": [
-      {
-        "id": "l10-q01",
-        "type": "single_choice",
-        "question": "While the Network Layer (IP) provides host-to-host packet delivery, what essential abstraction does the Transport Layer (Layer 4) provide?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Hop-by-hop framing across fiber cables"
-          },
-          {
-            "id": "B",
-            "text": "Process-to-process communication using port numbers (demultiplexing)"
-          },
-          {
-            "id": "C",
-            "text": "Global path computation using BGP"
-          },
-          {
-            "id": "D",
-            "text": "Translating domain names into 32-bit integers"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "The transport layer introduces port numbers, enabling multiple independent application processes on the same host to send and receive traffic concurrently over a shared network connection.",
-        "difficulty": "easy",
-        "subtopic": "Transport Layer Purpose"
-      },
-      {
-        "id": "l10-q02",
-        "type": "single_choice",
-        "question": "What 5-tuple uniquely identifies a TCP connection on an operating system?",
-        "options": [
-          {
-            "id": "A",
-            "text": "(Source MAC, Dest MAC, VLAN ID, TTL, Checksum)"
-          },
-          {
-            "id": "B",
-            "text": "(Source IP, Source Port, Destination IP, Destination Port, Protocol/TCP)"
-          },
-          {
-            "id": "C",
-            "text": "(Domain Name, URL Path, HTTP Method, User-Agent, Cookie)"
-          },
-          {
-            "id": "D",
-            "text": "(Window Size, Sequence Number, Ack Number, Flags, MSS)"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "A TCP socket connection is uniquely identified by its 5-tuple: `(Source IP, Source Port, Destination IP, Destination Port, Protocol)`. This allows a web server on port 80 to handle thousands of concurrent client connections simultaneously.",
-        "difficulty": "easy",
-        "subtopic": "Socket 5-Tuple"
-      },
-      {
-        "id": "l10-q03",
-        "type": "single_choice",
-        "question": "Why does DNS primarily use UDP on port 53 for standard name queries instead of TCP?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Because UDP encrypts queries to prevent eavesdropping"
-          },
-          {
-            "id": "B",
-            "text": "Because UDP has zero connection establishment overhead (1 RTT total: query and reply), minimizing latency and server memory overhead"
-          },
-          {
-            "id": "C",
-            "text": "Because TCP packets cannot cross internet backbones"
-          },
-          {
-            "id": "D",
-            "text": "Because UDP supports packet sizes up to 1 gigabyte"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "A typical DNS query fits in a single packet. UDP avoids the 3-way handshake round-trip delay and consumes no state/memory on DNS servers, making it exceptionally fast and scalable.",
-        "difficulty": "easy",
-        "subtopic": "UDP vs TCP Tradeoffs"
-      },
-      {
-        "id": "l10-q04",
-        "type": "single_choice",
-        "question": "What is the primary function of the TCP 3-Way Handshake?",
-        "options": [
-          {
-            "id": "A",
-            "text": "To negotiate the symmetric encryption keys for TLS"
-          },
-          {
-            "id": "B",
-            "text": "To synchronize Initial Sequence Numbers (ISNs) in both directions and exchange buffer parameters (MSS, window scale)"
-          },
-          {
-            "id": "C",
-            "text": "To verify the client's email address and password"
-          },
-          {
-            "id": "D",
-            "text": "To calculate the shortest path across the internet using Dijkstra"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "The 3-way handshake (SYN, SYN-ACK, ACK) ensures that both endpoints agree to communicate, synchronize their initial byte sequence numbers (ISNs), and agree on options like Maximum Segment Size (MSS).",
-        "difficulty": "medium",
-        "subtopic": "3-Way Handshake"
-      },
-      {
-        "id": "l10-q05",
-        "type": "single_choice",
-        "question": "Why does a modern TCP implementation initialize sequence numbers with pseudo-random Initial Sequence Numbers (ISNs) rather than starting every connection at sequence number 0?",
-        "options": [
-          {
-            "id": "A",
-            "text": "To prevent delayed duplicate packets from old, terminated connections from corrupting a new connection on the same 5-tuple, and to prevent sequence number prediction attacks"
-          },
-          {
-            "id": "B",
-            "text": "Because sequence number 0 is reserved for broadcast packets"
-          },
-          {
-            "id": "C",
-            "text": "To speed up CRC checksum calculations"
-          },
-          {
-            "id": "D",
-            "text": "Because 64-bit systems cannot represent the integer zero"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "Randomized ISNs protect against TCP sequence number spoofing/session hijacking attacks and prevent stray packets delayed in internet buffers from being mistakenly accepted by subsequent connections reusing the same ports.",
-        "difficulty": "hard",
-        "subtopic": "TCP ISN Randomization"
-      },
-      {
-        "id": "l10-q06",
-        "type": "single_choice",
-        "question": "In a SYN Flood denial-of-service attack, how does the 'SYN Cookies' technique allow a server to defend itself without exhausting memory on half-open connections?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It blocks all IP addresses that send SYN packets"
-          },
-          {
-            "id": "B",
-            "text": "It avoids allocating any kernel memory for the TCB (Transmission Control Block); instead, it encodes the connection state into the server's Initial Sequence Number (ISN) and reconstructs state upon receiving the client's final ACK"
-          },
-          {
-            "id": "C",
-            "text": "It automatically shifts the server from port 80 to port 443"
-          },
-          {
-            "id": "D",
-            "text": "It delegates connection handling to the client's gateway router"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "SYN cookies encode cryptographic state (MSS, timestamp, secret key) into the 32-bit ISN of the SYN-ACK packet. The server allocates zero state in RAM until the client sends a valid ACK containing that cookie incremented by 1.",
-        "difficulty": "hard",
-        "subtopic": "SYN Flood & SYN Cookies"
-      },
-      {
-        "id": "l10-q07",
-        "type": "single_choice",
-        "question": "Why does closing a TCP connection typically require a 4-Way Handshake (FIN, ACK, FIN, ACK) rather than a 3-way exchange?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Because TCP connections are full-duplex; one endpoint can finish transmitting data (sending FIN) while still receiving data from the peer (half-closed state)"
-          },
-          {
-            "id": "B",
-            "text": "Because Ethernet requires 4 frames to compute CRC"
-          },
-          {
-            "id": "C",
-            "text": "Because routers must acknowledge every disconnection"
-          },
-          {
-            "id": "D",
-            "text": "Because the client and server must exchange TLS certificates again"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "TCP is bidirectional (full-duplex). When host A sends a FIN, it only closes its own sending half-stream. Host B acknowledges with an ACK, but may continue sending pending data until it independently issues its own FIN.",
-        "difficulty": "medium",
-        "subtopic": "TCP 4-Way Teardown"
-      },
-      {
-        "id": "l10-q08",
-        "type": "single_choice",
-        "question": "Why must the active closer of a TCP connection remain in the `TIME_WAIT` state for a duration of 2 * MSL (Maximum Segment Lifetime, typically 60-120 seconds)?",
-        "options": [
-          {
-            "id": "A",
-            "text": "To allow the CPU to cool down after high throughput"
-          },
-          {
-            "id": "B",
-            "text": "To guarantee that the final ACK was received by the peer (and retransmit it if a stray FIN arrives), and to ensure all delayed duplicate segments from the old connection drain from the network"
-          },
-          {
-            "id": "C",
-            "text": "To keep the port locked permanently so nobody can reuse it"
-          },
-          {
-            "id": "D",
-            "text": "To wait for DNS caches to expire"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "If the final ACK is lost, the peer will retransmit its FIN. Being in TIME_WAIT allows the host to resend the ACK. Furthermore, 2*MSL ensures all phantom segments in flight dissipate before the socket 5-tuple can be safely reopened.",
-        "difficulty": "hard",
-        "subtopic": "TIME_WAIT Justification"
-      },
-      {
-        "id": "l10-q09",
-        "type": "single_choice",
-        "question": "What does a Cumulative Acknowledgment number of `ACK = 5001` signify in TCP?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Byte 5001 has been received with an error"
-          },
-          {
-            "id": "B",
-            "text": "All contiguous bytes up to byte 5000 have been successfully received, and the receiver expects byte 5001 next"
-          },
-          {
-            "id": "C",
-            "text": "Only byte 5001 has been received"
-          },
-          {
-            "id": "D",
-            "text": "The sender must reset the window to 5001 bytes"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "TCP acknowledgments are cumulative: an ACK value of N indicates that all bytes up to N - 1 have been received in order, and the receiver is anticipating byte N.",
-        "difficulty": "easy",
-        "subtopic": "Cumulative ACK"
-      },
-      {
-        "id": "l10-q10",
-        "type": "single_choice",
-        "question": "What major inefficiency of basic cumulative ACKs does Selective Acknowledgment (SACK, RFC 2018) solve?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It eliminates the need for sequence numbers entirely"
-          },
-          {
-            "id": "B",
-            "text": "When a single segment is lost in a large burst, SACK explicitly informs the sender which non-contiguous blocks arrived, avoiding retransmission of already received data"
-          },
-          {
-            "id": "C",
-            "text": "It converts TCP into UDP when packets are lost"
-          },
-          {
-            "id": "D",
-            "text": "It increases maximum packet payload to 64 KB"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Without SACK, if segment 2 is lost in a train of 10 segments, the sender might have to retransmit all segments from 2 through 10 (Go-Back-N). SACK allows the receiver to specify exact discontinuous ranges (e.g. 3-10 received), retransmitting only segment 2.",
-        "difficulty": "medium",
-        "subtopic": "TCP SACK"
-      },
-      {
-        "id": "l10-q11",
-        "type": "single_choice",
-        "question": "What is the difference between TCP Flow Control and TCP Congestion Control?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Flow control protects the receiving host from being overwhelmed; Congestion control protects the intermediate network routers/links from being overloaded"
-          },
-          {
-            "id": "B",
-            "text": "Flow control operates in hardware; congestion control operates in software"
-          },
-          {
-            "id": "C",
-            "text": "Flow control uses cwnd; congestion control uses rwnd"
-          },
-          {
-            "id": "D",
-            "text": "Flow control is for UDP; congestion control is for TCP"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "Flow Control is end-to-end: the receiver advertises `rwnd` to prevent buffer overflow on its own NIC/RAM. Congestion Control is sender-driven: the sender throttles `cwnd` based on packet loss or latency to prevent choking intermediate routers.",
-        "difficulty": "medium",
-        "subtopic": "Flow Control vs Congestion Control"
-      },
-      {
-        "id": "l10-q12",
-        "type": "single_choice",
-        "question": "At any given instant, what is the maximum number of unacknowledged in-flight bytes a TCP sender is permitted to transmit?",
-        "options": [
-          {
-            "id": "A",
-            "text": "cwnd + rwnd"
-          },
-          {
-            "id": "B",
-            "text": "min(cwnd, rwnd)"
-          },
-          {
-            "id": "C",
-            "text": "max(cwnd, rwnd)"
-          },
-          {
-            "id": "D",
-            "text": "MSS * 65535"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "The effective transmission window is the minimum of the receiver's advertised buffer window (`rwnd`) and the network's estimated congestion window (`cwnd`): `Effective Window = min(cwnd, rwnd)`.",
-        "difficulty": "easy",
-        "subtopic": "Effective Window Equation"
-      },
-      {
-        "id": "l10-q13",
-        "type": "single_choice",
-        "question": "During the TCP Slow Start phase, how does the Congestion Window (cwnd) grow upon receiving ACKs?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Linearly: cwnd += 1 MSS per Round Trip Time (RTT)"
-          },
-          {
-            "id": "B",
-            "text": "Exponentially: cwnd doubles every RTT (increasing by 1 MSS for every valid ACK received)"
-          },
-          {
-            "id": "C",
-            "text": "It remains strictly constant until timeout"
-          },
-          {
-            "id": "D",
-            "text": "It halves every RTT"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Despite its misleading name, 'Slow Start' ramps up aggressively: for each ACK received, cwnd increases by 1 MSS, effectively doubling the congestion window every Round Trip Time (RTT) until reaching `ssthresh`.",
-        "difficulty": "medium",
-        "subtopic": "TCP Slow Start"
-      },
-      {
-        "id": "l10-q14",
-        "type": "single_choice",
-        "question": "What triggers TCP Fast Retransmit without waiting for the full retransmission timeout (RTO) timer to expire?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Arrival of 3 duplicate ACKs for the same sequence number"
-          },
-          {
-            "id": "B",
-            "text": "Receipt of an ICMP Destination Unreachable message"
-          },
-          {
-            "id": "C",
-            "text": "A manual keyboard interrupt by the user"
-          },
-          {
-            "id": "D",
-            "text": "A decrease in the receiver's window size to zero"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "When three duplicate ACKs (4 identical ACKs total) arrive at the sender, it deduces that later packets reached the receiver and only one segment was dropped in between, triggering an immediate Fast Retransmit without waiting for the slow RTO timer.",
-        "difficulty": "medium",
-        "subtopic": "Fast Retransmit"
-      },
-      {
-        "id": "l10-q15",
-        "type": "single_choice",
-        "question": "What is the primary operational difference between loss-based congestion control (like TCP Reno/CUBIC) and modern delay-based/model-based congestion control like Google's BBR?",
-        "options": [
-          {
-            "id": "A",
-            "text": "BBR only runs over UDP"
-          },
-          {
-            "id": "B",
-            "text": "Loss-based algorithms intentionally fill router queue buffers until packets drop (causing bufferbloat); BBR measures bottleneck bandwidth and min-RTT to operate at optimal queue capacity without filling buffers"
-          },
-          {
-            "id": "C",
-            "text": "Loss-based algorithms require hardware router modifications"
-          },
-          {
-            "id": "D",
-            "text": "BBR disables retransmissions completely"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Reno and CUBIC treat packet loss as the congestion signal, which fills up intermediate router buffers (bufferbloat) and inflates latency. BBR (Bottleneck Bandwidth and RTT) models the physical pipe to keep queues empty and throughput maximum.",
-        "difficulty": "hard",
-        "subtopic": "BBR Congestion Control"
-      },
-      {
-        "id": "l10-q16",
-        "type": "single_choice",
-        "question": "In Python's `socket` module, what is the correct socket family and type to create a streaming TCP socket over IPv4?",
-        "options": [
-          {
-            "id": "A",
-            "text": "socket.socket(socket.AF_INET, socket.SOCK_DGRAM)"
-          },
-          {
-            "id": "B",
-            "text": "socket.socket(socket.AF_INET, socket.SOCK_STREAM)"
-          },
-          {
-            "id": "C",
-            "text": "socket.socket(socket.AF_INET6, socket.SOCK_RAW)"
-          },
-          {
-            "id": "D",
-            "text": "socket.socket(socket.AF_PACKET, socket.SOCK_STREAM)"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "`AF_INET` designates IPv4 addressing, and `SOCK_STREAM` specifies a reliable, ordered, two-way byte stream (TCP). (`SOCK_DGRAM` creates a UDP socket).",
-        "difficulty": "easy",
-        "subtopic": "Python Socket API"
-      },
-      {
-        "id": "l10-q17",
-        "type": "single_choice",
-        "question": "In a Python TCP server, what does `server_socket.accept()` return when a client connects?",
-        "options": [
-          {
-            "id": "A",
-            "text": "An integer representing the client's PID"
-          },
-          {
-            "id": "B",
-            "text": "A tuple of `(conn, address)` where `conn` is a brand-new socket object dedicated to communicating with that specific client, and `address` is `(ip, port)`"
-          },
-          {
-            "id": "C",
-            "text": "The raw bytes received from the client"
-          },
-          {
-            "id": "D",
-            "text": "The server's own IP address"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "`accept()` blocks until a client connects, then returns a new dedicated connection socket for that client's stream and a tuple containing the client's remote `(ip, port)`. The listening socket continues accepting other incoming connections.",
-        "difficulty": "medium",
-        "subtopic": "Socket accept() Lifecycle"
-      },
-      {
-        "id": "l10-q18",
-        "type": "single_choice",
-        "question": "Why is it recommended in Python network code to use `conn.sendall(data)` instead of `conn.send(data)` when transmitting large payloads?",
-        "options": [
-          {
-            "id": "A",
-            "text": "`send()` compresses data; `sendall()` does not"
-          },
-          {
-            "id": "B",
-            "text": "`send()` may transmit only a partial slice of the byte buffer if the socket send buffer is full; `sendall()` loops internally until the entire buffer has been transmitted or an error occurs"
-          },
-          {
-            "id": "C",
-            "text": "`send()` is only for UDP; `sendall()` is for TCP"
-          },
-          {
-            "id": "D",
-            "text": "`send()` requires root privileges"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "`send()` returns the number of bytes actually sent, which may be less than `len(data)` if kernel buffers are constrained. `sendall()` continues sending data from the buffer until all bytes are delivered.",
-        "difficulty": "medium",
-        "subtopic": "send() vs sendall()"
-      },
-      {
-        "id": "l10-q19",
-        "type": "single_choice",
-        "question": "What socket option must be configured with `setsockopt` to prevent the common `OSError: [Errno 98] Address already in use` error when restarting a development server?",
-        "options": [
-          {
-            "id": "A",
-            "text": "socket.SO_KEEPALIVE"
-          },
-          {
-            "id": "B",
-            "text": "socket.SO_REUSEADDR"
-          },
-          {
-            "id": "C",
-            "text": "socket.SO_BROADCAST"
-          },
-          {
-            "id": "D",
-            "text": "socket.TCP_NODELAY"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "`SO_REUSEADDR` allows the socket to forcibly bind to a local port that is currently in the `TIME_WAIT` state from a recently closed connection.",
-        "difficulty": "medium",
-        "subtopic": "SO_REUSEADDR Socket Option"
-      },
-      {
-        "id": "l10-q20",
-        "type": "multi_choice",
-        "question": "Why is TCP described as a 'Byte Stream' protocol rather than a 'Message/Packet' protocol? (Select ALL that apply)",
-        "options": [
-          {
-            "id": "A",
-            "text": "TCP does not preserve application message boundaries; two separate `send()` calls can be merged into a single segment by Nagle's algorithm"
-          },
-          {
-            "id": "B",
-            "text": "A single large `send()` call can be fragmented across multiple TCP segments"
-          },
-          {
-            "id": "C",
-            "text": "The application must implement its own framing (delimiters like `\\n` or length prefixes) to parse discrete messages"
-          },
-          {
-            "id": "D",
-            "text": "TCP sends raw machine instructions directly to the router CPU"
-          }
-        ],
-        "correctOptionIds": [
-          "A",
-          "B",
-          "C"
-        ],
-        "explanation": "TCP is a continuous unstructured pipe of bytes. It does not know or care where application messages begin or end. It can coalesce small packets or split large ones arbitrarily. Applications must frame their messages explicitly.",
-        "difficulty": "hard",
-        "subtopic": "TCP Stream Semantics"
-      }
-    ]
-  },
-  "lecture-11": {
-    "topicId": "lecture-11",
-    "lectureNumber": 11,
-    "title": "NAT, DHCP & Local Communication Quiz",
-    "description": "20 questions covering ARP requests/replies, gratuitous ARP, ARP spoofing, DHCP DORA lifecycle, NAT/PAT translation tables, SNAT vs DNAT, and home gateway architecture.",
-    "estimatedMinutes": 25,
-    "questions": [
-      {
-        "id": "l11-q01",
-        "type": "single_choice",
-        "question": "What is the core purpose of the Address Resolution Protocol (ARP) in IPv4 networking?",
-        "options": [
-          {
-            "id": "A",
-            "text": "To translate domain names into 32-bit IP addresses"
-          },
-          {
-            "id": "B",
-            "text": "To dynamically resolve a known Layer 3 IP address to a physical Layer 2 MAC address on the local broadcast link"
-          },
-          {
-            "id": "C",
-            "text": "To route packets across multiple Autonomous Systems"
-          },
-          {
-            "id": "D",
-            "text": "To assign IP addresses to new Wi-Fi devices automatically"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "IP operates at Layer 3, but NICs on local Ethernet/Wi-Fi links communicate strictly via Layer 2 MAC addresses. ARP maps the target IP to its corresponding 48-bit MAC address.",
-        "difficulty": "easy",
-        "subtopic": "ARP Fundamentals"
-      },
-      {
-        "id": "l11-q02",
-        "type": "single_choice",
-        "question": "What are the Layer 2 and Layer 3 destination addresses of an ARP Request frame searching for IP 192.168.1.1?",
-        "options": [
-          {
-            "id": "A",
-            "text": "L2 Dest: FF:FF:FF:FF:FF:FF (Broadcast), Target IP: 192.168.1.1"
-          },
-          {
-            "id": "B",
-            "text": "L2 Dest: 00:00:00:00:00:00, Target IP: 255.255.255.255"
-          },
-          {
-            "id": "C",
-            "text": "L2 Dest: Gateway MAC, Target IP: 0.0.0.0"
-          },
-          {
-            "id": "D",
-            "text": "L2 Dest: 01:00:5E:00:00:01 (Multicast), Target IP: 127.0.0.1"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "Because the sender does not know the target's MAC, it broadcasts the frame to `FF:FF:FF:FF:FF:FF`. Every host on the switch receives it, but only the host configured with target IP 192.168.1.1 responds.",
-        "difficulty": "medium",
-        "subtopic": "ARP Request Addressing"
-      },
-      {
-        "id": "l11-q03",
-        "type": "single_choice",
-        "question": "How is an ARP Reply transmitted back to the inquiring host?",
-        "options": [
-          {
-            "id": "A",
-            "text": "As a Layer 2 Broadcast to FF:FF:FF:FF:FF:FF"
-          },
-          {
-            "id": "B",
-            "text": "As a Layer 2 Unicast frame addressed directly to the inquiring host's MAC address"
-          },
-          {
-            "id": "C",
-            "text": "Through a DNS pointer query"
-          },
-          {
-            "id": "D",
-            "text": "Via the default gateway router"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "The ARP Request contained the sender's own MAC address. The target machine simply sends a direct unicast Layer 2 Ethernet frame back to that MAC address.",
-        "difficulty": "easy",
-        "subtopic": "ARP Reply"
-      },
-      {
-        "id": "l11-q04",
-        "type": "single_choice",
-        "question": "What Linux command shown in lecture demonstrations manually adds a static ARP mapping to interface `eth1`?",
-        "options": [
-          {
-            "id": "A",
-            "text": "ip route add 10.0.0.2 dev eth1"
-          },
-          {
-            "id": "B",
-            "text": "sudo ip neigh add 10.0.0.2 lladdr aa:bb:cc:dd:ee:ff dev eth1"
-          },
-          {
-            "id": "C",
-            "text": "ifconfig eth1 hw ether aa:bb:cc:dd:ee:ff"
-          },
-          {
-            "id": "D",
-            "text": "ping -c 1 10.0.0.2"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "As covered in handwritten lecture notes, `ip neigh add <IP> lladdr <MAC> dev <interface>` manipulates the kernel neighbor/ARP cache table directly.",
-        "difficulty": "medium",
-        "subtopic": "Linux ip neigh Command"
-      },
-      {
-        "id": "l11-q05",
-        "type": "single_choice",
-        "question": "What is a 'Gratuitous ARP' and what is its primary legitimate network function?",
-        "options": [
-          {
-            "id": "A",
-            "text": "An ARP query sent to hack neighbor routers"
-          },
-          {
-            "id": "B",
-            "text": "An unprompted ARP broadcast where a host announces its own IP-to-MAC mapping, used for IP conflict detection and updating switch MAC tables during failover (CARP/VRRP)"
-          },
-          {
-            "id": "C",
-            "text": "An ARP reply that is rejected due to invalid checksums"
-          },
-          {
-            "id": "D",
-            "text": "A request to renew a DHCP lease"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "A Gratuitous ARP occurs when a host broadcasts an ARP announcement for its own IP. If another host replies, an IP collision is detected. During high-availability failovers (VRRP), backup servers broadcast Gratuitous ARPs so switches immediately point traffic to their port.",
-        "difficulty": "hard",
-        "subtopic": "Gratuitous ARP"
-      },
-      {
-        "id": "l11-q06",
-        "type": "single_choice",
-        "question": "In an ARP Spoofing (Poisoning) attack, what vulnerability in the ARP protocol is exploited by the attacker?",
-        "options": [
-          {
-            "id": "A",
-            "text": "ARP uses 1024-bit RSA keys that are easily factored"
-          },
-          {
-            "id": "B",
-            "text": "ARP is completely stateless and unauthenticated; hosts accept unsolicited ARP replies and overwrite their ARP cache without verification"
-          },
-          {
-            "id": "C",
-            "text": "ARP packets are limited to 64 bytes"
-          },
-          {
-            "id": "D",
-            "text": "ARP operates exclusively over Wi-Fi, never wired cables"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "ARP lacks cryptographic authentication. A malicious host on the LAN can broadcast fake ARP replies claiming the Default Gateway's IP has the attacker's MAC address, intercepting all outbound internet traffic.",
-        "difficulty": "medium",
-        "subtopic": "ARP Spoofing"
-      },
-      {
-        "id": "l11-q07",
-        "type": "single_choice",
-        "question": "What is the correct chronological 4-step sequence of messages in the DHCP address allocation process (DORA)?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Discover -> Offer -> Request -> Acknowledge"
-          },
-          {
-            "id": "B",
-            "text": "Dial -> Open -> Receive -> Accept"
-          },
-          {
-            "id": "C",
-            "text": "Determine -> Option -> Route -> Assign"
-          },
-          {
-            "id": "D",
-            "text": "Detect -> Order -> Register -> Authorize"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "DHCP DORA sequence: 1. Discover (Client broadcasts looking for servers), 2. Offer (Server offers IP/subnet/gateway), 3. Request (Client formally requests offered IP), 4. Acknowledge (Server commits lease).",
-        "difficulty": "easy",
-        "subtopic": "DHCP DORA"
-      },
-      {
-        "id": "l11-q08",
-        "type": "single_choice",
-        "question": "When a brand-new host without an IP boots up and sends a DHCP Discover packet, what are its Source IP and Destination IP addresses?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Src IP: 127.0.0.1, Dst IP: 192.168.1.1"
-          },
-          {
-            "id": "B",
-            "text": "Src IP: 0.0.0.0, Dst IP: 255.255.255.255 (Limited Broadcast)"
-          },
-          {
-            "id": "C",
-            "text": "Src IP: 169.254.0.1, Dst IP: 8.8.8.8"
-          },
-          {
-            "id": "D",
-            "text": "Src IP: 0.0.0.0, Dst IP: 224.0.0.1"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Because the host has no assigned IP address yet, it uses `0.0.0.0` as source. To reach any listening DHCP server on the local subnet without knowing their IPs, it broadcasts to `255.255.255.255` on UDP port 67.",
-        "difficulty": "medium",
-        "subtopic": "DHCP Discover Packet"
-      },
-      {
-        "id": "l11-q09",
-        "type": "multi_choice",
-        "question": "Which crucial network configuration parameters are standardly provided to a client computer in a DHCP Acknowledge (ACK) message? (Select ALL that apply)",
-        "options": [
-          {
-            "id": "A",
-            "text": "Assigned Client IPv4 Address and Subnet Mask"
-          },
-          {
-            "id": "B",
-            "text": "Default Gateway (Router) IP Address"
-          },
-          {
-            "id": "C",
-            "text": "DNS Server IP Addresses (e.g. 1.1.1.1, 8.8.8.8)"
-          },
-          {
-            "id": "D",
-            "text": "The client's CPU clock frequency"
-          }
-        ],
-        "correctOptionIds": [
-          "A",
-          "B",
-          "C"
-        ],
-        "explanation": "DHCP delivers the complete network setup: client IP, subnet mask, default gateway IP, DNS server IPs, domain search suffixes, and lease duration. (CPU clock is internal hardware).",
-        "difficulty": "easy",
-        "subtopic": "DHCP Configuration Options"
-      },
-      {
-        "id": "l11-q10",
-        "type": "single_choice",
-        "question": "At what point during its lease lifetime does a DHCP client first attempt to renew its IP lease with the issuing DHCP server (Timer T1)?",
-        "options": [
-          {
-            "id": "A",
-            "text": "At 10% of the lease time"
-          },
-          {
-            "id": "B",
-            "text": "At 50% of the lease time (via unicast DHCP Request)"
-          },
-          {
-            "id": "C",
-            "text": "At 87.5% of the lease time"
-          },
-          {
-            "id": "D",
-            "text": "Only after the lease completely reaches 0 seconds"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "At T1 (50% of lease time), the client sends a unicast DHCP Request directly to the server that granted the lease. If no response is received by T2 (87.5%), it falls back to broadcasting to any available DHCP server.",
-        "difficulty": "medium",
-        "subtopic": "DHCP Lease Timers"
-      },
-      {
-        "id": "l11-q11",
-        "type": "single_choice",
-        "question": "If a Windows or macOS client is set to DHCP but fails to contact any DHCP server, what address block does it automatically assign to itself (APIPA)?",
-        "options": [
-          {
-            "id": "A",
-            "text": "10.0.0.0/8"
-          },
-          {
-            "id": "B",
-            "text": "192.168.0.0/16"
-          },
-          {
-            "id": "C",
-            "text": "169.254.0.0/16 (Link-Local)"
-          },
-          {
-            "id": "D",
-            "text": "127.0.0.0/8 (Loopback)"
-          }
-        ],
-        "correctOptionIds": [
-          "C"
-        ],
-        "explanation": "When DHCP fails, the OS falls back to APIPA (Automatic Private IP Addressing) using the RFC 3927 link-local range `169.254.x.x`. This allows ad-hoc LAN communication between hosts, but has no internet connectivity.",
-        "difficulty": "easy",
-        "subtopic": "APIPA Link-Local"
-      },
-      {
-        "id": "l11-q12",
-        "type": "single_choice",
-        "question": "What is the primary distinction between Static NAT and Dynamic PAT (Port Address Translation / NAT Overload)?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Static NAT is only for IPv6; PAT is for IPv4"
-          },
-          {
-            "id": "B",
-            "text": "Static NAT maps one private IP to one dedicated public IP (1:1); PAT multiplexes thousands of private IP hosts onto a single shared public IP using unique Layer 4 port numbers (M:1)"
-          },
-          {
-            "id": "C",
-            "text": "PAT requires dedicated hardware fiber cables"
-          },
-          {
-            "id": "D",
-            "text": "Static NAT does not alter the IP header"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Static NAT does a fixed 1:1 mapping (useful for hosting public servers). PAT (Network Address Port Translation / NAT Overload) allows an entire home or corporate office to share a single public IP by tracking ephemeral port numbers.",
-        "difficulty": "easy",
-        "subtopic": "NAT vs PAT"
-      },
-      {
-        "id": "l11-q13",
-        "type": "single_choice",
-        "question": "When Host A (192.168.1.50:52134) sends a packet to a web server (93.184.216.34:80) through a PAT gateway with public IP 203.0.113.1, how does the router rewrite the packet headers?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It leaves Source IP as 192.168.1.50 and changes Destination IP to 203.0.113.1"
-          },
-          {
-            "id": "B",
-            "text": "It replaces Source IP 192.168.1.50 with 203.0.113.1 and maps Source Port 52134 to an allocated translation port (e.g. 40001)"
-          },
-          {
-            "id": "C",
-            "text": "It changes Destination Port to 52134"
-          },
-          {
-            "id": "D",
-            "text": "It strips the IP header completely"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "The NAT router replaces the private Inside Local IP:Port (`192.168.1.50:52134`) with its own Inside Global IP and an assigned ephemeral port (`203.0.113.1:40001`), recording this mapping in its active NAT state table.",
-        "difficulty": "medium",
-        "subtopic": "PAT Packet Rewriting"
-      },
-      {
-        "id": "l11-q14",
-        "type": "single_choice",
-        "question": "Why does standard outbound PAT make it fundamentally impossible for external clients on the public internet to initiate an unsolicited direct connection to a private server inside a LAN?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Because fiber optic cables are unidirectional"
-          },
-          {
-            "id": "B",
-            "text": "Because the NAT router only forwards inbound packets that match an existing active translation entry created by previous outbound traffic"
-          },
-          {
-            "id": "C",
-            "text": "Because private hosts do not have MAC addresses"
-          },
-          {
-            "id": "D",
-            "text": "Because public IP packets cannot carry TCP headers"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "PAT is stateful: incoming packets from the WAN are dropped unless their destination port matches an active outbound session previously initiated by an internal host. Without an existing entry, the router does not know which internal host should receive the packet.",
-        "difficulty": "medium",
-        "subtopic": "NAT Inbound Blocking"
-      },
-      {
-        "id": "l11-q15",
-        "type": "single_choice",
-        "question": "What configuration technique allows external users on the internet to connect to an internal web server (192.168.1.100:8080) through a home router with a single public IP?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Port Forwarding (Destination NAT / DNAT)"
-          },
-          {
-            "id": "B",
-            "text": "Subnet Mask Inversion"
-          },
-          {
-            "id": "C",
-            "text": "Gratuitous ARP spoofing"
-          },
-          {
-            "id": "D",
-            "text": "Disabling the router's DNS server"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "Port Forwarding (DNAT) adds a static rule to the router's NAT table: any incoming packet on public port 80 (or custom port) is automatically translated and forwarded to internal private IP `192.168.1.100:8080`.",
-        "difficulty": "easy",
-        "subtopic": "Port Forwarding / DNAT"
-      },
-      {
-        "id": "l11-q16",
-        "type": "single_choice",
-        "question": "Why does NAT break end-to-end peer-to-peer (P2P) protocols like WebRTC, BitTorrent, and VoIP, requiring protocols like STUN, TURN, and ICE?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Because P2P software cannot run over Ethernet"
-          },
-          {
-            "id": "B",
-            "text": "Because neither peer knows its own externally reachable public IP/port, and neither can receive unsolicited incoming connection requests through the other peer's NAT firewall"
-          },
-          {
-            "id": "C",
-            "text": "Because NAT routers throttle all UDP traffic to 1 kbps"
-          },
-          {
-            "id": "D",
-            "text": "Because P2P requires classful Class A IP addresses"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "In P2P, both hosts are behind NATs. Neither host can accept incoming connections from the other because neither NAT table contains a pre-existing entry. STUN/TURN servers help peers discover their public mappings and relay traffic.",
-        "difficulty": "hard",
-        "subtopic": "NAT Traversal & STUN"
-      },
-      {
-        "id": "l11-q17",
-        "type": "multi_choice",
-        "question": "A typical home 'Wi-Fi router' purchased at retail is actually an integrated appliance combining which of the following physical network functions? (Select ALL that apply)",
-        "options": [
-          {
-            "id": "A",
-            "text": "Layer 3 Router & NAT Gateway"
-          },
-          {
-            "id": "B",
-            "text": "Multi-port Layer 2 Ethernet Switch & 802.11 Wireless Access Point"
-          },
-          {
-            "id": "C",
-            "text": "Stateful Firewall & DHCP Server"
-          },
-          {
-            "id": "D",
-            "text": "Autonomous System BGP Tier-1 Transit Core"
-          }
-        ],
-        "correctOptionIds": [
-          "A",
-          "B",
-          "C"
-        ],
-        "explanation": "A consumer router integrates: an AP (Wi-Fi), a 4-port switch (L2 LAN), a router (L3 WAN/LAN), a DHCP server, a DNS proxy/caching resolver, and a NAT/SPI firewall. It is NOT a Tier-1 BGP internet backbone transit router.",
-        "difficulty": "easy",
-        "subtopic": "Home Router Architecture"
-      },
-      {
-        "id": "l11-q18",
-        "type": "single_choice",
-        "question": "When a router performs NAT on an IP packet, what additional Layer 3 and Layer 4 header modifications MUST it recalculate?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It only changes the IP; no checksums are affected"
-          },
-          {
-            "id": "B",
-            "text": "It must recalculate the IPv4 Header Checksum AND the TCP/UDP checksum (since TCP/UDP checksums include a pseudo-header containing source and destination IPs)"
-          },
-          {
-            "id": "C",
-            "text": "It must recalculate the TLS cryptographic signature"
-          },
-          {
-            "id": "D",
-            "text": "It must increment the TTL by 5"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Modifying the IP address alters the IPv4 header, requiring a new IPv4 header checksum. Furthermore, TCP and UDP compute their checksums over a 'pseudo-header' that includes the source and destination IP addresses, requiring L4 checksum recomputation.",
-        "difficulty": "hard",
-        "subtopic": "NAT Checksum Invalidation"
-      },
-      {
-        "id": "l11-q19",
-        "type": "single_choice",
-        "question": "What is the purpose of a 'Default Gateway' configured on an office workstation?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It is the router interface on the local subnet to which all non-local outbound traffic (packets with destination IPs outside the local subnet) must be forwarded"
-          },
-          {
-            "id": "B",
-            "text": "It is the DNS server that stores all web passwords"
-          },
-          {
-            "id": "C",
-            "text": "It acts as a physical power supply for the Ethernet switch"
-          },
-          {
-            "id": "D",
-            "text": "It translates IPv4 addresses into ASCII text"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "When a host's subnet mask evaluation reveals that the destination IP is on an external network, the host encapsulates the packet into a frame addressed to the MAC address of its Default Gateway router.",
-        "difficulty": "easy",
-        "subtopic": "Default Gateway Role"
-      },
-      {
-        "id": "l11-q20",
-        "type": "single_choice",
-        "question": "What happens if a DHCP server accidentally assigns an IP address that is already statically configured on another device on the same LAN?",
-        "options": [
-          {
-            "id": "A",
-            "text": "The router reboots automatically"
-          },
-          {
-            "id": "B",
-            "text": "An IP conflict occurs; packets intended for that IP oscillate between the two devices depending on whose ARP reply reaches switches last, causing erratic connection drops"
-          },
-          {
-            "id": "C",
-            "text": "Bandwidth doubles because two machines share the traffic"
-          },
-          {
-            "id": "D",
-            "text": "The switch converts all unicast traffic to fiber optics"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Two devices claiming the same IP will both respond to ARP requests for that IP. Switches and routers will continuously flap their ARP/CAM entries between the two MAC addresses, causing severe packet loss and broken TCP sessions.",
-        "difficulty": "medium",
-        "subtopic": "IP Conflict & ARP Thrashing"
-      }
-    ]
-  },
-  "lecture-12": {
-    "topicId": "lecture-12",
-    "lectureNumber": 12,
-    "title": "Network Troubleshooting Quiz",
-    "description": "20 questions covering systematic bottom-up troubleshooting, CLI diagnostic tools (ping, traceroute, dig, netstat/ss, tcpdump, wireshark), MTU black holes, and packet loss diagnosis.",
-    "estimatedMinutes": 25,
-    "questions": [
-      {
-        "id": "l12-q01",
-        "type": "single_choice",
-        "question": "When diagnosing a total network outage on an enterprise computer, why is the 'Bottom-Up' troubleshooting methodology (Layer 1 -> Layer 7) standard industry practice?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Because higher layers are completely dependent on the health of lower layers; debugging application code or DNS is useless if the physical Ethernet cable is unplugged or the link is down"
-          },
-          {
-            "id": "B",
-            "text": "Because Layer 1 commands run faster in Linux"
-          },
-          {
-            "id": "C",
-            "text": "Because Layer 7 protocols do not use IP addresses"
-          },
-          {
-            "id": "D",
-            "text": "Because physical layer cables can only be checked via SSH"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "Network layering is strictly hierarchical: Layer 7 depends on Layer 4, which depends on Layer 3, which depends on Layer 2 and Layer 1. Verifying link lights, interface states, and local subnet reachability first eliminates basic underlying failures immediately.",
-        "difficulty": "easy",
-        "subtopic": "Bottom-Up Methodology"
-      },
-      {
-        "id": "l12-q02",
-        "type": "single_choice",
-        "question": "What ICMP message types are exchanged during a successful `ping 8.8.8.8` execution?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Type 3 (Destination Unreachable) and Type 11 (Time Exceeded)"
-          },
-          {
-            "id": "B",
-            "text": "Type 8 (Echo Request) and Type 0 (Echo Reply)"
-          },
-          {
-            "id": "C",
-            "text": "Type 5 (Redirect) and Type 13 (Timestamp)"
-          },
-          {
-            "id": "D",
-            "text": "Type 1 (SYN) and Type 2 (ACK)"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "The client transmits an ICMP Type 8 Code 0 (Echo Request). The remote host replies with an ICMP Type 0 Code 0 (Echo Reply).",
-        "difficulty": "easy",
-        "subtopic": "ICMP & Ping"
-      },
-      {
-        "id": "l12-q03",
-        "type": "single_choice",
-        "question": "A user can ping `142.250.195.46` successfully with 15ms latency, but running `ping google.com` fails with 'Name or service not known'. At which layer is the problem located?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Layer 1 — The physical Ethernet cable is disconnected"
-          },
-          {
-            "id": "B",
-            "text": "Layer 2 — The switch MAC address table is full"
-          },
-          {
-            "id": "C",
-            "text": "Layer 7 / Application — DNS resolution failure (misconfigured DNS server in /etc/resolv.conf or unreachable DNS)"
-          },
-          {
-            "id": "D",
-            "text": "Layer 3 — The default gateway has crashed"
-          }
-        ],
-        "correctOptionIds": [
-          "C"
-        ],
-        "explanation": "Pinging the raw IP works, proving Layer 1, 2, and 3 routing to the internet are fully functional. Failure to ping the hostname proves the failure is specifically within DNS resolution.",
-        "difficulty": "easy",
-        "subtopic": "DNS vs IP Connectivity"
-      },
-      {
-        "id": "l12-q04",
-        "type": "single_choice",
-        "question": "How does `traceroute` (or Windows `tracert`) identify each successive intermediate router along an internet path?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It queries the BGP routing table of the destination host"
-          },
-          {
-            "id": "B",
-            "text": "It sends probe packets with increasing TTL values (TTL=1, TTL=2, TTL=3...); each successive router decrements TTL to 0, discards the packet, and sends back an ICMP Type 11 (Time Exceeded) message revealing its own IP"
-          },
-          {
-            "id": "C",
-            "text": "It inspects the local switch's STP spanning tree topology"
-          },
-          {
-            "id": "D",
-            "text": "It forces every router to append its hostname to the TCP payload"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "When an IP packet's TTL drops to 0, RFC 792 dictates that the router must drop it and generate an ICMP Type 11 Code 0 (Time Exceeded) back to the sender. The source IP of that ICMP packet reveals the router's identity at that specific hop distance.",
-        "difficulty": "medium",
-        "subtopic": "Traceroute Mechanics"
-      },
-      {
-        "id": "l12-q05",
-        "type": "single_choice",
-        "question": "In a traceroute output, what does a hop displaying `* * * Request timed out` typically indicate?",
-        "options": [
-          {
-            "id": "A",
-            "text": "The entire internet connection is severed at that point"
-          },
-          {
-            "id": "B",
-            "text": "That specific intermediate router (or firewall) is configured to ignore or rate-limit ICMP TTL-exceeded messages, or drops inbound probe traffic, even while forwarding normal transit traffic"
-          },
-          {
-            "id": "C",
-            "text": "The destination server has crashed"
-          },
-          {
-            "id": "D",
-            "text": "The client computer has run out of RAM"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Asterisks simply mean that no ICMP response was received within the timeout. Many core carrier routers drop or deprioritize ICMP generation to protect their CPUs while still forwarding data-plane transit packets at full line rate.",
-        "difficulty": "medium",
-        "subtopic": "Interpreting Traceroute Asterisks"
-      },
-      {
-        "id": "l12-q06",
-        "type": "single_choice",
-        "question": "What is an 'MTU Black Hole' and how does it manifest to an end-user?",
-        "options": [
-          {
-            "id": "A",
-            "text": "An astronomical anomaly that swallows data centers"
-          },
-          {
-            "id": "B",
-            "text": "A network path where an intermediate link has a lower MTU (e.g. 1420 bytes on a VPN tunnel), but an intermediate firewall drops ICMP 'Fragmentation Needed' packets, causing small packets (ping, handshake) to work while large data packets hang indefinitely"
-          },
-          {
-            "id": "C",
-            "text": "A damaged RJ-45 cable that only transmits half-duplex signals"
-          },
-          {
-            "id": "D",
-            "text": "A DNS server that returns 0.0.0.0 for all queries"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "If a router cannot forward a packet because packet size > MTU and the DF (Don't Fragment) flag is set, it drops the packet and generates ICMP Type 3 Code 4. If a firewall blocks this ICMP packet, Path MTU Discovery (PMTUD) fails: small packets (SYN, ACK) work, but HTTP responses with large payloads hang forever.",
-        "difficulty": "hard",
-        "subtopic": "PMTUD Black Hole"
-      },
-      {
-        "id": "l12-q07",
-        "type": "single_choice",
-        "question": "What `ping` command flag combination can be used on Linux to diagnose an MTU black hole by enforcing Don't Fragment (DF)?",
-        "options": [
-          {
-            "id": "A",
-            "text": "ping -c 4 -M do -s 1472 <destination_ip>"
-          },
-          {
-            "id": "B",
-            "text": "ping -t 64 -v 1500 <destination_ip>"
-          },
-          {
-            "id": "C",
-            "text": "ping --tcp --force-mtu <destination_ip>"
-          },
-          {
-            "id": "D",
-            "text": "ping -a -b -c <destination_ip>"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "On Linux, `-M do` sets the DF bit, and `-s 1472` sets the ICMP payload size (1472 payload + 8 ICMP header + 20 IP header = 1500 byte IP packet). If this fails, the MTU on the path is smaller than 1500.",
-        "difficulty": "hard",
-        "subtopic": "MTU CLI Diagnosis"
-      },
-      {
-        "id": "l12-q08",
-        "type": "single_choice",
-        "question": "What modern Linux command has replaced legacy `netstat` to inspect active listening TCP ports, socket states, and associated process IDs?",
-        "options": [
-          {
-            "id": "A",
-            "text": "route -n"
-          },
-          {
-            "id": "B",
-            "text": "ss (Socket Statistics, e.g. `ss -tulpn`)"
-          },
-          {
-            "id": "C",
-            "text": "arp -a"
-          },
-          {
-            "id": "D",
-            "text": "ifconfig -a"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "`ss` (from the `iproute2` suite) queries socket information directly from kernel netlink interfaces, making it orders of magnitude faster than `netstat` (which read `/proc/net/tcp` line by line).",
-        "difficulty": "easy",
-        "subtopic": "Modern Diagnostic Tools (ss)"
-      },
-      {
-        "id": "l12-q09",
-        "type": "single_choice",
-        "question": "What is the primary diagnostic utility to query DNS records in-depth, inspect response flags, and follow iterative delegations directly from root servers (`+trace`)?",
-        "options": [
-          {
-            "id": "A",
-            "text": "dig (Domain Information Groper)"
-          },
-          {
-            "id": "B",
-            "text": "ping"
-          },
-          {
-            "id": "C",
-            "text": "traceroute"
-          },
-          {
-            "id": "D",
-            "text": "telnet"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "`dig` is the standard tool used by network administrators. It reveals the exact raw DNS response, including QUESTION, ANSWER, AUTHORITY, and ADDITIONAL sections, TTLs, and DNSSEC signatures.",
-        "difficulty": "easy",
-        "subtopic": "DNS Troubleshooting with dig"
-      },
-      {
-        "id": "l12-q10",
-        "type": "single_choice",
-        "question": "When capturing live traffic on a Linux server using `tcpdump`, what Berkeley Packet Filter (BPF) syntax captures ONLY HTTP traffic (port 80) destined to or originating from host 10.0.0.5?",
-        "options": [
-          {
-            "id": "A",
-            "text": "tcpdump 'port 80 and host 10.0.0.5'"
-          },
-          {
-            "id": "B",
-            "text": "tcpdump --filter=http://10.0.0.5"
-          },
-          {
-            "id": "C",
-            "text": "tcpdump -L2 80 10.0.0.5"
-          },
-          {
-            "id": "D",
-            "text": "tcpdump GET 10.0.0.5"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "BPF syntax uses logical boolean operators: `tcpdump 'port 80 and host 10.0.0.5'` compiles into kernel-level bytecode that filters out all other irrelevant traffic before copying packets to userspace.",
-        "difficulty": "medium",
-        "subtopic": "tcpdump BPF Filtering"
-      },
-      {
-        "id": "l12-q11",
-        "type": "single_choice",
-        "question": "In Wireshark, what visual indicator typically signals high packet loss or severe out-of-order delivery during a TCP session?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Packets highlighted with 'TCP Retransmission', 'TCP Dup ACK', and 'TCP Fast Retransmission' warnings"
-          },
-          {
-            "id": "B",
-            "text": "All packets turn green"
-          },
-          {
-            "id": "C",
-            "text": "The Wireshark window automatically closes"
-          },
-          {
-            "id": "D",
-            "text": "The source IP changes to 0.0.0.0"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "Wireshark's TCP expert analysis highlights retransmissions (sender timeout), duplicate ACKs (receiver signaling missing gaps), and Out-of-Order segments in distinctive black/red coloring.",
-        "difficulty": "easy",
-        "subtopic": "Wireshark Packet Analysis"
-      },
-      {
-        "id": "l12-q12",
-        "type": "single_choice",
-        "question": "A network administrator notices that a server's link status light is amber and throughput is capped at 10 Mbps half-duplex with massive CRC collision errors on a 1 Gbps port. What is the most likely root cause?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Duplex/Speed autonegotiation mismatch or a physically damaged twisted-pair Ethernet cable (missing pins 4, 5, 7, 8)"
-          },
-          {
-            "id": "B",
-            "text": "An expired TLS certificate on the server"
-          },
-          {
-            "id": "C",
-            "text": "A DNS round-robin misconfiguration"
-          },
-          {
-            "id": "D",
-            "text": "The server has too many open browser tabs"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "Gigabit Ethernet requires all 4 twisted pairs in Cat5e/Cat6. Damaged pins or disabling autonegotiation on one side causes the link to fall back to 10/100 Mbps half-duplex, resulting in catastrophic collision errors.",
-        "difficulty": "medium",
-        "subtopic": "Physical/Data Link Layer Issues"
-      },
-      {
-        "id": "l12-q13",
-        "type": "single_choice",
-        "question": "A host with IP `192.168.1.50/24` cannot communicate with a server on `192.168.2.10/24`. Pinging the local gateway `192.168.1.1` succeeds. What does this confirm?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Local Layer 2/3 connectivity to the default gateway is healthy; the failure lies in the router's routing table (RIB/FIB) or upstream forwarding towards 192.168.2.0/24"
-          },
-          {
-            "id": "B",
-            "text": "The client computer has a broken network card"
-          },
-          {
-            "id": "C",
-            "text": "The client's ARP table is corrupted"
-          },
-          {
-            "id": "D",
-            "text": "The server at 192.168.2.10 is running an expired Windows license"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "Successful ping to the gateway proves the local NIC, physical cable, switch port, IP configuration, and ARP mapping for the gateway are working. The failure is downstream routing or ACLs blocking traffic to the remote subnet.",
-        "difficulty": "medium",
-        "subtopic": "Isolating Subnet Routing Failures"
-      },
-      {
-        "id": "l12-q14",
-        "type": "single_choice",
-        "question": "What is the significance of the `TIME_WAIT` count exploding to tens of thousands in `ss -s` output on a busy web server?",
-        "options": [
-          {
-            "id": "A",
-            "text": "The server's ephemeral port range is exhausted because the server (or backend reverse proxy) is opening and rapidly closing thousands of short-lived TCP connections without connection pooling"
-          },
-          {
-            "id": "B",
-            "text": "The hard drive is failing"
-          },
-          {
-            "id": "C",
-            "text": "The web server has been hacked via SQL injection"
-          },
-          {
-            "id": "D",
-            "text": "DNS records have expired"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "When an application closes TCP connections actively at high request rates without HTTP Keep-Alive / connection pooling, sockets linger in TIME_WAIT for 2*MSL (60s). This exhausts the 65,535 ephemeral port space, causing connection errors.",
-        "difficulty": "hard",
-        "subtopic": "TIME_WAIT Socket Exhaustion"
-      },
-      {
-        "id": "l12-q15",
-        "type": "single_choice",
-        "question": "What command on Linux displays the kernel's active IPv4 routing table, interface bindings, and default gateways?",
-        "options": [
-          {
-            "id": "A",
-            "text": "ip route show (or `ip r`)"
-          },
-          {
-            "id": "B",
-            "text": "ip link set dev eth0 up"
-          },
-          {
-            "id": "C",
-            "text": "systemctl restart networking"
-          },
-          {
-            "id": "D",
-            "text": "cat /etc/hosts"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "`ip route show` displays the Kernel FIB, listing destination prefixes, gateways, outgoing devices, and routing metrics.",
-        "difficulty": "easy",
-        "subtopic": "Linux Routing Diagnostics"
-      },
-      {
-        "id": "l12-q16",
-        "type": "single_choice",
-        "question": "If an engineer runs `curl -v https://example.com` and it hangs at `* Connected to example.com (93.184.216.34) port 443`, but never completes `* TLS 1.3 connection established`, what is the most likely diagnosis?",
-        "options": [
-          {
-            "id": "A",
-            "text": "DNS failure"
-          },
-          {
-            "id": "B",
-            "text": "TCP 3-way handshake succeeded, but a stateful firewall or middlebox is blocking or dropping the TLS ClientHello / ServerHello packets"
-          },
-          {
-            "id": "C",
-            "text": "The client computer's keyboard is unplugged"
-          },
-          {
-            "id": "D",
-            "text": "The Ethernet cable is unplugged"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "`Connected to...` means the TCP 3-way handshake on port 443 completed successfully. The hang during the TLS handshake points to an SSL/TLS inspection middlebox, MTU issue dropping large certificate packets, or security firewall.",
-        "difficulty": "hard",
-        "subtopic": "TLS Handshake Troubleshooting"
-      },
-      {
-        "id": "l12-q17",
-        "type": "single_choice",
-        "question": "What is the role of `iperf3` in network performance troubleshooting?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It scans websites for security vulnerabilities"
-          },
-          {
-            "id": "B",
-            "text": "It measures pure active Layer 4 network throughput, bandwidth, jitter, and packet loss between a client and server without disk I/O bottlenecks"
-          },
-          {
-            "id": "C",
-            "text": "It cracks WPA2 Wi-Fi passwords"
-          },
-          {
-            "id": "D",
-            "text": "It creates DNS records"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "`iperf3` generates synthetic TCP/UDP streams between two endpoints, measuring raw maximum throughput and packet loss to isolate network link capacity from disk or application bottlenecks.",
-        "difficulty": "medium",
-        "subtopic": "Bandwidth Testing (iperf3)"
-      },
-      {
-        "id": "l12-q18",
-        "type": "multi_choice",
-        "question": "Which of the following symptoms indicate a Layer 2 Spanning Tree Protocol (STP) broadcast storm on a switched campus network? (Select ALL that apply)",
-        "options": [
-          {
-            "id": "A",
-            "text": "Switch link activity LEDs flashing frantically in unison across all ports"
-          },
-          {
-            "id": "B",
-            "text": "Switch CPU utilization reaching 100%"
-          },
-          {
-            "id": "C",
-            "text": "Severe packet drop and inability of hosts to obtain DHCP leases or resolve ARP requests"
-          },
-          {
-            "id": "D",
-            "text": "Automatic upgrade from IPv4 to IPv6"
-          }
-        ],
-        "correctOptionIds": [
-          "A",
-          "B",
-          "C"
-        ],
-        "explanation": "A switching loop causes broadcast frames (like ARP or DHCP) to multiply exponentially without TTL expiration. Switches flood their backplanes, CPU maxes out processing control packets, and legitimate traffic drops to zero.",
-        "difficulty": "medium",
-        "subtopic": "STP Broadcast Storms"
-      },
-      {
-        "id": "l12-q19",
-        "type": "single_choice",
-        "question": "What is the purpose of testing reachability to `127.0.0.1` (`ping 127.0.0.1`) during troubleshooting?",
-        "options": [
-          {
-            "id": "A",
-            "text": "To verify that the local operating system's TCP/IP network protocol stack and loopback interface (`lo`) are functional"
-          },
-          {
-            "id": "B",
-            "text": "To test whether the external internet fiber cable is unbroken"
-          },
-          {
-            "id": "C",
-            "text": "To ping the nearest Google edge node"
-          },
-          {
-            "id": "D",
-            "text": "To check if the Wi-Fi password is correct"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "Pinging the loopback interface (`127.0.0.1`) does not send any signals out to the physical wire; it stays entirely within the OS kernel. If this fails, the local TCP/IP stack or network drivers are corrupt.",
-        "difficulty": "easy",
-        "subtopic": "Loopback Interface Verification"
-      },
-      {
-        "id": "l12-q20",
-        "type": "single_choice",
-        "question": "When analyzing a packet capture of a broken TCP session, what does receiving an immediate packet with the `RST` (Reset) flag set by the destination port indicate?",
-        "options": [
-          {
-            "id": "A",
-            "text": "The destination host received the packet, but no application process is actively listening on that target port (port closed)"
-          },
-          {
-            "id": "B",
-            "text": "The connection was encrypted with AES-256"
-          },
-          {
-            "id": "C",
-            "text": "The packet reached maximum throughput"
-          },
-          {
-            "id": "D",
-            "text": "The destination host is requesting a higher window size"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "When an OS receives a TCP SYN for a port where no process has bound a listening socket, the kernel rejects the connection immediately by sending a TCP packet with the `RST` flag set.",
-        "difficulty": "medium",
-        "subtopic": "TCP RST Interpretation"
-      }
-    ]
-  },
-  "lecture-13": {
-    "topicId": "lecture-13",
-    "lectureNumber": 13,
-    "title": "The Complete Internet Journey Quiz",
-    "description": "20 questions tracing an end-to-end HTTPS request from URL entry, DNS resolution, ARP, routing, TCP handshake, TLS 1.3 encryption, to HTTP response rendering.",
-    "estimatedMinutes": 25,
-    "questions": [
-      {
-        "id": "l13-q01",
-        "type": "single_choice",
-        "question": "When a user types `https://www.example.com` into a web browser address bar and hits Enter, what is the VERY FIRST operation executed by the browser before any network packet is dispatched?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Transmitting an ARP broadcast on the local Ethernet switch"
-          },
-          {
-            "id": "B",
-            "text": "Parsing the URL string, checking the browser's internal HSTS (HTTP Strict Transport Security) preload list, and checking the local browser/OS DNS cache"
-          },
-          {
-            "id": "C",
-            "text": "Opening a TCP socket to root nameserver a.root-servers.net"
-          },
-          {
-            "id": "D",
-            "text": "Sending an HTTP GET request over raw IP"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Before generating packets, the browser validates the URL syntax, checks if HSTS forces HTTPS, and queries local memory caches (browser DNS cache, OS resolver cache, `/etc/hosts`).",
-        "difficulty": "easy",
-        "subtopic": "URL Parsing & Cache Lookup"
-      },
-      {
-        "id": "l13-q02",
-        "type": "single_choice",
-        "question": "If the domain name is NOT found in the browser cache, OS cache, or hosts file, to what network entity does the operating system dispatch its DNS query?",
-        "options": [
-          {
-            "id": "A",
-            "text": "To the Root Nameserver directly"
-          },
-          {
-            "id": "B",
-            "text": "To the Recursive DNS Resolver configured in network settings (typically assigned via DHCP)"
-          },
-          {
-            "id": "C",
-            "text": "To the website's web server"
-          },
-          {
-            "id": "D",
-            "text": "To the local switch's MAC table"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Stub resolvers on client endpoints forward recursive queries to a designated Recursive Resolver (e.g. ISP resolver, 1.1.1.1, 8.8.8.8) that performs the full iterative resolution walk.",
-        "difficulty": "easy",
-        "subtopic": "Resolver Dispatch"
-      },
-      {
-        "id": "l13-q03",
-        "type": "single_choice",
-        "question": "During the recursive resolver's lookup walk for `www.example.com`, which nameserver provides the referral delegation pointing to the `.com` TLD nameservers?",
-        "options": [
-          {
-            "id": "A",
-            "text": "The Authoritative Nameserver for example.com"
-          },
-          {
-            "id": "B",
-            "text": "The DNS Root Nameserver (one of the 13 anycast root clusters)"
-          },
-          {
-            "id": "C",
-            "text": "The local home router"
-          },
-          {
-            "id": "D",
-            "text": "The Google Web Crawler"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "The Root Nameservers hold the top of the tree. When asked for `www.example.com`, the root server replies with NS records pointing to the TLD servers responsible for the `.com` zone.",
-        "difficulty": "medium",
-        "subtopic": "DNS Delegation Walk"
-      },
-      {
-        "id": "l13-q04",
-        "type": "single_choice",
-        "question": "Once the client obtains destination IP `93.184.216.34`, how does the OS determine whether to send the frame directly to the web server or to its Default Gateway?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It checks if the server port is 443 or 80"
-          },
-          {
-            "id": "B",
-            "text": "It performs a bitwise AND between destination IP and its own Subnet Mask; if the resulting network ID differs from its own local subnet, it routes via the Default Gateway"
-          },
-          {
-            "id": "C",
-            "text": "It sends a ping to the web server to test distance"
-          },
-          {
-            "id": "D",
-            "text": "It asks the DNS server for routing instructions"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "`Local Subnet Check = (Dest IP & Subnet Mask) == (Host IP & Subnet Mask)`. If false, destination is remote, requiring forwarding to the Default Gateway.",
-        "difficulty": "medium",
-        "subtopic": "Local vs Remote Subnet Decision"
-      },
-      {
-        "id": "l13-q05",
-        "type": "single_choice",
-        "question": "When constructing the Layer 2 Ethernet frame for an outbound packet to `93.184.216.34` via Default Gateway `192.168.1.1`, what is the destination MAC address placed in the frame header?",
-        "options": [
-          {
-            "id": "A",
-            "text": "The MAC address of the remote web server (`93.184.216.34`)"
-          },
-          {
-            "id": "B",
-            "text": "The MAC address of the local Default Gateway router (`192.168.1.1`)"
-          },
-          {
-            "id": "C",
-            "text": "Broadcast MAC (FF:FF:FF:FF:FF:FF)"
-          },
-          {
-            "id": "D",
-            "text": "00:00:00:00:00:00"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "MAC addresses are strictly link-local and hop-by-hop. The packet retains Destination IP = `93.184.216.34`, but the Ethernet frame Destination MAC MUST be the local gateway router's MAC address.",
-        "difficulty": "medium",
-        "subtopic": "L2 vs L3 Addressing in Transit"
-      },
-      {
-        "id": "l13-q06",
-        "type": "single_choice",
-        "question": "If the host does not have the Default Gateway's MAC address in its local memory, what protocol is triggered immediately to discover it?",
-        "options": [
-          {
-            "id": "A",
-            "text": "BGP"
-          },
-          {
-            "id": "B",
-            "text": "ARP (Address Resolution Protocol broadcast)"
-          },
-          {
-            "id": "C",
-            "text": "DHCP"
-          },
-          {
-            "id": "D",
-            "text": "TLS Handshake"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Before the Ethernet frame can be placed onto the wire, the host must resolve the gateway IP to a MAC address using an ARP Request broadcast.",
-        "difficulty": "easy",
-        "subtopic": "ARP Resolution Trigger"
-      },
-      {
-        "id": "l13-q07",
-        "type": "single_choice",
-        "question": "As the Ethernet frame passes through an intermediate Layer 2 Ethernet switch on the LAN, how does the switch determine which output port to forward it to?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It inspects the Destination MAC address and looks up the corresponding port in its MAC Address Table (CAM Table)"
-          },
-          {
-            "id": "B",
-            "text": "It recalculates the IP checksum"
-          },
-          {
-            "id": "C",
-            "text": "It decrypts the TLS application data"
-          },
-          {
-            "id": "D",
-            "text": "It queries the DNS server"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "Layer 2 switches operate by inspecting the Destination MAC address and forwarding the frame out the specific port associated with that MAC in the CAM (Content Addressable Memory) table.",
-        "difficulty": "easy",
-        "subtopic": "Switch CAM Forwarding"
-      },
-      {
-        "id": "l13-q08",
-        "type": "multi_choice",
-        "question": "When the packet reaches the Default Gateway router, what modifications are performed on the packet before it is forwarded out the WAN interface? (Select ALL that apply)",
-        "options": [
-          {
-            "id": "A",
-            "text": "The router decrements the IPv4 Time to Live (TTL) by 1"
-          },
-          {
-            "id": "B",
-            "text": "The router recalculates the IPv4 Header Checksum"
-          },
-          {
-            "id": "C",
-            "text": "The router performs NAT/PAT, rewriting the private source IP/port with its public IP/port"
+            "text": "SMTP mail transfer agents (MTAs) frequently reject incoming email if the sender's IP address does not have a matching valid reverse PTR record (Forward-Confirmed reverse DNS)."
           },
           {
-            "id": "D",
-            "text": "The router strips the incoming Layer 2 Ethernet frame and encapsulates the packet in a new Layer 2 frame for the WAN link"
+            "id": "E",
+            "text": "A PTR record query is handled directly by the client's local ARP cache without making network requests."
           }
         ],
         "correctOptionIds": [
@@ -6759,357 +4300,3513 @@ export const quizzesRegistry: Record<string, TopicQuiz> = {
           "C",
           "D"
         ],
-        "explanation": "Every routing hop decrements TTL, updates header checksum, strips old L2 framing and encapsulates into new L2 framing. A NAT gateway additionally rewrites source IP/port.",
+        "explanation": "Statements A, B, C, and D are correct. A & B: IPv4 reverse lookups reverse octets under `in-addr.arpa` so hierarchical DNS delegation matches IP subnetting. C: IPv6 reverses each 4-bit nibble under `ip6.arpa`. D: FCrDNS is a foundational anti-spam mechanism used by major mail providers (Gmail, Outlook). E is false: ARP maps IP to MAC at Layer 2 on a local broadcast domain, whereas PTR is a Layer 7 DNS query traversing the global DNS tree.",
+        "difficulty": "medium",
+        "subtopic": "Reverse DNS & PTR Records"
+      },
+      {
+        "id": "l09-q05",
+        "type": "multi_choice",
+        "question": "Team A configures a DNS TTL of 30 seconds for `api.scaler.com`, while Team B configures a TTL of 86400 seconds (1 day) for `docs.scaler.com`. Which of the following consequences are true?",
+        "options": [
+          {
+            "id": "A",
+            "text": "When Team A migrates their API to a new public IP, the vast majority of clients worldwide will discover the new IP address within ~30 seconds."
+          },
+          {
+            "id": "B",
+            "text": "Team B's authoritative nameservers will experience significantly lower query volume than Team A's nameservers for an equivalent number of active users."
+          },
+          {
+            "id": "C",
+            "text": "Team B's web visitors will suffer slower page load times on every repeat visit because of the high TTL."
+          },
+          {
+            "id": "D",
+            "text": "If Team B suffers a catastrophic server failure and updates their DNS record, many clients will continue attempting to connect to the dead IP address for up to 24 hours."
+          },
+          {
+            "id": "E",
+            "text": "The DNS TTL directly dictates how long the client's browser maintains its TCP socket in the ESTABLISHED state."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "D"
+        ],
+        "explanation": "Statements A, B, and D are correct. A low TTL allows rapid failover and IP migration (A), but generates massive query load on authoritative nameservers (B). A high TTL caches answers extensively, making emergency migrations slow to propagate (D). C is false: High TTL improves client performance on repeat visits because cached DNS lookups take 0 ms. E is false: DNS TTL governs caching of the name-to-IP binding; it has zero relationship with TCP Keep-Alive or socket lifecycle.",
+        "difficulty": "medium",
+        "subtopic": "DNS TTL & Caching Dynamics"
+      },
+      {
+        "id": "l09-q06",
+        "type": "multi_choice",
+        "question": "In the landmark Dan Kaminsky DNS Cache Poisoning attack (2008), how did the attacker overcome the historical limitations of traditional DNS spoofing?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The attacker queried pseudo-random nonexistent subdomains (e.g., `random123.target.com`) to guarantee recursive cache misses on every attempt."
+          },
+          {
+            "id": "B",
+            "text": "Because each query was for a unique name, the target resolver immediately forwarded an iterative query upstream, eliminating the need to wait for the TTL to expire."
+          },
+          {
+            "id": "C",
+            "text": "The attacker flooded the resolver with forged responses containing a guessed 16-bit Transaction ID along with malicious NS delegation records in the Authority section."
+          },
+          {
+            "id": "D",
+            "text": "Once a forged response matching the Transaction ID was accepted, the resolver cached the attacker's nameserver as authoritative for the entire `target.com` zone."
+          },
+          {
+            "id": "E",
+            "text": "The attack succeeded by cracking the RSA-4096 private key of the ICANN Root Zone."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D accurately describe Kaminsky DNS cache poisoning. Prior to Kaminsky, attackers had to wait for a cached record's TTL to expire before attempting to spoof it. Kaminsky queried nonexistent names (`rand1.bank.com`, `rand2.bank.com`), triggering continuous iterative upstream queries while flooding forged responses with candidate Transaction IDs and fake Authority/Additional NS glue records (A, B, C). Winning the race poisoned the entire domain delegation (D). E is completely false; DNS at the time was unencrypted and unsigned, requiring no cryptographic cracking.",
         "difficulty": "hard",
-        "subtopic": "Router Forwarding Lifecycle"
+        "subtopic": "Kaminsky DNS Cache Poisoning"
+      },
+      {
+        "id": "l09-q07",
+        "type": "multi_choice",
+        "question": "Which of the following mechanisms serve as direct defensive countermeasures against DNS Cache Poisoning attacks?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Source Port Randomization (SPR): Randomizing the client UDP source port across ~64,000 ephemeral ports increases the attacker's search space from $2^{16}$ to $\\approx 2^{32}$ combinations."
+          },
+          {
+            "id": "B",
+            "text": "DNS Bailiwick Rules: Resolvers strictly reject out-of-domain records (e.g., rejecting an authoritative NS record for `bank.com` returned by a nameserver authoritative only for `attacker.com`)."
+          },
+          {
+            "id": "C",
+            "text": "0x20 Bit Encoding: Randomizing upper and lower case letters in the queried domain name (e.g., `sCaLeR.cOm`) and requiring the response to mirror the exact casing."
+          },
+          {
+            "id": "D",
+            "text": "Deploying DNSSEC to cryptographically sign resource record sets with digital signatures."
+          },
+          {
+            "id": "E",
+            "text": "Increasing the Ethernet MTU to 9000 bytes to force all DNS queries over IPv6."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are authentic defensive measures against DNS cache poisoning. SPR (RFC 5452) combines a 16-bit Transaction ID with ~16 bits of ephemeral port entropy, requiring $\\approx 4\\text{ billion}$ spoofed packets to win (A). Bailiwick rules prevent rogue delegations (B). 0x20 encoding adds entropy via case preservation (C). DNSSEC provides unforgeable cryptographic authenticity (D). E is irrelevant and unrelated to DNS security.",
+        "difficulty": "hard",
+        "subtopic": "DNS Spoofing Countermeasures"
+      },
+      {
+        "id": "l09-q08",
+        "type": "multi_choice",
+        "question": "Which of the following statements correctly describe the cryptographic architecture of DNSSEC (RFC 4033 - RFC 4035)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "DNSSEC encrypts DNS query and response payloads so that on-path eavesdroppers cannot inspect domain names."
+          },
+          {
+            "id": "B",
+            "text": "Resource Record Sets (RRsets) of the same name and type are bundled together and digitally signed with a Zone-Signing Key (ZSK) to produce an `RRSIG` record."
+          },
+          {
+            "id": "C",
+            "text": "The public Zone-Signing Key (ZSK) is signed by the Key-Signing Key (KSK) within the zone's `DNSKEY` record."
+          },
+          {
+            "id": "D",
+            "text": "A cryptographic hash of the child zone's public KSK is published in the parent zone as a Delegation Signer (`DS`) record, establishing the chain of trust."
+          },
+          {
+            "id": "E",
+            "text": "The Root Zone KSK serves as the global Trust Anchor pre-configured into validating recursive resolvers."
+          }
+        ],
+        "correctOptionIds": [
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "Statements B, C, D, and E are correct. DNSSEC secures integrity and authentication via a hierarchical chain of trust: RRsets are signed by ZSK to create RRSIG (B); ZSK is signed by KSK (C); parent zones store the DS hash of the child KSK (D); the Root KSK is the Trust Anchor (E). A is completely false: DNSSEC does NOT provide confidentiality or encryption; DNS payloads remain in plaintext.",
+        "difficulty": "hard",
+        "subtopic": "DNSSEC Architecture"
+      },
+      {
+        "id": "l09-q09",
+        "type": "multi_choice",
+        "question": "How do NSEC and NSEC3 records solve the problem of 'Authenticated Denial of Existence' in DNSSEC without requiring online private key signing for every nonexistent domain?",
+        "options": [
+          {
+            "id": "A",
+            "text": "An `NSEC` record defines a signed range asserting that no names exist lexicographically between two existing domain records (e.g., asserting no record exists between `alpha.example.com` and `charlie.example.com`)."
+          },
+          {
+            "id": "B",
+            "text": "A major vulnerability of classical `NSEC` is 'Zone Walking', which allows adversaries to enumerate every subdomain in a private zone simply by following consecutive NSEC links."
+          },
+          {
+            "id": "C",
+            "text": "An `NSEC3` record prevents zone enumeration by hashing domain names using salted iterations of SHA-1 before creating the signed range."
+          },
+          {
+            "id": "D",
+            "text": "NSEC records automatically decrypt TLS traffic passing through recursive resolvers."
+          },
+          {
+            "id": "E",
+            "text": "Both NSEC and NSEC3 allow validating resolvers to cryptographically verify that an `NXDOMAIN` response was genuinely authorized by the zone owner."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. Because nameservers cannot sign non-existent names offline in advance, NSEC provides signed spans of lexicographical gaps (A). However, this permits zone walking (B). NSEC3 mitigates zone walking by hashing domain names (C). Validating resolvers verify NXDOMAIN authenticity using these signed proofs (E). D is nonsense.",
+        "difficulty": "hard",
+        "subtopic": "DNSSEC Authenticated Denial of Existence"
+      },
+      {
+        "id": "l09-q10",
+        "type": "multi_choice",
+        "question": "Compare DNS over TLS (DoT - RFC 7858) and DNS over HTTPS (DoH - RFC 8484). Which of the following statements are technically accurate?",
+        "options": [
+          {
+            "id": "A",
+            "text": "DoT runs over dedicated TCP port 853, making it straightforward for enterprise firewalls to inspect, permit, or block."
+          },
+          {
+            "id": "B",
+            "text": "DoH encapsulates DNS queries inside HTTP/2 or HTTP/3 streams over standard TCP/UDP port 443, making it blend seamlessly with regular encrypted web traffic."
+          },
+          {
+            "id": "C",
+            "text": "Both DoT and DoH provide end-to-end transport confidentiality and integrity, preventing local network eavesdroppers from viewing queried domains."
+          },
+          {
+            "id": "D",
+            "text": "Neither DoT nor DoH prevents the upstream recursive resolver (e.g., Cloudflare or Google) from logging client queries."
+          },
+          {
+            "id": "E",
+            "text": "DoT eliminates the need for TCP handshakes by operating exclusively over raw ICMP."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. DoT operates on port 853 (A), while DoH blends over port 443 (B). Both encrypt the last mile between client and resolver, preventing local sniffing/tampering (C), but the upstream resolver itself still sees all queries in plaintext unless Oblivious DoH (ODoH) is deployed (D). E is false; DoT uses TCP and TLS.",
+        "difficulty": "medium",
+        "subtopic": "Encrypted DNS: DoT & DoH"
+      },
+      {
+        "id": "l09-q11",
+        "type": "multi_choice",
+        "question": "Which of the following are true regarding the EDNS0 Client Subnet (ECS) extension (RFC 7871)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "ECS enables recursive resolvers to append the client's network prefix (typically a /24 for IPv4 or /56 for IPv6) to the query sent to authoritative nameservers."
+          },
+          {
+            "id": "B",
+            "text": "Authoritative nameservers for CDNs use ECS data to return an Anycast or Edge IP address topologically closest to the client rather than the resolver."
+          },
+          {
+            "id": "C",
+            "text": "ECS completely resolves all privacy concerns because it replaces the client's MAC address with a random UUID."
+          },
+          {
+            "id": "D",
+            "text": "ECS reduces the cache efficiency of public recursive resolvers because identical queries from clients on different subnets generate separate cached entries."
+          },
+          {
+            "id": "E",
+            "text": "ECS operates as an option inside an OPT pseudo-resource record, expanding standard DNS capabilities without breaking backward compatibility."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "D",
+          "E"
+        ],
+        "explanation": "Statements A, B, D, and E are correct. ECS transmits client subnet prefixes to authoritative nameservers (A), allowing CDNs to optimize routing for the user instead of the resolver's location (B). However, this increases cache fragmentation on resolvers (D) and introduces privacy trade-offs. ECS utilizes the EDNS0 OPT record (E). C is false; ECS transmits IP prefix information, which actually raises privacy concerns rather than eliminating them.",
+        "difficulty": "hard",
+        "subtopic": "EDNS0 Client Subnet (ECS)"
+      },
+      {
+        "id": "l09-q12",
+        "type": "multi_choice",
+        "question": "A Start of Authority (SOA) record contains several critical timing parameters. Which of the following mappings and behavioral rules are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`Serial`: A revision number that secondary nameservers compare against their local copy; an incremented serial triggers zone transfer (AXFR/IXFR)."
+          },
+          {
+            "id": "B",
+            "text": "`Refresh`: The interval at which secondary nameservers poll the primary nameserver to inspect the serial number."
+          },
+          {
+            "id": "C",
+            "text": "`Retry`: The time a secondary nameserver waits before re-attempting a failed zone refresh."
+          },
+          {
+            "id": "D",
+            "text": "`Minimum TTL`: Under RFC 2308, this field defines the duration that downstream resolvers may cache a negative response (NXDOMAIN / NODATA)."
+          },
+          {
+            "id": "E",
+            "text": "`Expire`: The time after which a secondary nameserver drops its cached zone records if it cannot establish contact with the primary."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) are technically correct! The SOA record governs secondary zone replication and negative caching. Serial tracks versions (A), Refresh sets polling cadence (B), Retry dictates retry timing on failure (C), Minimum TTL dictates RFC 2308 negative caching (D), and Expire dictates when secondary zone data becomes invalid if primary remains unreachable (E).",
+        "difficulty": "hard",
+        "subtopic": "SOA Record Anatomy"
+      },
+      {
+        "id": "l09-q13",
+        "type": "multi_choice",
+        "question": "Which of the following are valid rules regarding DNS Mail Exchange (MX) records?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Each MX record contains a numeric preference value (priority); lower numeric values indicate higher priority."
+          },
+          {
+            "id": "B",
+            "text": "An MX record must point directly to a canonical domain name with an A or AAAA record, NOT directly to an IP address or a CNAME alias."
+          },
+          {
+            "id": "C",
+            "text": "If two MX records have identical priority values, sending mail servers must perform round-robin or randomized load sharing between them."
+          },
+          {
+            "id": "D",
+            "text": "Higher numeric priority MX records are contacted first, and lower numbers serve strictly as fallbacks."
+          },
+          {
+            "id": "E",
+            "text": "If a domain has no MX record, sending MTAs fall back to querying the domain's A record directly."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. A & D: Lower numbers have higher priority (e.g., priority 10 is preferred over priority 20; D is false). B: RFC 2181 Section 10.3 mandates MX targets must point to domain names with A/AAAA records, never CNAMEs or raw IPs. C: Equal priority values share traffic. E: Standard SMTP fallback attempts delivery to the domain's A record if no MX records exist.",
+        "difficulty": "medium",
+        "subtopic": "MX Record Protocol Rules"
+      },
+      {
+        "id": "l09-q14",
+        "type": "multi_choice",
+        "question": "Which of the following security mechanisms utilize DNS TXT records to authenticate and protect email domains?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Sender Policy Framework (SPF): Lists authorized IP addresses and subnets permitted to send email on behalf of the domain (e.g., `v=spf1 ip4:198.51.100.0/24 -all`)."
+          },
+          {
+            "id": "B",
+            "text": "DomainKeys Identified Mail (DKIM): Publishes the sender's public cryptographic key under a selector subdomain so receiving MTAs can verify digital signatures on email headers."
+          },
+          {
+            "id": "C",
+            "text": "Domain-based Message Authentication, Reporting, and Conformance (DMARC): Specifies enforcement policies (`p=reject`, `p=quarantine`) when SPF or DKIM alignment checks fail."
+          },
+          {
+            "id": "D",
+            "text": "Certificate Authority Authorization (CAA): Published as TXT records to specify which CAs can issue SSL certificates."
+          },
+          {
+            "id": "E",
+            "text": "Google Site Verification: Proves administrative ownership of a domain to search engines and cloud platforms via arbitrary verification tokens."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. SPF, DKIM, and DMARC form the email authentication triad and all use DNS TXT records (A, B, C). Domain verification tokens also rely on TXT records (E). D is false: While CAA governs certificate issuance, it has its own dedicated DNS Resource Record type (Type 257 - CAA), not a TXT record.",
+        "difficulty": "medium",
+        "subtopic": "TXT Records & Email Security"
+      },
+      {
+        "id": "l09-q15",
+        "type": "multi_choice",
+        "question": "Which major architectural enhancements were introduced in HTTP/1.1 (RFC 2616 / RFC 7230) compared to legacy HTTP/1.0?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Mandatory `Host` header: Allows multiple virtual hosts with distinct domain names to share a single public IP address."
+          },
+          {
+            "id": "B",
+            "text": "Persistent Connections (`Connection: keep-alive` by default): Allows multiple HTTP request/response cycles over a single underlying TCP connection."
+          },
+          {
+            "id": "C",
+            "text": "Chunked Transfer Encoding (`Transfer-Encoding: chunked`): Allows streaming dynamically generated responses without knowing the `Content-Length` upfront."
+          },
+          {
+            "id": "D",
+            "text": "Binary framing layer that splits messages into interleaved frames with 31-bit stream identifiers."
+          },
+          {
+            "id": "E",
+            "text": "Pipelining: Allowing clients to send multiple requests without waiting for intermediate responses (though limited by Head-of-Line blocking)."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are hallmark features introduced in HTTP/1.1. Host headers enabled modern multi-tenant virtual hosting (A). Keep-Alive became default (B). Chunked transfer enabled dynamic streaming (C). Pipelining was introduced (E). D is false: Binary framing with interleaved stream identifiers was introduced in HTTP/2, not HTTP/1.1.",
+        "difficulty": "medium",
+        "subtopic": "HTTP/1.1 Core Enhancements"
+      },
+      {
+        "id": "l09-q16",
+        "type": "multi_choice",
+        "question": "How does HTTP/2 (RFC 7540 / RFC 9113) fundamentally overcome the application-layer limitations of HTTP/1.1?",
+        "options": [
+          {
+            "id": "A",
+            "text": "It introduces a binary framing layer, breaking communication into discrete frames (e.g., HEADERS, DATA, SETTINGS, RST_STREAM)."
+          },
+          {
+            "id": "B",
+            "text": "It multiplexes multiple independent bidirectional streams concurrently over a single TCP connection, eliminating application-layer Head-of-Line blocking."
+          },
+          {
+            "id": "C",
+            "text": "It compresses header fields using HPACK, maintaining static and dynamic indexing tables between client and server to eliminate redundant header transmission."
+          },
+          {
+            "id": "D",
+            "text": "It replaces TCP with UDP at the transport layer to eliminate transport packet loss."
+          },
+          {
+            "id": "E",
+            "text": "It supports stream prioritization and server push, allowing servers to send critical assets before the client explicitly parses and requests them."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. HTTP/2 uses binary framing (A), multiplexes streams across a single TCP socket (B), compresses headers via HPACK (C), and supports stream dependencies and server push (E). D is false: HTTP/2 still runs strictly over TCP; replacing TCP with UDP is the defining innovation of HTTP/3 (QUIC).",
+        "difficulty": "hard",
+        "subtopic": "HTTP/2 Binary Framing & Multiplexing"
+      },
+      {
+        "id": "l09-q17",
+        "type": "multi_choice",
+        "question": "Despite HTTP/2's application-layer multiplexing, what transport-layer limitations motivated the development of HTTP/3 over QUIC (RFC 9000 / RFC 9114)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "TCP Head-of-Line (HoL) Blocking: If a single TCP segment is dropped on a lossy connection, the kernel TCP stack stalls ALL interleaved HTTP/2 streams until the missing segment is retransmitted."
+          },
+          {
+            "id": "B",
+            "text": "Slow Connection Establishment: Establishing an HTTPS session over TCP requires 1 RTT for TCP SYN/ACK plus 1 RTT for TLS 1.3 (total 2 RTTs), whereas QUIC completes transport and cryptographic negotiation in 1 RTT (or 0-RTT)."
+          },
+          {
+            "id": "C",
+            "text": "Connection Migration: When a mobile device shifts between Wi-Fi and 5G cellular, its IP address changes; TCP drops the connection, whereas QUIC uses a 64-bit Connection ID to persist the session without interruption."
+          },
+          {
+            "id": "D",
+            "text": "Middlebox Ossification: Routers and firewalls that drop unknown TCP options or interfere with TCP headers can be bypassed because QUIC encapsulates its transport state entirely inside encrypted UDP payloads."
+          },
+          {
+            "id": "E",
+            "text": "QUIC eliminates the need for congestion control algorithms, allowing clients to send unlimited data without packet drops."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D accurately summarize the engineering imperatives behind QUIC and HTTP/3. TCP packet loss stalls all multiplexed streams at the kernel layer (A). TCP+TLS handshakes require sequential round-trips (B). IP changes break TCP 4-tuples, while QUIC Connection IDs survive network changes (C). UDP encapsulation evades legacy middlebox tampering (D). E is completely false: QUIC implements robust congestion control (Cubic, BBR, NewReno) in userspace.",
+        "difficulty": "hard",
+        "subtopic": "HTTP/3 & QUIC Protocol Imperatives"
+      },
+      {
+        "id": "l09-q18",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding HTTP Cookie security attributes are technically correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The `HttpOnly` flag prevents client-side scripts from reading the cookie via `document.cookie`, mitigating credential theft via Cross-Site Scripting (XSS)."
+          },
+          {
+            "id": "B",
+            "text": "The `Secure` flag instructs the browser to transmit the cookie only over encrypted connections (HTTPS), preventing transmission over plaintext HTTP."
+          },
+          {
+            "id": "C",
+            "text": "`SameSite=Strict` blocks the cookie from being sent on any cross-site request, even when a user clicks an external link navigating to the target website."
+          },
+          {
+            "id": "D",
+            "text": "`SameSite=Lax` allows the cookie to be sent on top-level safe GET navigations initiated from external sites, while blocking it on cross-site POST requests to defend against CSRF."
+          },
+          {
+            "id": "E",
+            "text": "Setting `SameSite=None` automatically enables end-to-end RSA encryption of the cookie payload."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. `HttpOnly` blocks JavaScript DOM access (A). `Secure` mandates HTTPS (B). `SameSite=Strict` suppresses the cookie on all cross-origin requests including link clicks (C). `SameSite=Lax` allows safe top-level GET navigations while preventing CSRF on state-changing requests (D). E is false: `SameSite=None` simply allows third-party cross-site transmission (and requires the `Secure` flag in modern browsers); it does not encrypt the cookie body.",
+        "difficulty": "medium",
+        "subtopic": "HTTP Cookie Security Attributes"
+      },
+      {
+        "id": "l09-q19",
+        "type": "multi_choice",
+        "question": "Which of the following statements accurately characterize HTTP caching directives and conditional validation mechanisms?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`Cache-Control: no-cache` does NOT mean 'do not cache'; it means the client/proxy may cache the response, but MUST revalidate with the origin server before serving it."
+          },
+          {
+            "id": "B",
+            "text": "`Cache-Control: no-store` strictly forbids any cache (browser or intermediate proxy) from storing any part of the request or response on disk or memory."
+          },
+          {
+            "id": "C",
+            "text": "An `ETag` (Entity Tag) acts as a content fingerprint; clients transmit it back in the `If-None-Match` header to perform conditional validation."
+          },
+          {
+            "id": "D",
+            "text": "When a conditional GET validation succeeds (the content has not changed), the origin server replies with `304 Not Modified` and transmits zero body payload bytes."
+          },
+          {
+            "id": "E",
+            "text": "The `Expires` header takes strict mathematical precedence over the `Cache-Control: max-age` directive in modern HTTP/1.1 and HTTP/2 clients."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. A: `no-cache` forces revalidation. B: `no-store` bans caching entirely for sensitive data. C: ETags enable conditional requests via `If-None-Match`. D: 304 Not Modified returns headers only with empty body, saving bandwidth. E is false: RFC 7234 Section 5.3 explicitly states that `Cache-Control: max-age` completely overrides `Expires`.",
+        "difficulty": "medium",
+        "subtopic": "HTTP Caching & Conditional Revalidation"
+      },
+      {
+        "id": "l09-q20",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding modern web performance, TLS termination, and application architecture are true?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Server Name Indication (SNI) is an extension to the TLS protocol that includes the target hostname in the ClientHello message, allowing one server IP to host multiple TLS certificates."
+          },
+          {
+            "id": "B",
+            "text": "Encrypted Client Hello (ECH) encrypts the SNI extension using a public key published in the domain's DNS `HTTPS` / `SVCB` resource record, preventing network eavesdroppers from discovering the destination domain."
+          },
+          {
+            "id": "C",
+            "text": "HTTP Strict Transport Security (HSTS) preload lists compiled into web browsers eliminate the initial unencrypted HTTP redirect, mitigating SSL-stripping attacks."
+          },
+          {
+            "id": "D",
+            "text": "SSL Offloading at an edge load balancer decrypts incoming TLS traffic, allowing backend application microservices to communicate over internal networks without cryptographic overhead."
+          },
+          {
+            "id": "E",
+            "text": "Content Delivery Networks (CDNs) employ Anycast BGP routing to terminate client TCP and TLS handshakes at topologically adjacent Edge Points of Presence (PoPs), minimizing Round-Trip Time."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) are true! SNI allows virtual hosting on HTTPS (A). ECH encrypts SNI using DNS HTTPS records (B). HSTS preload prevents initial HTTP downgrade (C). SSL offloading terminates TLS at the edge (D). Anycast CDNs terminate TCP/TLS handshakes close to the user, drastically cutting latency (E).",
+        "difficulty": "hard",
+        "subtopic": "Web Architecture & Security Synthesis"
+      }
+    ]
+  },
+  "lecture-10": {
+    "topicId": "lecture-10",
+    "lectureNumber": 10,
+    "title": "TCP, UDP & Socket Programming Master Quiz",
+    "description": "20 rigorous multi-correct questions covering transport demultiplexing, TCP header bitfields, 11-state FSM, TIME_WAIT & 2MSL, SYN cookies, sliding window flow control, AIMD congestion control, BDP calculations, BBR, and socket programming.",
+    "estimatedMinutes": 35,
+    "questions": [
+      {
+        "id": "l10-q01",
+        "type": "multi_choice",
+        "question": "Which of the following statements correctly describe how the operating system kernel demultiplexes incoming transport-layer packets to application socket descriptors?",
+        "options": [
+          {
+            "id": "A",
+            "text": "A TCP connection is uniquely demultiplexed using a 4-tuple: `(Source IP, Source Port, Destination IP, Destination Port)`."
+          },
+          {
+            "id": "B",
+            "text": "A connectionless UDP socket is demultiplexed primarily based on a 2-tuple: `(Destination IP, Destination Port)`."
+          },
+          {
+            "id": "C",
+            "text": "A server daemon listening on `0.0.0.0:8080` accepts TCP connections on all local network interfaces (including loopback `127.0.0.1` and Ethernet `eth0`)."
+          },
+          {
+            "id": "D",
+            "text": "A server daemon listening on `127.0.0.1:8080` can receive TCP SYN packets arriving from an external client over the local area network if port forwarding is enabled on the client."
+          },
+          {
+            "id": "E",
+            "text": "Two distinct external clients connecting from different IP addresses can simultaneously establish TCP connections to the exact same server IP and port (`198.51.100.1:443`)."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. A & B: TCP requires the full 4-tuple for stateful demuxing, while UDP typically routes based on destination socket address. C: `0.0.0.0` (INADDR_ANY) binds to all local interfaces. E: Different client source IPs create distinct 4-tuples, allowing millions of concurrent connections to the same server port. D is false: Sockets bound strictly to loopback (`127.0.0.1`) only accept packets routed through the loopback interface (`lo`); external frames addressed to other interfaces are immediately rejected or dropped.",
+        "difficulty": "medium",
+        "subtopic": "Socket Demultiplexing & Bind Addresses"
+      },
+      {
+        "id": "l10-q02",
+        "type": "multi_choice",
+        "question": "In the standard 20-to-60 byte TCP header (RFC 793), which of the following statements regarding the header fields and bit representations are accurate?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The `Data Offset` field is 4 bits wide and specifies the length of the TCP header in units of 32-bit (4-byte) words."
+          },
+          {
+            "id": "B",
+            "text": "The minimum legal value of the `Data Offset` field is 5 (representing a minimum header size of $5 \\times 4 = 20\\text{ bytes}$ without options)."
+          },
+          {
+            "id": "C",
+            "text": "The maximum legal value of the `Data Offset` field is 15, limiting the maximum possible TCP header size to $15 \\times 4 = 60\\text{ bytes}$."
+          },
+          {
+            "id": "D",
+            "text": "The TCP header contains a 16-bit `Checksum` field that covers only the TCP header and ignores the payload data to maximize throughput."
+          },
+          {
+            "id": "E",
+            "text": "The `Window Size` field is 16 bits wide and advertises the number of bytes the receiver is currently willing to accept (receive window `rwnd`)."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. Data Offset is 4 bits ($0 - 15$) counting 32-bit words, dictating a range from $20\\text{ bytes}$ ($5 \\times 4$) up to $60\\text{ bytes}$ ($15 \\times 4$) (A, B, C). Window size is 16 bits advertising `rwnd` (E). D is false: Unlike IPv4's header-only checksum, the TCP checksum covers the pseudo-header, the entire TCP header, AND the payload data.",
+        "difficulty": "hard",
+        "subtopic": "TCP Header Binary Structure"
+      },
+      {
+        "id": "l10-q03",
+        "type": "multi_choice",
+        "question": "Regarding TCP Sequence Numbers and Acknowledgment Numbers, which of the following rules are mathematically and operationally correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "TCP sequence numbers count bytes in the data stream, NOT individual packets or segments."
+          },
+          {
+            "id": "B",
+            "text": "The `SYN` and `FIN` control flags each logically consume exactly one sequence number in the stream sequence space."
+          },
+          {
+            "id": "C",
+            "text": "An acknowledgment number `Ack = K` confirms that the receiver has successfully received all contiguous stream bytes up to $K - 1$, and expects byte $K$ next (cumulative acknowledgment)."
+          },
+          {
+            "id": "D",
+            "text": "Pure `ACK` packets carrying zero data payload consume one sequence number in the stream sequence space."
+          },
+          {
+            "id": "E",
+            "text": "If a host sends a segment with `Seq = 1000` carrying a payload of 500 bytes, the next sequential data byte sent by this host will begin at `Seq = 1500`."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. TCP is a byte-stream protocol where sequence numbers track byte offsets (A). SYN and FIN occupy one slot in the sequence space to guarantee their reliable delivery and acknowledgment (B). ACKs are cumulative, indicating the next expected byte (C). Next sequence number is $\\text{Seq} + \\text{Length} = 1000 + 500 = 1500$ (E). D is false: Pure ACKs carrying no payload or SYN/FIN consume zero sequence space; the sequence number does not advance.",
+        "difficulty": "hard",
+        "subtopic": "Sequence Numbers & Cumulative ACKs"
+      },
+      {
+        "id": "l10-q04",
+        "type": "multi_choice",
+        "question": "During the TCP Three-Way Handshake, which of the following TCP options (RFC 793, RFC 7323, RFC 2018) can be legitimately negotiated in the SYN and SYN-ACK segments?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Maximum Segment Size (MSS): Informs the remote peer of the largest payload (excluding IP/TCP headers) the sending host can receive without fragmentation."
+          },
+          {
+            "id": "B",
+            "text": "Window Scale (WSCALE): Defines a logarithmic left-shift multiplier ($0 - 14$) applied to the 16-bit Window field, allowing window sizes up to $1\\text{ GiB}$."
+          },
+          {
+            "id": "C",
+            "text": "Selective Acknowledgment Permitted (SACK-Permitted): Enables the receiver to report non-contiguous blocks of received data to avoid retransmitting already-received segments."
+          },
+          {
+            "id": "D",
+            "text": "TCP Timestamps (TSopt): Transmits a timestamp value (TSval) and timestamp echo reply (TSecr) to enable accurate RTT measurement and Protection Against Wrapped Sequences (PAWS)."
+          },
+          {
+            "id": "E",
+            "text": "Diffie-Hellman Key Exchange (DHKEY): Directly encrypts the TCP payload with AES-256 without requiring TLS."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are standard TCP handshake options defined in RFCs. MSS (A), Window Scaling (B), SACK-Permitted (C), and Timestamps (D) are all negotiated in SYN packets. E is false: Standard TCP does not contain a native Diffie-Hellman encryption option; encryption is handled by higher-layer TLS records (or experimental TCP-AO/tcpcrypt).",
+        "difficulty": "hard",
+        "subtopic": "TCP Options & Handshake Negotiation"
+      },
+      {
+        "id": "l10-q05",
+        "type": "multi_choice",
+        "question": "In a TCP SYN Flood attack and its defense via Cryptographic SYN Cookies (RFC 4987), which of the following statements are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "A SYN Flood exhausts the server's kernel memory by forcing it to allocate a Transmission Control Block (TCB) for each spoofed SYN in its half-open connection table (SYN Queue)."
+          },
+          {
+            "id": "B",
+            "text": "When SYN Cookies are activated, the server refuses to allocate any kernel memory or state table entry upon receiving a SYN packet."
+          },
+          {
+            "id": "C",
+            "text": "The server encodes a cryptographic hash of the 4-tuple, a timestamp counter, and an MSS index into the 32-bit Initial Sequence Number (ISN) of the SYN-ACK."
+          },
+          {
+            "id": "D",
+            "text": "When the legitimate client completes the handshake by sending an ACK with `Ack = ISN + 1`, the server recalculates the hash from `Ack - 1` and reconstructs the connection state only then."
+          },
+          {
+            "id": "E",
+            "text": "SYN Cookies eliminate the need for the final ACK in the TCP three-way handshake."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D accurately capture SYN Flood attacks and SYN Cookie defense. Attackers exploit half-open TCB state allocation (A). SYN Cookies eliminate server state upon SYN receipt (B). State is encoded inside the 32-bit ISN using cryptographic hashes and timestamps (C). The connection is verified and allocated only when the client returns ACK containing `ISN + 1` (D). E is false: The client's final ACK is essential because it contains the cookie to be verified.",
+        "difficulty": "hard",
+        "subtopic": "SYN Flood & Cryptographic SYN Cookies"
+      },
+      {
+        "id": "l10-q06",
+        "type": "multi_choice",
+        "question": "Trace the TCP 11-State Finite State Machine (FSM). Which of the following transitions and state assignments are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "A client sending a SYN packet transitions from `CLOSED` to `SYN_SENT`."
+          },
+          {
+            "id": "B",
+            "text": "A server receiving a SYN while in `LISTEN` transmits a SYN-ACK and transitions to `SYN_RCVD`."
+          },
+          {
+            "id": "C",
+            "text": "The side that receives a FIN packet while in `ESTABLISHED` automatically transmits an ACK and transitions to `CLOSE_WAIT`."
+          },
+          {
+            "id": "D",
+            "text": "The active closer transitions from `FIN_WAIT_1` to `FIN_WAIT_2` upon receiving an ACK for its FIN."
+          },
+          {
+            "id": "E",
+            "text": "A socket transitions directly from `LISTEN` to `TIME_WAIT` when an incoming connection is rejected."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are classical TCP FSM transitions specified in RFC 793. CLOSED $\\rightarrow$ SYN_SENT on active open (A). LISTEN $\\rightarrow$ SYN_RCVD on receiving SYN (B). ESTABLISHED $\\rightarrow$ CLOSE_WAIT on passive close upon receiving FIN (C). FIN_WAIT_1 $\\rightarrow$ FIN_WAIT_2 upon receiving ACK for FIN (D). E is false: Rejection sends a RST; a listening socket never transitions to TIME_WAIT.",
+        "difficulty": "hard",
+        "subtopic": "TCP Finite State Machine Transitions"
+      },
+      {
+        "id": "l10-q07",
+        "type": "multi_choice",
+        "question": "Why does the active closer of a TCP connection enter the `TIME_WAIT` state, and why is its duration standardized to $2\\text{MSL}$ (Maximum Segment Lifetime, typically 60 seconds)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "To ensure the final ACK sent by the active closer reaches the passive closer; if the ACK is lost, the passive closer retransmits its FIN, which the host in TIME_WAIT can still acknowledge."
+          },
+          {
+            "id": "B",
+            "text": "To allow any duplicate segments wandering through the Internet from the old connection to expire and dissipate before a new socket can reuse the identical 4-tuple."
+          },
+          {
+            "id": "C",
+            "text": "MSL represents the maximum time a packet can survive in the network (traditionally estimated as 30 or 120 seconds); waiting $2\\text{MSL}$ covers the round trip of a delayed FIN and its retransmitted ACK."
+          },
+          {
+            "id": "D",
+            "text": "To allow the server CPU to cool down following intensive data processing."
+          },
+          {
+            "id": "E",
+            "text": "In Linux, enabling `net.ipv4.tcp_tw_reuse = 1` allows outgoing client connections to safely reuse sockets in `TIME_WAIT` if TCP timestamps confirm the new packet is fresh."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. TIME_WAIT ensures reliable termination: acknowledging retransmitted FINs if the final ACK is lost (A), and draining old wandering packets to avoid corrupting new connection incarnations (B & C). Linux allows timestamp-verified reuse via `tcp_tw_reuse` (E). D is humorous and false.",
+        "difficulty": "medium",
+        "subtopic": "TIME_WAIT State & 2MSL Mechanics"
+      },
+      {
+        "id": "l10-q08",
+        "type": "multi_choice",
+        "question": "A production backend server exhibits thousands of connections stuck in `CLOSE_WAIT` and begins crashing with `Too many open files`. An SRE investigates. Which of the following statements are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The connections entered `CLOSE_WAIT` because the remote client actively initiated a connection close by sending a FIN, and the local kernel acknowledged it."
+          },
+          {
+            "id": "B",
+            "text": "A socket remains in `CLOSE_WAIT` until the local application process explicitly calls `close(sockfd)` on the socket descriptor."
+          },
+          {
+            "id": "C",
+            "text": "Massive accumulation of `CLOSE_WAIT` connections represents an application bug (e.g., leaked connection handles or missing `finally` blocks) rather than a network error."
+          },
+          {
+            "id": "D",
+            "text": "This issue can be permanently resolved by setting `net.ipv4.tcp_tw_reuse = 1` in `/etc/sysctl.conf`."
+          },
+          {
+            "id": "E",
+            "text": "Each unclosed socket in `CLOSE_WAIT` retains an open file descriptor in the operating system, eventually exhausting the process file descriptor limit (`RLIMIT_NOFILE`)."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. `CLOSE_WAIT` indicates the kernel is waiting on the *local* program to invoke `close()` after the remote side closed (A & B). It is an application leak defect that burns file descriptors until exhaustion (C & E). D is false: `tcp_tw_reuse` applies strictly to `TIME_WAIT` on active closers; kernel sysctls cannot force an application to release leaked `CLOSE_WAIT` descriptors.",
+        "difficulty": "hard",
+        "subtopic": "CLOSE_WAIT SRE Post-Mortem"
+      },
+      {
+        "id": "l10-q09",
+        "type": "multi_choice",
+        "question": "Which of the following principles govern TCP Sliding Window Flow Control?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Flow control protects the receiving application from being overwhelmed by a sender transmitting data faster than the receiver can process it."
+          },
+          {
+            "id": "B",
+            "text": "The receiver advertises its available buffer space via the `rwnd` (Receive Window) field in every TCP header."
+          },
+          {
+            "id": "C",
+            "text": "The sender is constrained to transmit no more than $\\min(\\text{cwnd}, \\text{rwnd})$ unacknowledged bytes in flight."
+          },
+          {
+            "id": "D",
+            "text": "Flow control automatically measures network router buffer queues and throttles transmission based on drop rates in intermediate switches."
+          },
+          {
+            "id": "E",
+            "text": "When an application reads bytes from its socket receive buffer using `read()` or `recv()`, the available `rwnd` increases, which the kernel announces via a Window Update."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. Flow control is an end-to-end receiver-protection mechanism (A). The receiver advertises `rwnd` (B), sender limits flight size to $\\min(\\text{cwnd}, \\text{rwnd})$ (C), and draining the buffer via `read()` opens the window (E). D is false: Throttling based on intermediate network congestion is the domain of Congestion Control (`cwnd`), not Flow Control (`rwnd`).",
+        "difficulty": "medium",
+        "subtopic": "Sliding Window Flow Control"
+      },
+      {
+        "id": "l10-q10",
+        "type": "multi_choice",
+        "question": "What happens during a TCP Zero Window condition, and how does TCP prevent deadlock?",
+        "options": [
+          {
+            "id": "A",
+            "text": "A Zero Window occurs when the receiver's application buffer is completely full, causing the receiver to advertise `rwnd = 0`."
+          },
+          {
+            "id": "B",
+            "text": "Upon receiving `rwnd = 0`, the sender must immediately cease transmitting new data segments."
+          },
+          {
+            "id": "C",
+            "text": "To prevent deadlock if the subsequent Window Update packet is lost, the sender arms a Persist Timer."
+          },
+          {
+            "id": "D",
+            "text": "When the Persist Timer expires, the sender transmits a Zero Window Probe (ZWP) containing a 1-byte payload to force the receiver to reply with its current `rwnd`."
+          },
+          {
+            "id": "E",
+            "text": "A Zero Window condition automatically aborts the TCP connection and resets the socket state to `CLOSED`."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. A full buffer advertises `rwnd = 0` (A), halting data transmission (B). If the receiver later frees space and sends an ACK advertising `rwnd > 0`, but that ACK is lost in transit, both sides would wait forever (deadlock). The Persist Timer solves this by sending periodic 1-byte Zero Window Probes (C & D). E is false: A Zero Window pauses transmission gracefully; it does not abort the connection.",
+        "difficulty": "hard",
+        "subtopic": "Zero Window & Persist Timer"
+      },
+      {
+        "id": "l10-q11",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding Silly Window Syndrome (SWS) and its remedies are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Silly Window Syndrome occurs when data is exchanged in tiny segments (e.g., 1 byte of payload inside 40 bytes of IP/TCP headers), drastically degrading protocol efficiency."
+          },
+          {
+            "id": "B",
+            "text": "Receiver-side SWS avoidance (Clark's Solution) dictates that the receiver must not advertise a small window update until buffer space is at least $\\min(\\text{MSS}, \\text{Buffer Size} / 2)$."
+          },
+          {
+            "id": "C",
+            "text": "Sender-side SWS avoidance is implemented via Nagle's Algorithm: If there is unacknowledged data in flight, buffer small outgoing chunks until a full MSS accumulates or all previous data is acknowledged."
+          },
+          {
+            "id": "D",
+            "text": "Disabling Nagle's Algorithm using the `TCP_NODELAY` socket option is critical for low-latency interactive applications like multiplayer online gaming or SSH keystrokes."
+          },
+          {
+            "id": "E",
+            "text": "Nagle's Algorithm and TCP Delayed ACKs can interact destructively, inducing an artificial 40ms to 200ms latency penalty on small request-response patterns."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) are correct! SWS generates massive header overhead for tiny payloads (A). Clark's solution prevents receivers from advertising microscopic window updates (B). Nagle's algorithm buffers small outgoing writes at the sender (C). Low-latency systems disable Nagle via `TCP_NODELAY` (D). Nagle waiting for an ACK while the receiver delays its ACK (Delayed ACK algorithm) causes the famous Nagle-Delayed ACK deadlock inducing ~40-200ms delays (E).",
+        "difficulty": "hard",
+        "subtopic": "Silly Window Syndrome & Nagle Algorithm"
+      },
+      {
+        "id": "l10-q12",
+        "type": "multi_choice",
+        "question": "Which of the following characteristics accurately define Additive Increase, Multiplicative Decrease (AIMD) in classical TCP Congestion Control?",
+        "options": [
+          {
+            "id": "A",
+            "text": "During Congestion Avoidance, if all transmitted segments in a window are successfully acknowledged, `cwnd` increases by approximately 1 MSS per Round-Trip Time (RTT)."
+          },
+          {
+            "id": "B",
+            "text": "Mathematically, the per-ACK additive update rule is: $\\text{cwnd} \\leftarrow \\text{cwnd} + \\frac{\\text{MSS} \\times \\text{MSS}}{\\text{cwnd}}$."
+          },
+          {
+            "id": "C",
+            "text": "Upon detecting packet loss via a retransmission timeout (RTO), `cwnd` is cut multiplicatively in half while `ssthresh` drops to 1."
+          },
+          {
+            "id": "D",
+            "text": "Upon detecting packet loss, the multiplicative decrease cuts the sending rate drastically, ensuring rapid network queue drain and preventing congestion collapse."
+          },
+          {
+            "id": "E",
+            "text": "AIMD is mathematically proven to converge distributed competing flows to both efficiency and Pareto fairness across a shared bottleneck link."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "D",
+          "E"
+        ],
+        "explanation": "Statements A, B, D, and E are correct. In congestion avoidance, AIMD increases `cwnd` linearly by 1 MSS per RTT (A), which on an ACK-by-ACK basis is $\\Delta = \\frac{\\text{MSS}^2}{\\text{cwnd}}$ (B). Multiplicative decrease cuts sending rate sharply upon loss (D). Chiu & Jain (1989) proved AIMD converges competing flows to fairness and efficiency (E). C is false: On an RTO, `ssthresh` is set to $\\text{cwnd} / 2$, but `cwnd` collapses to 1 MSS (not cut in half).",
+        "difficulty": "hard",
+        "subtopic": "AIMD Congestion Control Dynamics"
+      },
+      {
+        "id": "l10-q13",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding TCP Slow Start are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Despite its name, Slow Start increases the Congestion Window (`cwnd`) exponentially with respect to time, doubling `cwnd` every Round-Trip Time (RTT)."
+          },
+          {
+            "id": "B",
+            "text": "For every incoming acknowledgment (ACK) that confirms new data, `cwnd` increases by 1 MSS: $\\text{cwnd} \\leftarrow \\text{cwnd} + \\text{MSS}$."
+          },
+          {
+            "id": "C",
+            "text": "Slow Start begins with an initial window (`IW`), which in modern Linux kernels defaults to 10 MSS (RFC 6928)."
+          },
+          {
+            "id": "D",
+            "text": "The connection terminates Slow Start and transitions to Congestion Avoidance when `cwnd >= ssthresh`."
+          },
+          {
+            "id": "E",
+            "text": "Slow Start continues growing exponentially forever until the physical fiber optic cable melts."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. Slow start doubles `cwnd` every RTT by adding 1 MSS per ACK received (A & B). Linux modern IW is 10 segments (C). When `cwnd` reaches the slow start threshold (`ssthresh`), it shifts to linear congestion avoidance (D). E is humorous and false; slow start halts at `ssthresh` or upon packet loss.",
+        "difficulty": "medium",
+        "subtopic": "TCP Slow Start Mechanics"
+      },
+      {
+        "id": "l10-q14",
+        "type": "multi_choice",
+        "question": "How do Fast Retransmit and Fast Recovery (RFC 5681) optimize TCP performance compared to timeout-based retransmission?",
+        "options": [
+          {
+            "id": "A",
+            "text": "When a single segment is lost in a sequence, out-of-order segments arriving at the receiver generate immediate Duplicate ACKs."
+          },
+          {
+            "id": "B",
+            "text": "Upon receiving exactly 3 Duplicate ACKs (4 identical ACKs total), the sender concludes a packet was lost rather than merely reordered."
+          },
+          {
+            "id": "C",
+            "text": "Fast Retransmit sends the missing segment immediately without waiting for the Retransmission Timer (RTO) to expire."
+          },
+          {
+            "id": "D",
+            "text": "Fast Recovery prevents collapsing `cwnd` to 1 MSS; it sets $\\text{ssthresh} = \\text{cwnd}/2$, inflates `cwnd` for subsequent dup ACKs, and resumes Congestion Avoidance once the loss is cleared."
+          },
+          {
+            "id": "E",
+            "text": "Fast Retransmit switches the connection to UDP for 30 seconds."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. Out-of-order packets trigger duplicate ACKs (A). 3 duplicate ACKs trigger Fast Retransmit (B), retransmitting without waiting for RTO (C). Fast Recovery maintains pipeline throughput by setting `ssthresh` and halving window rather than collapsing to 1 MSS (D). E is absurd.",
+        "difficulty": "medium",
+        "subtopic": "Fast Retransmit & Fast Recovery"
+      },
+      {
+        "id": "l10-q15",
+        "type": "multi_choice",
+        "question": "A 10 Gbps transatlantic link has a Round-Trip Time (RTT) of $80\\text{ ms}$. Which of the following calculations and observations regarding the Bandwidth-Delay Product (BDP) are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The Bandwidth-Delay Product is $\\text{BDP} = 10\\text{ Gbps} \\times 0.080\\text{ s} = 800\\text{ Megabits} = 100\\text{ Megabytes}$ ($100\\text{ MB}$)."
+          },
+          {
+            "id": "B",
+            "text": "Without the TCP Window Scale option, the maximum window size allowed by the 16-bit header field is $65,535\\text{ bytes}$ ($\\approx 64\\text{ KB}$)."
+          },
+          {
+            "id": "C",
+            "text": "Without Window Scaling, the maximum achievable throughput on this 10 Gbps link is approximately $\\frac{65,535\\text{ bytes} \\times 8}{0.080\\text{ s}} \\approx 6.55\\text{ Mbps}$ (less than $0.1\\%$ of link capacity!)."
+          },
+          {
+            "id": "D",
+            "text": "To fully saturate this 10 Gbps pipe, the sender and receiver TCP socket buffers must be tuned to at least $100\\text{ MB}$."
+          },
+          {
+            "id": "E",
+            "text": "The Window Scale option can never scale the window beyond 64 KB because IPv4 routers drop scaled packets."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are mathematically exact. $\\text{BDP} = 10\\times 10^9 \\times 0.080 = 800\\times 10^6\\text{ bits} = 100\\text{ MB}$ (A). Standard 16-bit window caps at $65,535\\text{ bytes}$ (B). Maximum unscaled throughput is $\\frac{65535 \\times 8}{0.08} = 6.55\\text{ Mbps}$ (C). Sockets must scale to BDP ($100\\text{ MB}$) to saturate pipe (D). E is false: RFC 7323 Window Scale shifts up to 14 bits, enabling windows up to $1\\text{ GiB}$.",
+        "difficulty": "hard",
+        "subtopic": "BDP & Window Scale Mathematics"
+      },
+      {
+        "id": "l10-q16",
+        "type": "multi_choice",
+        "question": "How does Google's BBR (Bottleneck Bandwidth and RTT) congestion control fundamentally differ from classical loss-based algorithms like Reno and Cubic?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Loss-based algorithms (Reno, Cubic) treat packet loss as the primary indicator of congestion, driving buffers to overflow and creating severe bufferbloat."
+          },
+          {
+            "id": "B",
+            "text": "BBR models the physical network by independently measuring two parameters: Maximum Bottleneck Bandwidth ($BtlBw$) and Minimum Round-Trip Propagation Delay ($RTprop$)."
+          },
+          {
+            "id": "C",
+            "text": "BBR operates around the Kleinrock optimal operating point, keeping the inflight data equal to exactly $1\\text{ BDP}$ to maximize throughput while minimizing queuing delay."
+          },
+          {
+            "id": "D",
+            "text": "On lossy wireless or transcontinental networks with non-congestion random packet loss (e.g., $1\\%$ RF loss), Cubic's throughput collapses dramatically while BBR maintains high throughput."
+          },
+          {
+            "id": "E",
+            "text": "BBR requires specialized hardware upgrades on every intermediate router along the path to function."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D accurately describe BBR. Loss-based congestion control fills buffers until drops occur, causing bufferbloat (A). BBR models physical $BtlBw$ and $RTprop$ (B) and aims for Kleinrock's optimal operating point (C). Because BBR does not interpret shallow packet loss as congestion, it dramatically outperforms Cubic on lossy wireless/long-haul links (D). E is false: BBR is purely an end-host sender algorithm requiring zero changes on intermediate routers.",
+        "difficulty": "hard",
+        "subtopic": "BBR vs Loss-Based Congestion Control"
+      },
+      {
+        "id": "l10-q17",
+        "type": "multi_choice",
+        "question": "Which of the following principles govern Jacobson's algorithm for calculating TCP's Retransmission Timeout (RTO)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "RTO cannot be a static constant; it must adapt dynamically to changing network latency by tracking Smoothed Round-Trip Time (SRTT) and Round-Trip Time Variation (RTTVAR)."
+          },
+          {
+            "id": "B",
+            "text": "The classic Jacobson/Karn formula computes: $\\text{RTO} = \\text{SRTT} + 4 \\times \\text{RTTVAR}$."
+          },
+          {
+            "id": "C",
+            "text": "When a timeout occurs, Karn's Algorithm dictates that the host must back off the timer exponentially (doubling RTO: $\\text{RTO} \\leftarrow 2 \\times \\text{RTO}$) for subsequent retries."
+          },
+          {
+            "id": "D",
+            "text": "Karn's Algorithm stipulates that RTT measurements must NOT be sampled from retransmitted segments because of ambiguity over which transmission generated the ACK."
+          },
+          {
+            "id": "E",
+            "text": "In Linux, the RTO timer is fixed at exactly $10\\text{ milliseconds}$ under all conditions."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. Jacobson's algorithm computes $\\text{RTO} = \\text{SRTT} + 4 \\times \\text{RTTVAR}$ (A & B). Karn's algorithm enforces exponential backoff on timeouts (C) and forbids sampling RTT from retransmitted segments to prevent acknowledgment ambiguity (D). E is false: Linux default initial RTO is 1000ms (1s), with dynamic adaptation bounded between `TCP_RTO_MIN` (200ms) and `TCP_RTO_MAX` (120s).",
+        "difficulty": "hard",
+        "subtopic": "RTO Calculation & Karn's Algorithm"
+      },
+      {
+        "id": "l10-q18",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding the User Datagram Protocol (UDP - RFC 768) are technically correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "UDP has a fixed 8-byte header containing only four fields: Source Port, Destination Port, Length, and Checksum."
+          },
+          {
+            "id": "B",
+            "text": "UDP preserves message boundaries; each `sendto()` call by an application corresponds to exactly one discrete datagram received by `recvfrom()`."
+          },
+          {
+            "id": "C",
+            "text": "In IPv4, computing the UDP Checksum is technically optional (can be set to 0), but in IPv6, the UDP checksum is strictly mandatory."
+          },
+          {
+            "id": "D",
+            "text": "The UDP checksum calculation incorporates an IP 'pseudo-header' containing the Source IP, Destination IP, Protocol (17), and UDP Length to catch misrouted packets."
+          },
+          {
+            "id": "E",
+            "text": "UDP guarantees in-order delivery of packets using 8-bit segment identifiers."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. UDP header is 8 bytes (A). UDP preserves datagram boundaries, unlike TCP's unstructured byte stream (B). IPv4 UDP checksum is optional ($0$ = disabled), but IPv6 mandates it (C). The checksum covers an IP pseudo-header (D). E is false: UDP provides zero ordering, reliability, or sequence numbers.",
+        "difficulty": "medium",
+        "subtopic": "UDP Protocol Characteristics"
+      },
+      {
+        "id": "l10-q19",
+        "type": "multi_choice",
+        "question": "When inspecting sockets on a Linux system using `ss -tulpn` and `ss -ti`, which of the following interpretations are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "For a socket in the `LISTEN` state, `Send-Q` represents the maximum backlog limit of the accept queue (set by `listen(fd, backlog)` and `net.core.somaxconn`)."
+          },
+          {
+            "id": "B",
+            "text": "For a socket in the `LISTEN` state, `Recv-Q` represents the number of established connections currently waiting in the accept queue for the application to invoke `accept()`."
+          },
+          {
+            "id": "C",
+            "text": "For a socket in the `ESTABLISHED` state, `Recv-Q` represents data bytes received from the network and buffered in the kernel that have NOT yet been read by the application."
+          },
+          {
+            "id": "D",
+            "text": "For a socket in the `ESTABLISHED` state, `Send-Q` represents data bytes sent by the application but NOT yet acknowledged by the remote peer."
+          },
+          {
+            "id": "E",
+            "text": "`ss` executes by locking `/proc/net/tcp` in memory, making it much slower than legacy `netstat`."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. `Recv-Q` and `Send-Q` have dual meanings: In LISTEN, they represent the current accept queue depth and maximum accept queue limit (A & B). In ESTABLISHED, they represent unread received bytes and unacknowledged outbound bytes (C & D). E is false: `ss` uses Netlink kernel sockets (`NETLINK_INET_DIAG`) for $O(1)$ zero-copy dumps, whereas legacy `netstat` parsed `/proc/net/tcp`.",
+        "difficulty": "hard",
+        "subtopic": "Kernel Socket Metrics & ss Diagnostics"
+      },
+      {
+        "id": "l10-q20",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding network socket programming and POSIX system calls are technically accurate?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The `listen(sockfd, backlog)` system call puts a stream socket into passive listening mode and defines the size of the pending connection backlog queue."
+          },
+          {
+            "id": "B",
+            "text": "The `accept(sockfd, ...)` call extracts the first connection on the pending queue, creates a brand-new socket descriptor for that specific connection, and returns it."
+          },
+          {
+            "id": "C",
+            "text": "Setting `SO_REUSEADDR` allows a server daemon to bind to a local port even if existing connections on that port are currently lingering in the `TIME_WAIT` state."
+          },
+          {
+            "id": "D",
+            "text": "Setting `SO_REUSEPORT` allows multiple independent processes or threads on the same host to bind to the exact same IP and port, with the kernel automatically load balancing incoming connections."
+          },
+          {
+            "id": "E",
+            "text": "The `epoll` system call on Linux provides $O(1)$ I/O event multiplexing scalable to hundreds of thousands of concurrent file descriptors, overcoming the $O(N)$ scanning bottlenecks of `select()`."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) are technically correct! `listen()` sets backlog (A). `accept()` returns a new active descriptor per client (B). `SO_REUSEADDR` overcomes TIME_WAIT bind failure (C). `SO_REUSEPORT` enables multi-process kernel port sharding (D). `epoll` (epoll_create/epoll_ctl/epoll_wait) provides $O(1)$ event notifications, powering high-concurrency systems like NGINX and Node.js (E).",
+        "difficulty": "hard",
+        "subtopic": "POSIX Socket Programming & High Concurrency"
+      }
+    ]
+  },
+  "lecture-11": {
+    "topicId": "lecture-11",
+    "lectureNumber": 11,
+    "title": "NAT, DHCP & Local Networks Master Quiz",
+    "description": "20 rigorous multi-correct questions covering the End-to-End Principle, 28-byte ARP packet format, Gratuitous ARP, ARP spoofing & DAI, NAPT/PAT state tables, Cone vs Symmetric NAT, STUN/TURN/ICE, DHCP DORA and lease timers (T1/T2), Option 82, and container networking.",
+    "estimatedMinutes": 35,
+    "questions": [
+      {
+        "id": "l11-q01",
+        "type": "multi_choice",
+        "question": "Which of the following statements correctly represent the classical 'End-to-End Principle' (Saltzer, Reed, and Clark, 1981) and how Network Address Translation (NAT) impacts it?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The End-to-End Principle asserts that communication functions should be implemented at the end hosts rather than inside intermediate network nodes unless strictly necessary for performance."
+          },
+          {
+            "id": "B",
+            "text": "Under pure End-to-End architecture, intermediate routers maintain zero per-flow connection state, providing stateless, survivable packet forwarding."
+          },
+          {
+            "id": "C",
+            "text": "NAT fundamentally violates the End-to-End Principle by forcing stateful connection tracking and packet rewriting into intermediate middleboxes."
+          },
+          {
+            "id": "D",
+            "text": "NAT breaks peer-to-peer protocols (such as SIP, WebRTC, and BitTorrent) because hosts behind NAT cannot advertise their private IP addresses to external peers for incoming connections."
+          },
+          {
+            "id": "E",
+            "text": "The End-to-End Principle was originally designed to prevent routers from running OSPF routing algorithms."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. Saltzer's End-to-End principle placed intelligence and state at endpoints while keeping the core simple and stateless (A & B). NAT violates this by creating stateful flow tables inside routers (C), breaking incoming peer-to-peer connections and protocols embedding IP addresses in payloads (D). E is false; OSPF is an interior routing protocol and completely unrelated to the end-to-end principle.",
+        "difficulty": "medium",
+        "subtopic": "End-to-End Principle & Middleboxes"
+      },
+      {
+        "id": "l11-q02",
+        "type": "multi_choice",
+        "question": "In the standard 28-byte Address Resolution Protocol (ARP - RFC 826) packet format for IPv4 over Ethernet, which of the following fields and values are accurate?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Hardware Type (HTYPE): Set to `0x0001` to denote Ethernet."
+          },
+          {
+            "id": "B",
+            "text": "Protocol Type (PTYPE): Set to `0x0800` to denote the IPv4 protocol."
+          },
+          {
+            "id": "C",
+            "text": "Hardware Length (HLEN) is 6 bytes (MAC address length), and Protocol Length (PLEN) is 4 bytes (IPv4 address length)."
+          },
+          {
+            "id": "D",
+            "text": "Opcode (OPER): Set to `0x0001` for an ARP Request and `0x0002` for an ARP Reply."
+          },
+          {
+            "id": "E",
+            "text": "ARP packets include an 8-bit TTL field decremented by intermediate switches across VLANs."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are exact specifications of the 28-byte ARP header (HTYPE=1, PTYPE=0x0800, HLEN=6, PLEN=4, Opcode 1=Request, Opcode 2=Reply). E is false: ARP is a Layer 2 protocol encapsulated directly inside Ethernet frames (EtherType `0x0806`); it has no TTL field and does not route across Layer 3 boundaries.",
+        "difficulty": "hard",
+        "subtopic": "ARP Header Binary Format"
+      },
+      {
+        "id": "l11-q03",
+        "type": "multi_choice",
+        "question": "Why is an ARP Request transmitted as a broadcast frame, while an ARP Reply is transmitted as a unicast frame?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The requester does not know the target's MAC address; therefore, the Layer 2 Ethernet destination MAC must be set to the broadcast address `FF:FF:FF:FF:FF:FF`."
+          },
+          {
+            "id": "B",
+            "text": "Every host on the local broadcast domain receives the ARP Request and inspects the Target IP field."
+          },
+          {
+            "id": "C",
+            "text": "The responder already learned the requester's MAC address from the Sender Hardware Address (SHA) field in the incoming ARP Request."
+          },
+          {
+            "id": "D",
+            "text": "Because the responder knows the requester's exact MAC address, it sends the ARP Reply directly as a unicast frame to avoid unnecessary network flooding."
+          },
+          {
+            "id": "E",
+            "text": "Switches forward the ARP Request frame to all ports worldwide across the public Internet."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D accurately explain the ARP exchange dynamics. The request must broadcast ($FF:FF:FF:FF:FF:FF$) because the target MAC is unknown (A & B). However, the request includes the sender's MAC, allowing the target to cache the requester and reply via efficient unicast (C & D). E is false: Broadcast frames are strictly bounded within the local Layer 2 broadcast domain.",
+        "difficulty": "medium",
+        "subtopic": "ARP Broadcast vs Unicast Mechanics"
+      },
+      {
+        "id": "l11-q04",
+        "type": "multi_choice",
+        "question": "A Gratuitous ARP (GARP) is an ARP packet sent where the Sender IP and Target IP are identical. Which of the following are legitimate production use cases of Gratuitous ARP?",
+        "options": [
+          {
+            "id": "A",
+            "text": "IP Address Conflict Detection: Upon interface bring-up, a host sends a GARP probe; if another device responds, an IP conflict exists and the host flags an error."
+          },
+          {
+            "id": "B",
+            "text": "High Availability Failover (VRRP / CARP / Keepalived): When a primary router crashes, the standby router assumes the Virtual IP (VIP) and broadcasts a GARP to instantly update all client ARP caches with its MAC address."
+          },
+          {
+            "id": "C",
+            "text": "Virtual Machine Live Migration: When a VM moves between physical hypervisors, a GARP notifies the physical switch fabric to update its CAM (Content Addressable Memory) MAC learning tables."
+          },
+          {
+            "id": "D",
+            "text": "NIC Teaming / Bonding: When an active network interface fails, the backup NIC sends a GARP to associate the existing MAC/IP with the new physical switch port."
+          },
+          {
+            "id": "E",
+            "text": "To bypass the need for TLS certificates during HTTPS handshakes."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are foundational networking use cases for Gratuitous ARP. GARP detects IP duplicates (A), updates client ARP caches during router failover (B), refreshes switch CAM tables during VM live migration (C), and coordinates NIC bonding failover (D). E is completely unrelated.",
+        "difficulty": "hard",
+        "subtopic": "Gratuitous ARP Applications"
+      },
+      {
+        "id": "l11-q05",
+        "type": "multi_choice",
+        "question": "Which of the following architectural vulnerabilities allow ARP Poisoning / ARP Spoofing attacks to succeed on a local network?",
+        "options": [
+          {
+            "id": "A",
+            "text": "ARP is stateless and entirely unauthenticated; hosts accept ARP Replies without verifying cryptographic signatures or verifying whether an ARP Request was ever sent."
+          },
+          {
+            "id": "B",
+            "text": "An attacker can transmit unsolicited ARP Replies claiming that the default gateway's IP address maps to the attacker's own MAC address."
+          },
+          {
+            "id": "C",
+            "text": "Once poisoned, victim hosts transmit all outbound Internet traffic to the attacker's MAC, enabling Man-in-the-Middle (MITM) eavesdropping and packet tampering."
+          },
+          {
+            "id": "D",
+            "text": "ARP poisoning allows an attacker to decrypt AES-256 encrypted TLS traffic without obtaining the private key."
+          },
+          {
+            "id": "E",
+            "text": "An attacker can poison the default gateway's ARP cache simultaneously to intercept bidirectional traffic flows."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. ARP has no cryptographic authentication and caches unsolicited replies (A & B). Poisoning both victim and gateway positions the attacker as a full L2 Man-in-the-Middle (C & E). D is false: L2 ARP spoofing intercepts raw frames, but TLS payload remains encrypted unless the attacker also compromises CA certificates or executes SSL stripping.",
+        "difficulty": "medium",
+        "subtopic": "ARP Spoofing & MITM Attacks"
+      },
+      {
+        "id": "l11-q06",
+        "type": "multi_choice",
+        "question": "How do enterprise switches mitigate ARP spoofing and rogue DHCP servers using DHCP Snooping and Dynamic ARP Inspection (DAI)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "DHCP Snooping designates switch ports as either 'Trusted' (connected to legitimate DHCP servers/uplinks) or 'Untrusted' (access ports connected to regular end users)."
+          },
+          {
+            "id": "B",
+            "text": "The switch drops any incoming DHCP Offer or DHCP Ack packets arriving on Untrusted ports, preventing rogue DHCP servers from hijacking client gateways or DNS configurations."
+          },
+          {
+            "id": "C",
+            "text": "The switch listens to valid DHCP exchanges on untrusted ports and dynamically constructs a `DHCP Snooping Binding Database` mapping `(MAC, IP, VLAN, Port, Lease Time)`."
+          },
+          {
+            "id": "D",
+            "text": "Dynamic ARP Inspection (DAI) inspects all ARP packets arriving on untrusted ports, verifying them against the DHCP Snooping Binding Database; mismatched or spoofed ARPs are dropped."
+          },
+          {
+            "id": "E",
+            "text": "DHCP Snooping automatically blocks all IPv6 traffic by resetting the switch CPU."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D describe the standard enterprise L2 security architecture. DHCP Snooping classifies ports as trusted/untrusted (A), blocks rogue DHCP responses (B), and builds the binding database (C). DAI leverages this database to validate and filter ARP packets at hardware line speed (D). E is false.",
+        "difficulty": "hard",
+        "subtopic": "DHCP Snooping & Dynamic ARP Inspection"
+      },
+      {
+        "id": "l11-q07",
+        "type": "multi_choice",
+        "question": "In Network Address and Port Translation (NAPT / PAT), what exact modifications are performed by the NAT router when an internal host (`192.168.1.5:54321`) transmits a packet to an external server (`93.184.216.34:443`)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The router replaces the private Source IP (`192.168.1.5`) with the router's public WAN IP address (e.g., `203.0.113.10`)."
+          },
+          {
+            "id": "B",
+            "text": "The router allocates an available source port from its public pool (e.g., `10045`) and rewrites the Source Port field."
+          },
+          {
+            "id": "C",
+            "text": "The router records the 5-tuple translation `(192.168.1.5:54321 ⟷ 203.0.113.10:10045 ⟷ 93.184.216.34:443)` into its internal NAT state table."
+          },
+          {
+            "id": "D",
+            "text": "The router decrements the IPv4 TTL and recomputes both the IPv4 Header Checksum and the TCP Checksum (because the IP addresses and TCP ports in the pseudo-header changed)."
+          },
+          {
+            "id": "E",
+            "text": "The Destination IP address is rewritten to `0.0.0.0`."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are accurate steps in NAPT. Source IP is replaced by WAN IP (A). Source Port is mapped (B). State table stores mapping for reverse translation (C). TTL is decremented, and both IP and L4 checksums MUST be recalculated because IP and port values changed (D). E is absurd.",
+        "difficulty": "hard",
+        "subtopic": "NAPT / PAT State Mechanics"
+      },
+      {
+        "id": "l11-q08",
+        "type": "multi_choice",
+        "question": "Which of the following are consequences and limitations of NAT Port Address Translation (PAT)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "A single public IPv4 address has an ephemeral port range limit ($2^{16} = 65,535$ ports), theoretically capping concurrent outbound translations per public IP."
+          },
+          {
+            "id": "B",
+            "text": "In Carrier-Grade NAT (CGNAT / RFC 6598), ISPs place multiple households behind a shared public IPv4 pool using the `100.64.0.0/10` shared address space."
+          },
+          {
+            "id": "C",
+            "text": "Under heavy traffic, rapid connection churn can exhaust the NAT port pool, causing new outbound connections to fail with port allocation errors."
+          },
+          {
+            "id": "D",
+            "text": "NAT completely eliminates the need for firewalls because translation headers cannot be read by hackers."
+          },
+          {
+            "id": "E",
+            "text": "Port translation requires the NAT device to maintain state in RAM; if the router crashes and reboots, all active connections across the NAT are broken."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. Port limits cap capacity per IP (A). CGNAT uses `100.64.0.0/10` to conserve public IPs (B). High churn causes port exhaustion (C). NAT is stateful, so reboots destroy active connections (E). D is false: NAT is not a substitute for a true stateful firewall.",
+        "difficulty": "medium",
+        "subtopic": "PAT Port Limitations & CGNAT"
+      },
+      {
+        "id": "l11-q09",
+        "type": "multi_choice",
+        "question": "In the taxonomy of NAT behaviors (RFC 3489 / RFC 4787), which of the following statements regarding Cone NAT vs. Symmetric NAT are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "In a Full Cone NAT (One-to-One NAT), once an internal address/port (`IP_i:Port_i`) is mapped to an external port (`IP_e:Port_e`), ANY external host can send packets to `IP_e:Port_e` and they will be delivered to the internal host."
+          },
+          {
+            "id": "B",
+            "text": "In an Address-Restricted Cone NAT, an external host can send packets to `IP_e:Port_e` ONLY if the internal host previously sent a packet to that external host's IP address."
+          },
+          {
+            "id": "C",
+            "text": "In a Port-Restricted Cone NAT, an external host can send packets ONLY if the internal host previously sent a packet to that external host's exact IP and port."
+          },
+          {
+            "id": "D",
+            "text": "In a Symmetric NAT, the router assigns a DIFFERENT public source port for every distinct destination IP/port combination that the internal host connects to."
+          },
+          {
+            "id": "E",
+            "text": "Direct peer-to-peer UDP hole punching succeeds consistently between two endpoints when both endpoints are located behind Symmetric NATs."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct definitions of the classical NAT types. Full Cone accepts from anyone (A). Address-Restricted checks remote IP (B). Port-Restricted checks remote IP and port (C). Symmetric NAT allocates a unique external port for every unique destination target (D). E is false: When both peers are behind Symmetric NATs, UDP hole punching fails because neither peer can predict the port allocated for the other; a TURN relay is mandatory.",
+        "difficulty": "hard",
+        "subtopic": "Cone NAT vs Symmetric NAT"
+      },
+      {
+        "id": "l11-q10",
+        "type": "multi_choice",
+        "question": "Which of the following are true regarding STUN (Session Traversal Utilities for NAT - RFC 5389)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "A STUN client transmits a Binding Request to an external STUN server on the public Internet."
+          },
+          {
+            "id": "B",
+            "text": "The STUN server inspects the source IP and source port of the incoming UDP packet and reflects them back in a `XOR-MAPPED-ADDRESS` attribute in the Binding Response."
+          },
+          {
+            "id": "C",
+            "text": "STUN allows an internal client to discover its own public reflexive IP address and external port allocation."
+          },
+          {
+            "id": "D",
+            "text": "STUN provides a universal solution that enables direct peer-to-peer media streaming even when both peers are behind Symmetric NATs."
+          },
+          {
+            "id": "E",
+            "text": "STUN packets are lightweight UDP datagrams containing a 20-byte fixed header with a Magic Cookie (`0x2112A442`)."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are accurate. STUN sends binding requests (A), reflects the public reflexive socket address via `XOR-MAPPED-ADDRESS` (B), discovering client public endpoints (C). STUN uses a 20-byte header with magic cookie `0x2112A442` (E). D is false: STUN cannot traverse Symmetric NAT combinations, which require TURN relays.",
+        "difficulty": "hard",
+        "subtopic": "STUN Protocol Architecture"
+      },
+      {
+        "id": "l11-q11",
+        "type": "multi_choice",
+        "question": "When STUN-based hole punching fails, how does TURN (Traversal Using Relays around NAT - RFC 5766) ensure reliable multimedia communication (e.g., in WebRTC)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "TURN provides an external relay server that allocates a public IP and port on behalf of the client."
+          },
+          {
+            "id": "B",
+            "text": "Both peers transmit their encrypted audio/video media packets directly to the TURN server, which forwards them to the remote peer."
+          },
+          {
+            "id": "C",
+            "text": "TURN guarantees connection success in 100% of network topologies, regardless of symmetric NATs or restrictive enterprise firewalls."
+          },
+          {
+            "id": "D",
+            "text": "TURN introduces server bandwidth costs and added packet latency because all media streams must traverse the relay instead of flowing peer-to-peer."
+          },
+          {
+            "id": "E",
+            "text": "TURN modifies the intermediate ISP router's BGP tables to eliminate the NAT gateway."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. TURN acts as an always-working fallback relay (A), forwarding packets between clients (B). It guarantees connectivity in all NAT topologies (C), but incurs bandwidth costs and relay latency (D). E is false.",
+        "difficulty": "medium",
+        "subtopic": "TURN Relay Architecture"
+      },
+      {
+        "id": "l11-q12",
+        "type": "multi_choice",
+        "question": "In WebRTC, how does the Interactive Connectivity Establishment (ICE - RFC 8445) framework orchestrate connection setup?",
+        "options": [
+          {
+            "id": "A",
+            "text": "ICE systematically gathers three types of candidates: Host candidates (local physical/virtual IPs), Server Reflexive candidates (STUN-discovered public IPs), and Relay candidates (TURN servers)."
+          },
+          {
+            "id": "B",
+            "text": "Peers exchange their gathered candidates via an out-of-band signaling channel (e.g., WebSockets using SDP - Session Description Protocol)."
+          },
+          {
+            "id": "C",
+            "text": "ICE pairs the candidates into priority-ranked candidate pairs and performs STUN connectivity checks in parallel."
+          },
+          {
+            "id": "D",
+            "text": "ICE always prefers direct peer-to-peer Host and Server Reflexive paths over costly TURN Relay paths whenever direct connectivity succeeds."
+          },
+          {
+            "id": "E",
+            "text": "ICE requires that both communicating endpoints share the exact same Wi-Fi SSID."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. ICE gathers host, reflexive, and relay candidates (A), exchanges them via signaling (B), runs parallel STUN connectivity checks (C), and prioritizes direct P2P connections to avoid relay overhead (D). E is false: ICE is designed specifically for peers on completely different networks.",
+        "difficulty": "hard",
+        "subtopic": "ICE Framework & WebRTC"
+      },
+      {
+        "id": "l11-q13",
+        "type": "multi_choice",
+        "question": "Which of the following are technically accurate regarding the Dynamic Host Configuration Protocol (DHCP - RFC 2131) DORA state machine?",
+        "options": [
+          {
+            "id": "A",
+            "text": "DHCP operates over UDP, with servers listening on port 67 and clients receiving on port 68."
+          },
+          {
+            "id": "B",
+            "text": "In the DHCP Discover message, the client sets Source IP to `0.0.0.0` and Destination IP to the limited broadcast address `255.255.255.255`."
+          },
+          {
+            "id": "C",
+            "text": "The client generates a random 32-bit Transaction ID (`xid`) in the Discover message, which the server echoes back in the Offer to allow the client to match responses."
+          },
+          {
+            "id": "D",
+            "text": "The DHCP Request message is broadcast on the local network so that other DHCP servers that made competing offers can retract their offered leases."
+          },
+          {
+            "id": "E",
+            "text": "The DHCP Ack message is sent over TCP port 443 to encrypt the network lease parameters."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are accurate. DHCP uses UDP 67/68 (A). Discover broadcasts from 0.0.0.0 to 255.255.255.255 (B). A 32-bit `xid` correlates transactions (C). Request is broadcast so competing DHCP servers release their reserved leases (D). E is false: DHCP Ack is sent over UDP, not TCP or HTTPS.",
+        "difficulty": "medium",
+        "subtopic": "DHCP DORA State Machine"
+      },
+      {
+        "id": "l11-q14",
+        "type": "multi_choice",
+        "question": "Which of the following rules govern DHCP Lease Timers and lease renewal behavior?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The total lease duration is defined by Lease Time ($T_3$, or Option 51)."
+          },
+          {
+            "id": "B",
+            "text": "At renewal timer $T_1 = 0.50 \\times \\text{Lease Time}$ (50%), the client attempts to renew its lease by sending a unicast DHCP Request directly to the original DHCP server."
+          },
+          {
+            "id": "C",
+            "text": "If the original server does not respond by rebinding timer $T_2 = 0.875 \\times \\text{Lease Time}$ (87.5%), the client broadcasts a DHCP Request to ANY available DHCP server on the network."
+          },
+          {
+            "id": "D",
+            "text": "If no DHCP Ack is received before $T_3 = 1.00 \\times \\text{Lease Time}$ (100%), the lease expires, the host immediately unbinds the IP address, and restarts the DORA process with a Discover."
+          },
+          {
+            "id": "E",
+            "text": "If the DHCP server reboots, all active client leases are immediately revoked within 50 milliseconds."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are standard RFC 2131 lease timer specifications. $T_1 = 50\\%$ unicast renewal (B). $T_2 = 87.5\\%$ broadcast rebinding (C). $T_3 = 100\\%$ expiration and lease release (D). E is false: Clients retain leased IPs until timer expiry regardless of whether the DHCP server reboots or goes offline temporarily.",
+        "difficulty": "hard",
+        "subtopic": "DHCP Lease Timers (T1, T2, T3)"
+      },
+      {
+        "id": "l11-q15",
+        "type": "multi_choice",
+        "question": "Which of the following security threats are directly associated with DHCP deployments on unmanaged local area networks?",
+        "options": [
+          {
+            "id": "A",
+            "text": "DHCP Starvation Attack: An attacker floods the network with thousands of DHCP Discovers with forged MAC addresses, exhausting the DHCP server's entire IP address pool."
+          },
+          {
+            "id": "B",
+            "text": "Rogue DHCP Server Attack: An unauthorized DHCP server replies to client Discovers faster than the legitimate server, assigning a malicious default gateway or malicious DNS resolver IP to victims."
+          },
+          {
+            "id": "C",
+            "text": "DHCP Snooping on network switches mitigates starvation attacks by enforcing rate-limiting on DHCP packets on untrusted switch ports."
+          },
+          {
+            "id": "D",
+            "text": "Rogue DHCP servers can be completely neutralized by replacing all Cat6 cables with multi-mode fiber optic lines."
+          },
+          {
+            "id": "E",
+            "text": "A rogue DHCP server can assign its own IP address as the default gateway to perform transparent Man-in-the-Middle eavesdropping on all client web traffic."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. Starvation exhausts pools (A). Rogue DHCP servers hijack gateways and DNS (B & E). Switch port rate limiting and snooping mitigate starvation (C). D is false: Cable medium has zero effect on higher-layer broadcast protocol security.",
+        "difficulty": "medium",
+        "subtopic": "DHCP Attacks & Defenses"
+      },
+      {
+        "id": "l11-q16",
+        "type": "multi_choice",
+        "question": "How does a DHCP Relay Agent (RFC 3046 / Option 82) enable centralized DHCP servers to serve clients across multiple routed subnets?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Because routers do not forward limited broadcast packets (`255.255.255.255`), a client's DHCP Discover cannot cross a router boundary on its own."
+          },
+          {
+            "id": "B",
+            "text": "A router interface configured as a DHCP Relay intercepts incoming client broadcast Discovers and re-encapsulates them as unicast UDP packets sent to the centralized DHCP server."
+          },
+          {
+            "id": "C",
+            "text": "The relay agent inserts the IP address of its receiving interface into the `giaddr` (Gateway IP Address) field of the DHCP message."
+          },
+          {
+            "id": "D",
+            "text": "The centralized DHCP server inspects `giaddr` to determine which subnet IP pool to allocate the client's lease from."
+          },
+          {
+            "id": "E",
+            "text": "The DHCP Relay Agent decrypts the client's Wi-Fi password and stores it in the router's NVRAM."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D accurately capture the DHCP Relay mechanism. Routers drop L2/L3 broadcasts (A). Relay converts broadcast to unicast toward central server (B). The `giaddr` field tells the server the client's origin subnet (C & D). E is absurd.",
+        "difficulty": "hard",
+        "subtopic": "DHCP Relay Agent & Option 82"
+      },
+      {
+        "id": "l11-q17",
+        "type": "multi_choice",
+        "question": "A typical consumer home 'Wi-Fi Router' is actually a multi-functional embedded appliance combining several distinct networking components. Which of the following components are integrated inside?",
+        "options": [
+          {
+            "id": "A",
+            "text": "A Layer 2 Ethernet Switch providing local LAN ports with hardware CAM MAC learning."
+          },
+          {
+            "id": "B",
+            "text": "A Wireless Access Point (AP) bridging 802.11 wireless frames onto the wired Layer 2 network."
+          },
+          {
+            "id": "C",
+            "text": "A Layer 3 IP Router forwarding packets between the local LAN subnet (`192.168.1.0/24`) and the ISP WAN network."
+          },
+          {
+            "id": "D",
+            "text": "A stateful NAPT / PAT engine and firewall translating private RFC 1918 addresses to a single public IP."
+          },
+          {
+            "id": "E",
+            "text": "Local network services, including an embedded DHCP server and a caching DNS forwarder/proxy (e.g., `dnsmasq`)."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) are correct! The home 'router' combines an L2 switch (A), 802.11 AP (B), L3 router (C), NAPT/firewall (D), and embedded DHCP/DNS daemons like dnsmasq (E) into a single unified chassis.",
+        "difficulty": "medium",
+        "subtopic": "Home Gateway Architecture"
+      },
+      {
+        "id": "l11-q18",
+        "type": "multi_choice",
+        "question": "Which of the following transition mechanisms enable IPv6-only clients to communicate with legacy IPv4-only Internet services?",
+        "options": [
+          {
+            "id": "A",
+            "text": "DNS64: When an IPv6 client queries a domain that only possesses an IPv4 A record, the DNS64 resolver synthesizes an artificial AAAA record by prepending a Well-Known Prefix (e.g., `64:ff9b::/96`)."
+          },
+          {
+            "id": "B",
+            "text": "NAT64: The intermediate gateway intercepts the IPv6 packet addressed to the synthetic prefix, extracts the embedded IPv4 address, and translates it to an IPv4 packet using a stateful NAT pool."
+          },
+          {
+            "id": "C",
+            "text": "Dual Stack: Configures network interfaces and routers with both an IPv4 and an IPv6 address simultaneously, routing each protocol natively."
+          },
+          {
+            "id": "D",
+            "text": "Happy Eyeballs (RFC 8305): Browsers query both A and AAAA records in parallel and attempt connections to both, preferring IPv6 but falling back to IPv4 with minimal delay if IPv6 connectivity is impaired."
+          },
+          {
+            "id": "E",
+            "text": "NAT64 works by physically stripping the first 96 bits of fiber optic glass in the uplink cable."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. DNS64 synthesizes AAAA records (A), NAT64 translates between IPv6 and IPv4 headers (B), Dual Stack runs both protocols side-by-side (C), and Happy Eyeballs minimizes user-visible latency during dual-stack transitions (D). E is humorous nonsense.",
+        "difficulty": "hard",
+        "subtopic": "IPv6 Transition: NAT64 & DNS64"
+      },
+      {
+        "id": "l11-q19",
+        "type": "multi_choice",
+        "question": "In container platforms like Docker and Kubernetes, how does container networking utilize Linux network namespaces and NAT?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Each container is assigned its own isolated Linux Network Namespace with its own independent network interfaces, routing table, and iptables rules."
+          },
+          {
+            "id": "B",
+            "text": "A Virtual Ethernet pair (`veth`) connects the container namespace to the host namespace, acting like a virtual patch cable with one end inside the container and the other end plugged into the `docker0` virtual bridge."
+          },
+          {
+            "id": "C",
+            "text": "Outbound traffic from containers to the external network undergoes source NAT via Linux iptables (`MASQUERADE` rule), rewriting the container's private IP to the host's physical IP."
+          },
+          {
+            "id": "D",
+            "text": "Inbound port publishing (`docker run -p 8080:80`) creates a Destination NAT (DNAT) rule in iptables, redirecting incoming packets on host port 8080 to the container's internal IP on port 80."
+          },
+          {
+            "id": "E",
+            "text": "Docker containers require an individual physical PCIe network card plugged into the motherboard for each running container."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D accurately represent Linux container networking. Network namespaces isolate stacks (A). `veth` pairs bridge namespaces into `docker0` (B). Outbound traffic uses `iptables -j MASQUERADE` SNAT (C). Port forwarding uses `PREROUTING -j DNAT` (D). E is false; everything is virtualized in software.",
+        "difficulty": "hard",
+        "subtopic": "Linux Namespaces & Container NAT"
+      },
+      {
+        "id": "l11-q20",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding local network plumbing and Layer 2/Layer 3 boundaries are true?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Ethernet switches forward frames using MAC addresses within the same broadcast domain; routers forward packets using IP addresses across different broadcast domains."
+          },
+          {
+            "id": "B",
+            "text": "When a packet crosses an intermediate router hop, the source and destination IP addresses remain intact (unless NAT is applied), but the source and destination MAC addresses are replaced entirely."
+          },
+          {
+            "id": "C",
+            "text": "A broadcast frame with destination MAC `FF:FF:FF:FF:FF:FF` is flooded by Layer 2 switches out of every port in the same VLAN except the ingress port."
+          },
+          {
+            "id": "D",
+            "text": "A standard IP router will never forward an Ethernet frame with destination MAC `FF:FF:FF:FF:FF:FF` across to another subnet (broadcast boundary)."
+          },
+          {
+            "id": "E",
+            "text": "If a host wishes to communicate with a remote IP address outside its subnet, its ARP request asks for the MAC address of its Default Gateway, NOT the remote destination host."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) are core networking truths! Switches switch by MAC, routers route by IP (A). MACs change hop-by-hop while IPs remain constant (B). Broadcasts flood within the VLAN (C) and are dropped at router boundaries (D). For remote traffic, hosts ARP for their default gateway (E).",
+        "difficulty": "medium",
+        "subtopic": "Layer 2 & Layer 3 Integration"
+      }
+    ]
+  },
+  "lecture-12": {
+    "topicId": "lecture-12",
+    "lectureNumber": 12,
+    "title": "Network Troubleshooting & Diagnostics Master Quiz",
+    "description": "20 rigorous multi-correct questions covering troubleshooting cognitive models, ICMP packet dissection, PMTUD black holes & MSS clamping, ping jitter (mdev), traceroute mechanisms (UDP/ICMP/TCP SYN), asymmetric routing, mtr interpretation, ss Netlink inspection, ethtool hardware diagnostics, and BPF packet filters.",
+    "estimatedMinutes": 35,
+    "questions": [
+      {
+        "id": "l12-q01",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding network troubleshooting philosophies and cognitive models are accurate?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Bottom-Up troubleshooting validates Layer 1 physical links and cables first before systematically progressing upward through Link, Network, Transport, and Application layers."
+          },
+          {
+            "id": "B",
+            "text": "Top-Down troubleshooting begins at Layer 7 by inspecting application errors, HTTP status codes, and server logs, working downward toward physical infrastructure."
+          },
+          {
+            "id": "C",
+            "text": "In the Divide-and-Conquer (Bisection) approach, an engineer executes an initial Layer 3/4 probe (e.g., `ping 8.8.8.8` or `curl`); if it succeeds, Layers 1, 2, and 3 are instantly eliminated from suspicion."
+          },
+          {
+            "id": "D",
+            "text": "If `ping 8.8.8.8` succeeds but `ping google.com` fails, the issue is isolated to DNS resolution (Layer 7) rather than underlying routing or physical connectivity."
+          },
+          {
+            "id": "E",
+            "text": "Top-Down troubleshooting is always mathematically superior to Bottom-Up troubleshooting in data center cable installation projects."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D accurately represent systematic network troubleshooting. Bottom-Up starts at L1 (A). Top-Down starts at L7 (B). Divide-and-Conquer bisects the stack at L3/L4 (C). Pinging an IP proves L1-L3 works; hostname failure pinpoints DNS (D). E is false: In physical wiring and hardware installation, Bottom-Up is the industry standard because physical defects are the primary fault mode.",
+        "difficulty": "medium",
+        "subtopic": "Troubleshooting Cognitive Models"
+      },
+      {
+        "id": "l12-q02",
+        "type": "multi_choice",
+        "question": "In the binary packet architecture of the Internet Control Message Protocol (ICMPv4 - RFC 792), which of the following statements are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "ICMP messages possess a fixed 8-byte header starting with an 8-bit Type, an 8-bit Code, and a 16-bit Checksum."
+          },
+          {
+            "id": "B",
+            "text": "ICMP error messages (such as Destination Unreachable and Time Exceeded) MUST encapsulate the original IPv4 header plus at least the first 8 bytes of the offending payload."
+          },
+          {
+            "id": "C",
+            "text": "The first 8 bytes of the offending payload returned in an ICMP error allow the originating OS kernel to identify the source and destination TCP/UDP port numbers and demultiplex the error to the exact user process socket."
+          },
+          {
+            "id": "D",
+            "text": "ICMP packets run directly inside Ethernet frames without an IPv4 header (using EtherType `0x0800`)."
+          },
+          {
+            "id": "E",
+            "text": "In IPv4, ICMP is identified by IP Protocol Number `1`, whereas in IPv6, ICMPv6 is identified by Protocol Number `58`."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. ICMP has an 8-byte header (A), encapsulates the original IP header + first 8 bytes of payload (B), allowing socket demuxing via L4 port numbers (C). IP protocol numbers are 1 for ICMPv4 and 58 for ICMPv6 (E). D is false: ICMP is encapsulated inside an IP packet (`Protocol: 1`), not directly inside Ethernet.",
+        "difficulty": "hard",
+        "subtopic": "ICMP Header Anatomy & Error Reflection"
+      },
+      {
+        "id": "l12-q03",
+        "type": "multi_choice",
+        "question": "Which of the following ICMP Type and Code assignments and their diagnostic meanings are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Type 0, Code 0: Echo Reply (response to `ping`)."
+          },
+          {
+            "id": "B",
+            "text": "Type 3, Code 1: Host Unreachable (router has a route to the subnet, but ARP request timed out because the host is off or disconnected)."
+          },
+          {
+            "id": "C",
+            "text": "Type 3, Code 3: Port Unreachable (destination host received a UDP datagram on a closed port with no listening process)."
+          },
+          {
+            "id": "D",
+            "text": "Type 3, Code 4: Fragmentation Needed and DF Set (critical signal used in Path MTU Discovery)."
+          },
+          {
+            "id": "E",
+            "text": "Type 11, Code 0: Time-to-Live (TTL) Expired in Transit (core signal used by `traceroute` to detect intermediate hops)."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) are accurate standard ICMP definitions! Type 0 is Echo Reply (A). Type 3 Code 1 is Host Unreachable via ARP failure (B). Type 3 Code 3 is Port Unreachable on UDP (C). Type 3 Code 4 is Frag Needed with DF set for PMTUD (D). Type 11 Code 0 is TTL Expired in Transit (E).",
+        "difficulty": "hard",
+        "subtopic": "ICMP Taxonomy of Types & Codes"
+      },
+      {
+        "id": "l12-q04",
+        "type": "multi_choice",
+        "question": "A cloud engineer deploys a WireGuard VPN tunnel (MTU 1420) between a client and a web server. Client users report that small SSH and curl requests succeed, but loading a large webpage hangs indefinitely. Which of the following describe this 'PMTUD Black Hole' phenomenon?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The sender sets the `DF=1` (Don't Fragment) bit in the IPv4 header of all outgoing TCP segments."
+          },
+          {
+            "id": "B",
+            "text": "The initial TCP three-way handshake segments are small ($\\approx 60\\text{ bytes}$) and easily pass through the 1420-byte MTU tunnel without issues."
+          },
+          {
+            "id": "C",
+            "text": "When the server transmits a full-size HTTP response ($1500\\text{ bytes}$), the ingress tunnel router drops the packet because it exceeds $1420\\text{ bytes}$ and cannot be fragmented."
+          },
+          {
+            "id": "D",
+            "text": "The router generates an `ICMP Type 3, Code 4` error informing the server of `Next-Hop MTU = 1420`, but an overly aggressive firewall drops all inbound ICMP."
+          },
+          {
+            "id": "E",
+            "text": "Because the server never receives the ICMP notification, it repeatedly retransmits the $1500\\text{ byte}$ segment until the connection times out, leaving the client hanging."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) accurately describe the classic PMTUD Black Hole! DF=1 is set (A). Small handshakes pass (B). Large data packets exceed tunnel MTU and get dropped (C). Router sends ICMP Type 3 Code 4, but firewalls drop ICMP (D). Server retransmits forever, causing client connections to hang indefinitely (E).",
+        "difficulty": "hard",
+        "subtopic": "PMTUD Black Hole Mechanics"
+      },
+      {
+        "id": "l12-q05",
+        "type": "multi_choice",
+        "question": "How does TCP MSS Clamping mitigate the PMTUD Black Hole problem without requiring changes to client operating systems or remote firewalls?",
+        "options": [
+          {
+            "id": "A",
+            "text": "A firewall or router at the network boundary intercepts TCP SYN and SYN-ACK packets traversing the tunnel."
+          },
+          {
+            "id": "B",
+            "text": "It inspects the Maximum Segment Size (MSS) option in the TCP header and clamps (rewrites) it down to $\\text{Tunnel MTU} - 40\\text{ bytes}$ (accounting for IP and TCP headers)."
+          },
+          {
+            "id": "C",
+            "text": "In Linux, this is achieved using the iptables rule: `iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu`."
+          },
+          {
+            "id": "D",
+            "text": "Both endpoints are tricked into negotiating a smaller MSS, ensuring that no TCP segment transmitted by either host ever exceeds the tunnel MTU."
+          },
+          {
+            "id": "E",
+            "text": "TCP MSS Clamping eliminates the need for IP addresses by converting all TCP streams into raw Bluetooth frames."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. MSS Clamping rewrites the MSS option in TCP SYN packets (A & B) using iptables/nftables (C), preventing hosts from ever sending segments exceeding path MTU (D). E is absurd.",
+        "difficulty": "hard",
+        "subtopic": "TCP MSS Clamping"
+      },
+      {
+        "id": "l12-q06",
+        "type": "multi_choice",
+        "question": "When interpreting the summary output of `ping`: `rtt min/avg/max/mdev = 12.1/14.5/45.2/8.4 ms`, which of the following statements are technically correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`min` represents the physical baseline propagation delay of speed-of-light in the medium plus minimal router queuing."
+          },
+          {
+            "id": "B",
+            "text": "`max` typically reflects transient buffer queuing (bufferbloat) or packet reordering bursts along the path."
+          },
+          {
+            "id": "C",
+            "text": "`mdev` stands for Mean Deviation, representing the standard deviation or jitter (variability) of Round-Trip Time across the sample set."
+          },
+          {
+            "id": "D",
+            "text": "A high `mdev` relative to `avg` indicates an unstable or congested path, common in bufferbloated uplinks or radio interference on Wi-Fi/cellular links."
+          },
+          {
+            "id": "E",
+            "text": "`mdev` represents the millisecond countdown before the local network card enters power-saving sleep mode."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. Min reflects physical speed of light (A). Max reflects queue peaks (B). `mdev` measures mean deviation / jitter: $\\frac{1}{N}\\sum |RTT_i - \\overline{RTT}|$ (C), with high mdev signaling jitter/congestion/interference (D). E is nonsense.",
+        "difficulty": "medium",
+        "subtopic": "Ping Metrics & Jitter (mdev)"
+      },
+      {
+        "id": "l12-q07",
+        "type": "multi_choice",
+        "question": "What is the 'Ping Fallacy' (Control Plane Rate Limiting), and why can intermediate packet loss reported by `ping` or `traceroute` be misleading?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Modern high-speed core routers forward user data traffic in dedicated hardware ASICs (Data Plane) at line rate."
+          },
+          {
+            "id": "B",
+            "text": "Responding to an ICMP Echo Request requires sending the packet from the ASIC to the router's central management CPU (Control Plane)."
+          },
+          {
+            "id": "C",
+            "text": "To protect their control plane CPUs from denial-of-service exhaustion, routers apply strict token-bucket rate limiters on ICMP generation."
+          },
+          {
+            "id": "D",
+            "text": "If an intermediate router shows $30\\%$ packet loss to ping, but the ultimate destination shows $0\\%$ loss, transit traffic is NOT experiencing any packet loss at all."
+          },
+          {
+            "id": "E",
+            "text": "If any intermediate hop shows packet loss, all web and database traffic traversing that hop is degraded by exactly that same percentage."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. ASICs handle data forwarding (A) while ICMP responses require CPU intervention (B). Rate limiters drop control plane ICMP probes (C). If downstream hops and destination report 0% loss, forwarding is 100% healthy (D). E is the exact false assumption known as the Ping Fallacy.",
+        "difficulty": "hard",
+        "subtopic": "The Ping Fallacy & Control Plane Rate Limiting"
+      },
+      {
+        "id": "l12-q08",
+        "type": "multi_choice",
+        "question": "How do Linux `traceroute`, Windows `tracert`, and TCP SYN traceroute differ in their protocol mechanics?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Linux `traceroute` defaults to sending UDP datagrams to high ephemeral ports (starting at 33434) with incrementing TTL values."
+          },
+          {
+            "id": "B",
+            "text": "Windows `tracert` defaults to sending ICMP Echo Request packets (Type 8) with incrementing TTL values."
+          },
+          {
+            "id": "C",
+            "text": "Linux UDP traceroute recognizes that it has reached the destination when it receives an `ICMP Type 3, Code 3` (Port Unreachable) error from the target host."
+          },
+          {
+            "id": "D",
+            "text": "TCP SYN traceroute (`traceroute -T -p 443`) sends TCP SYN packets to port 443; intermediate hops still return `ICMP Time Exceeded`, but the destination replies with `SYN-ACK` or `RST`."
+          },
+          {
+            "id": "E",
+            "text": "Windows `tracert` uses DNS queries exclusively to discover routers."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. Linux defaults to UDP high ports (A) and detects destination via ICMP Port Unreachable (C). Windows defaults to ICMP Echo (B). TCP SYN traceroute punches through corporate firewalls by targeting port 443 (D). E is false.",
+        "difficulty": "hard",
+        "subtopic": "Traceroute Protocol Variations"
+      },
+      {
+        "id": "l12-q09",
+        "type": "multi_choice",
+        "question": "A network administrator runs `traceroute` to an external host and observes the following output:\n```\n 3  10.20.0.1 (10.20.0.1)  4.1 ms  4.0 ms  4.1 ms\n 4  * * *\n 5  142.250.214.34 (142.250.214.34)  12.3 ms  12.2 ms  12.3 ms\n```\nWhich of the following interpretations are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Hop 4 is completely down and has severed the network connection."
+          },
+          {
+            "id": "B",
+            "text": "Hop 4 is successfully forwarding transit IP packets; otherwise, probe packets could never have reached Hop 5."
+          },
+          {
+            "id": "C",
+            "text": "Hop 4's router is configured to drop or ignore unprompted UDP/ICMP probe packets or suppress ICMP Time Exceeded generation."
+          },
+          {
+            "id": "D",
+            "text": "An intermediate firewall between Hop 3 and Hop 4 is selectively filtering ICMP Time Exceeded responses sent by Hop 4."
+          },
+          {
+            "id": "E",
+            "text": "Asterisks (`* * *`) at an intermediate hop do NOT indicate a network failure if subsequent hops respond normally."
+          }
+        ],
+        "correctOptionIds": [
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "Statements B, C, D, and E are correct. If Hop 5 responded in 12 ms, Hop 4 is actively forwarding traffic (B & E). Asterisks simply mean the router did not generate or return an ICMP Time Exceeded message (C & D). A is the classic beginner mistake.",
+        "difficulty": "medium",
+        "subtopic": "Interpreting Traceroute Asterisks"
+      },
+      {
+        "id": "l12-q010",
+        "type": "multi_choice",
+        "question": "In internet routing diagnostics, what is 'Asymmetric Routing', and how can it create an illusion of latency spikes in `traceroute`?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Asymmetric routing occurs when packets from host A to host B traverse a different physical sequence of Autonomous Systems and links than packets returning from B to A."
+          },
+          {
+            "id": "B",
+            "text": "Traceroute can only measure Round-Trip Time (RTT: forward probe + reverse ICMP response); it cannot isolate forward latency from return latency."
+          },
+          {
+            "id": "C",
+            "text": "A sudden latency jump of $+120\\text{ ms}$ at Hop 4 may not reflect a slow forward link; it frequently indicates that the return path from Hop 4 entered an alternative, higher-latency transoceanic path."
+          },
+          {
+            "id": "D",
+            "text": "BGP hot-potato routing frequently induces asymmetric routing between ISPs because each provider hands off traffic to its peer as early as possible."
+          },
+          {
+            "id": "E",
+            "text": "Asymmetric routing violates TCP specifications and causes all TCP handshakes to fail."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. Forward and reverse paths frequently diverge across the global Internet (A), traceroute measures RTT (B), latency jumps often reflect return path asymmetry (C), and hot-potato BGP routing causes asymmetric flow (D). E is false: IP and TCP are completely indifferent to path symmetry.",
+        "difficulty": "hard",
+        "subtopic": "Asymmetric Routing Phenomena"
+      },
+      {
+        "id": "l12-q011",
+        "type": "multi_choice",
+        "question": "Which of the following principles govern the correct interpretation of multi-hop diagnostics using `mtr` (My Traceroute)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The Golden Rule of MTR: Genuine network packet loss MUST persist across all subsequent downstream hops."
+          },
+          {
+            "id": "B",
+            "text": "If Hop 3 reports $30\\%$ loss, but Hop 4 and Hop 5 report $0\\%$ loss, Hop 3 is healthy and merely rate-limiting ICMP responses."
+          },
+          {
+            "id": "C",
+            "text": "If Hop 4 reports $25\\%$ loss, and Hops 5, 6, and 7 continue to report $25\\%$ loss or higher, real packet loss began at Hop 4."
+          },
+          {
+            "id": "D",
+            "text": "A sudden permanent elevation in latency that starts at Hop $K$ and continues through all subsequent hops indicates that the bottleneck link is between Hop $K-1$ and Hop $K$."
+          },
+          {
+            "id": "E",
+            "text": "`mtr` requires that every intermediate router run the Linux operating system to compute packet loss."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are foundational rules of MTR analysis. Real loss propagates forward (A & C). Non-propagating loss is ICMP rate limiting (B). Latency shifts propagating through all subsequent hops isolate the bottleneck link (D). E is false: MTR works across any vendor's routers (Cisco, Juniper, Arista, etc.).",
+        "difficulty": "hard",
+        "subtopic": "MTR Real-Time Path Analysis"
+      },
+      {
+        "id": "l12-q012",
+        "type": "multi_choice",
+        "question": "Why has `netstat` been deprecated in modern Linux distributions in favor of `ss` (Socket Statistics)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`netstat` parses `/proc/net/tcp` line-by-line as text, acquiring kernel locks that can freeze systems hosting tens of thousands of active sockets."
+          },
+          {
+            "id": "B",
+            "text": "`ss` communicates directly with the kernel via Netlink sockets (`NETLINK_INET_DIAG`), dumping binary socket data in zero-copy chunks."
+          },
+          {
+            "id": "C",
+            "text": "`ss` executes in $O(1)$ constant time or rapid batching, avoiding user-space string formatting overhead."
+          },
+          {
+            "id": "D",
+            "text": "`ss` can query internal TCP transmission parameters (such as `cwnd`, `rtt`, `rto`, and pacing rate) that `netstat` cannot display."
+          },
+          {
+            "id": "E",
+            "text": "`netstat` only supports IPv4, whereas `ss` is the only tool that supports TCP."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are accurate. `netstat` parsed `/proc/net/tcp` with kernel locks and high overhead (A). `ss` uses Netlink zero-copy binary sockets (B & C) and exposes rich TCP stack internals via `ss -ti` (D). E is false.",
+        "difficulty": "medium",
+        "subtopic": "ss Netlink Subsystem vs Deprecated netstat"
+      },
+      {
+        "id": "l12-q013",
+        "type": "multi_choice",
+        "question": "An SRE executes `ss -tulpn` on a busy production server and reviews the `Recv-Q` and `Send-Q` columns. Which of the following interpretations are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "For a socket in the `LISTEN` state, `Send-Q` displays the maximum size of the accept backlog queue."
+          },
+          {
+            "id": "B",
+            "text": "For a socket in the `LISTEN` state, `Recv-Q` displays the count of fully-handshaked connections waiting in the accept queue for the application to call `accept()`."
+          },
+          {
+            "id": "C",
+            "text": "If a listening socket has `Recv-Q > Send-Q`, the accept queue has overflowed, and incoming client connections will experience dropped SYN-ACKs or connection resets."
+          },
+          {
+            "id": "D",
+            "text": "For a socket in the `ESTABLISHED` state, `Recv-Q` represents received bytes waiting in kernel memory that have not yet been consumed by the application via `read()`."
+          },
+          {
+            "id": "E",
+            "text": "For a socket in the `ESTABLISHED` state, a persistently high `Send-Q` indicates that the remote receiver is fast and the network is completely clear."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. Dual meaning of Recv-Q and Send-Q: In LISTEN, Send-Q is max backlog and Recv-Q is pending connections (A & B); Recv-Q > Send-Q indicates accept queue overflow (C). In ESTABLISHED, Recv-Q is unread bytes (D). E is false: High Send-Q in ESTABLISHED means outbound bytes are stuck unacknowledged, indicating remote client is slow or network path is dropping packets.",
+        "difficulty": "hard",
+        "subtopic": "ss Recv-Q and Send-Q Semantics"
+      },
+      {
+        "id": "l12-q014",
+        "type": "multi_choice",
+        "question": "Running `ss -ti` displays the following kernel TCP parameters for an established socket:\n`cubic wscale:7,7 rto:220 rtt:18.2/0.4 ato:40 mss:1460 rcvspace:14600 cwnd:10 ssthresh:24 retrans:0/2`\nWhich of the following statements are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The smoothed Round-Trip Time (`rtt`) is $18.2\\text{ ms}$ with a jitter (variation) of $0.4\\text{ ms}$."
+          },
+          {
+            "id": "B",
+            "text": "The sender's Congestion Window (`cwnd`) currently permits 10 segments in-flight."
+          },
+          {
+            "id": "C",
+            "text": "`retrans:0/2` indicates that 0 segments are currently being retransmitted, out of 2 total retransmissions experienced across the lifetime of the connection."
+          },
+          {
+            "id": "D",
+            "text": "Because `cwnd:10` is strictly less than `ssthresh:24`, the connection is currently operating in Congestion Avoidance mode."
+          },
+          {
+            "id": "E",
+            "text": "`wscale:7,7` indicates that both sender and receiver negotiated a Window Scale factor of 7 (multiplying advertised window values by $2^7 = 128$)."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. `rtt:18.2/0.4` gives SRTT and jitter (A). `cwnd:10` is window in segments (B). `retrans:0/2` tracks current/total retransmissions (C). `wscale:7,7` represents $2^7 = 128$ scaling (E). D is false: When `cwnd < ssthresh` ($10 < 24$), the connection is in Slow Start mode, NOT Congestion Avoidance.",
+        "difficulty": "hard",
+        "subtopic": "Kernel TCP Internals via ss -ti"
+      },
+      {
+        "id": "l12-q015",
+        "type": "multi_choice",
+        "question": "When diagnosing physical and link-layer network interface problems using `ethtool`, which of the following statements are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "An Auto-negotiation mismatch where one end is configured for Full-Duplex and the other end is Half-Duplex causes severe throughput collapse, late collisions, and frame drops."
+          },
+          {
+            "id": "B",
+            "text": "A high counter for `rx_crc_errors` in `ethtool -S <interface>` indicates physical layer degradation: damaged copper patch cables, electromagnetic noise, or dirty fiber optic transceivers."
+          },
+          {
+            "id": "C",
+            "text": "A high counter for `rx_missed_errors` or `rx_dropped` indicates that the NIC's hardware DMA ring buffer overflowed because the CPU could not service interrupts fast enough."
+          },
+          {
+            "id": "D",
+            "text": "Hardware ring buffer overflows can be mitigated by increasing the RX ring buffer size via `ethtool -G <interface> rx 4096`."
+          },
+          {
+            "id": "E",
+            "text": "`ethtool` can only be executed on wireless Wi-Fi interfaces and fails on physical Ethernet cards."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are standard L1/L2 engineering diagnostics. Duplex mismatches cause collisions and collapse (A). `rx_crc_errors` indicates bad cables/optics (B). `rx_missed_errors` indicates ring buffer exhaustion (C), solvable by expanding ring buffers via `ethtool -G` (D). E is false: `ethtool` is the canonical diagnostic tool for physical Ethernet NICs.",
+        "difficulty": "hard",
+        "subtopic": "Hardware & NIC Diagnostics via ethtool"
+      },
+      {
+        "id": "l12-q016",
+        "type": "multi_choice",
+        "question": "Which of the following principles govern the Berkeley Packet Filter (BPF) engine utilized by `tcpdump`?",
+        "options": [
+          {
+            "id": "A",
+            "text": "BPF compiles filter expressions into bytecode executed inside an in-kernel register-based virtual machine."
+          },
+          {
+            "id": "B",
+            "text": "Packets that do not match the filter are discarded immediately in kernel space, eliminating costly copying and context switches to user-space memory."
+          },
+          {
+            "id": "C",
+            "text": "In modern Linux kernels, BPF filter bytecode is JIT-compiled into native host CPU machine instructions for maximum packet-filtering performance."
+          },
+          {
+            "id": "D",
+            "text": "BPF requires that every packet be decrypted and printed in ASCII before any filtering can occur."
+          },
+          {
+            "id": "E",
+            "text": "BPF filters can inspect arbitrary packet bytes at specific byte offsets within protocol headers (e.g., `tcp[13]` for TCP flags)."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E accurately describe BPF. Bytecode virtual machine in-kernel (A). Discards non-matching packets in kernel space before context switches (B). JIT-compiled to machine code (C). Supports offset byte masking like `tcp[13]` (E). D is false: Filtering is done on raw binary in kernel memory before userspace receives anything.",
+        "difficulty": "hard",
+        "subtopic": "BPF Architecture in tcpdump"
+      },
+      {
+        "id": "l12-q017",
+        "type": "multi_choice",
+        "question": "Which of the following `tcpdump` commands and Berkeley Packet Filters are constructed accurately for their stated diagnostic goals?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Capture only TCP SYN packets (new connection establishment): `sudo tcpdump -nn 'tcp[tcpflags] & tcp-syn != 0 and tcp[tcpflags] & tcp-ack == 0'`."
+          },
+          {
+            "id": "B",
+            "text": "Capture TCP connection resets: `sudo tcpdump -nn 'tcp[tcpflags] & tcp-rst != 0'`."
+          },
+          {
+            "id": "C",
+            "text": "Capture all DNS traffic on UDP or TCP port 53 without resolving hostnames: `sudo tcpdump -nn port 53`."
+          },
+          {
+            "id": "D",
+            "text": "High-speed packet capture to a ring buffer of 5 files of 100MB each with a 4MB kernel buffer: `sudo tcpdump -nn -i eth0 -s 0 -B 4096 -w /tmp/cap.pcap -W 5 -C 100`."
+          },
+          {
+            "id": "E",
+            "text": "Capture ICMP Fragmentation Needed packets: `sudo tcpdump -nn 'icmp and icmp[0] == 3 and icmp[1] == 4'`."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE commands (A, B, C, D, and E) are syntactically and semantically correct production recipes! SYN filter excludes ACKs (A). RST filter catches resets (B). Port 53 captures DNS (C). Ring buffer `-W 5 -C 100` with `-B 4096` prevents drops during high-speed traffic (D). ICMP Type 3 Code 4 filter catches PMTUD drops (E).",
+        "difficulty": "hard",
+        "subtopic": "Advanced tcpdump Recipes & BPF Filters"
+      },
+      {
+        "id": "l12-q018",
+        "type": "multi_choice",
+        "question": "When analyzing packet captures in Wireshark, which of the following interpretations of the Expert Information engine are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`[TCP Retransmission]`: Sender's Retransmission Timer (RTO) expired without receiving an ACK for previously sent bytes."
+          },
+          {
+            "id": "B",
+            "text": "`[TCP Fast Retransmission]`: Sender received 3 duplicate ACKs and retransmitted the missing segment before the RTO expired."
+          },
+          {
+            "id": "C",
+            "text": "`[TCP ZeroWindow]`: The receiving host's socket buffer is 100% full, warning the sender to halt transmission."
+          },
+          {
+            "id": "D",
+            "text": "`[TCP Window Update]`: The receiving application consumed bytes from its socket buffer, advertising restored receive capacity."
+          },
+          {
+            "id": "E",
+            "text": "`[TCP Spurious Retransmission]`: Indicates that the sender retransmitted data that the receiver had already acknowledged."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) are correct Wireshark Expert Info definitions! Retransmission indicates RTO timeout (A). Fast Retransmit follows 3 dup ACKs (B). ZeroWindow signals receiver buffer exhaustion (C). Window Update resumes stream (D). Spurious retransmission indicates unnecessary retransmit due to delayed ACK (E).",
+        "difficulty": "medium",
+        "subtopic": "Wireshark Expert Info Analysis"
+      },
+      {
+        "id": "l12-q019",
+        "type": "multi_choice",
+        "question": "A newly deployed web service runs on a Linux host, but external clients receive 'Connection Refused' (`ECONNREFUSED` / TCP RST) when attempting to connect. Which of the following are valid diagnostic steps and likely causes?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Run `ss -tulpn | grep :8080`; if the socket is bound to `127.0.0.1:8080`, it will refuse all external incoming connections."
+          },
+          {
+            "id": "B",
+            "text": "If bound to `127.0.0.1`, reconfigure the service config to bind to `0.0.0.0:8080` (or `:::8080` for IPv6) to listen on all interfaces."
+          },
+          {
+            "id": "C",
+            "text": "Run `sudo iptables -L -n -v` or `nft list ruleset` to verify that local host firewall rules are not rejecting inbound packets on port 8080."
+          },
+          {
+            "id": "D",
+            "text": "Run `tcpdump -nn -i eth0 port 8080` to observe if incoming SYN packets arrive at the physical network interface."
+          },
+          {
+            "id": "E",
+            "text": "Connection Refused proves that the DNS server failed to resolve the domain name."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are valid troubleshooting steps. Binding to 127.0.0.1 rejects non-loopback connections (A & B). Host firewalls can reject packets (C). Tcpdump verifies whether SYNs reach the NIC (D). E is false: Connection Refused means a TCP RST was received from an IP; DNS resolution had already succeeded.",
+        "difficulty": "medium",
+        "subtopic": "SRE Runbook: Connection Refused Diagnostics"
+      },
+      {
+        "id": "l12-q020",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding end-to-end network troubleshooting tools and diagnostics are true?",
+        "options": [
+          {
+            "id": "A",
+            "text": "`curl -Iv https://example.com` outputs HTTP status codes, response headers, TLS certificate details, and timing handshakes."
+          },
+          {
+            "id": "B",
+            "text": "`dig +trace example.com` outputs the full hierarchical iterative resolution walk starting from the Root nameservers down to the authoritative answer."
+          },
+          {
+            "id": "C",
+            "text": "`ip route get 8.8.8.8` asks the Linux kernel to simulate a FIB routing lookup and outputs the exact egress interface, source IP, and gateway chosen for that destination."
+          },
+          {
+            "id": "D",
+            "text": "`nc -zv 10.0.0.5 443` rapidly probes whether TCP port 443 is reachable and listening without initiating a full application-layer session."
+          },
+          {
+            "id": "E",
+            "text": "Executing `ping` automatically fixes all broken Ethernet cables using electromagnetic self-repair."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are essential networking CLI tools. `curl -Iv` inspects HTTP/TLS headers (A). `dig +trace` displays root-to-auth iterative walk (B). `ip route get` shows FIB route decision (C). `nc -zv` tests raw L4 socket port connectivity (D). E is humorous and false.",
+        "difficulty": "medium",
+        "subtopic": "Network Troubleshooting CLI Toolkit"
+      }
+    ]
+  },
+  "lecture-13": {
+    "topicId": "lecture-13",
+    "lectureNumber": 13,
+    "title": "The Complete Internet Journey Capstone Quiz",
+    "description": "20 rigorous multi-correct questions synthesizing the entire course: 802.11 link establishment, DHCP/ARP bootstrapping, HSTS preload, global recursive DNS walk, BGP Anycast, NAT/PAT, TCP options, TLS 1.3 ECDHE key exchange, HTTP/2 vs HTTP/3 QUIC, reverse proxy ingress, and browser rendering pipeline.",
+    "estimatedMinutes": 40,
+    "questions": [
+      {
+        "id": "l13-q01",
+        "type": "multi_choice",
+        "question": "Before any IP traffic can flow, a client laptop connects to an encrypted 802.11 Wi-Fi network. Which of the following statements regarding link establishment and the 4-Way WPA2/WPA3 Handshake are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The laptop scans for 802.11 Beacon frames broadcasting the SSID, sends an Association Request, and receives an Association Response."
+          },
+          {
+            "id": "B",
+            "text": "Both the client and the Access Point independently derive the Pairwise Master Key (PMK) from the Wi-Fi pre-shared key (passphrase)."
+          },
+          {
+            "id": "C",
+            "text": "The client and AP execute a 4-way EAPOL handshake, exchanging nonces ($ANonce$ and $SNonce$) to derive the Pairwise Transient Key (PTK)."
+          },
+          {
+            "id": "D",
+            "text": "The Wi-Fi pre-shared passphrase is sent in plaintext across the radio link so the Access Point can verify it against its internal database."
+          },
+          {
+            "id": "E",
+            "text": "The derived PTK is used to encrypt all subsequent Layer 2 802.11 data frames using AES-CCMP or GCMP."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. The client associates via beacons/probes (A), both sides derive PMK locally (B), exchange nonces to derive PTK via EAPOL (C), and encrypt L2 frames with AES (E). D is false: The passphrase/PMK is NEVER sent over the air; the 4-way handshake proves knowledge of the key mathematically without exposing it.",
+        "difficulty": "hard",
+        "subtopic": "Wi-Fi Link Attachment & 4-Way Handshake"
+      },
+      {
+        "id": "l13-q02",
+        "type": "multi_choice",
+        "question": "Immediately following Layer 2 link establishment, the laptop bootstraps its IP configuration. Which of the following events occur during DHCP and Gratuitous ARP?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The laptop broadcasts a DHCP Discover over UDP (Source: `0.0.0.0:68`, Destination: `255.255.255.255:67`)."
+          },
+          {
+            "id": "B",
+            "text": "The local router responds with a DHCP Offer proposing an IP address (`192.168.1.5`), Subnet Mask (`/24`), Default Gateway (`192.168.1.1`), and DNS servers."
+          },
+          {
+            "id": "C",
+            "text": "After committing the lease via Request and Ack, the client sends a Gratuitous ARP asking: 'Who has 192.168.1.5? Tell 192.168.1.5'."
+          },
+          {
+            "id": "D",
+            "text": "If another host on the LAN responds to the Gratuitous ARP, an IP collision is detected, and the client declines the lease (`DHCPDECLINE`)."
+          },
+          {
+            "id": "E",
+            "text": "The DHCP Discover frame is routed across 5 transoceanic BGP backbone routers to reach ICANN headquarters."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D accurately represent host network bootstrapping. DHCP Discover broadcasts from 0.0.0.0 (A). Offer provides IP, mask, gateway, and DNS (B). Gratuitous ARP verifies IP uniqueness before assignment (C & D). E is absurd: DHCP Discover is a local broadcast contained strictly within the local LAN.",
+        "difficulty": "medium",
+        "subtopic": "DHCP Bootstrapping & Gratuitous ARP"
+      },
+      {
+        "id": "l13-q03",
+        "type": "multi_choice",
+        "question": "A user types `https://scaler.com` into the browser omnibox. Which of the following occur during URL parsing and HSTS evaluation before any network packets are sent?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The browser URI parser extracts the scheme (`https`), hostname (`scaler.com`), implicit port (443), and root path (`/`)."
+          },
+          {
+            "id": "B",
+            "text": "The browser checks its internal hardcoded HSTS (HTTP Strict Transport Security) Preload List."
+          },
+          {
+            "id": "C",
+            "text": "If `scaler.com` is present in the HSTS preload list, even if the user typed `http://`, the browser internally upgrades the request to `https://` (307 Internal Redirect) without transmitting an unencrypted request over the wire."
+          },
+          {
+            "id": "D",
+            "text": "HSTS preloading protects users against SSL-Stripping Man-in-the-Middle attacks on public networks."
+          },
+          {
+            "id": "E",
+            "text": "The browser executes a physical ping to the root DNS server before parsing the URL text."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. The browser parses URI components (A), checks the HSTS Preload database (B), performs client-side 307 internal redirection to HTTPS (C), completely neutralizing SSL-stripping attacks (D). E is nonsense.",
+        "difficulty": "medium",
+        "subtopic": "URL Parsing & HSTS Preload Protection"
+      },
+      {
+        "id": "l13-q04",
+        "type": "multi_choice",
+        "question": "Before initiating network communication, the browser evaluates its multi-tier cache. Which of the following cache mechanisms and behaviors are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The browser queries the Service Worker Cache (if registered) and the Memory Cache before checking the persistent Disk Cache."
+          },
+          {
+            "id": "B",
+            "text": "If a cached resource is fresh according to its `Cache-Control: max-age`, the browser serves it directly from disk, completing the request in $0\\text{ ms}$ with zero network traffic."
+          },
+          {
+            "id": "C",
+            "text": "If a cached resource is stale, the browser sends a Conditional GET request containing `If-None-Match: <ETag>` and/or `If-Modified-Since`."
+          },
+          {
+            "id": "D",
+            "text": "If the resource has not changed on the server, the server replies with `304 Not Modified` with zero body bytes, prompting the browser to render the cached body."
+          },
+          {
+            "id": "E",
+            "text": "A response marked `Cache-Control: no-cache` can never be stored on the client's hard disk."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. Multi-tier cache checks Service Worker $\\rightarrow$ Memory $\\rightarrow$ Disk (A). Fresh cache hits require 0 network packets (B). Stale entries trigger conditional validation via `If-None-Match` (C), returning `304 Not Modified` with empty body on match (D). E is false: `no-cache` CAN be stored on disk, but must be revalidated before use; `no-store` is the directive that forbids disk storage.",
+        "difficulty": "medium",
+        "subtopic": "Browser Cache Evaluation & Conditional Revalidation"
+      },
+      {
+        "id": "l13-q05",
+        "type": "multi_choice",
+        "question": "On a cold DNS cache miss, the recursive resolver walks the global DNS hierarchy to resolve `www.scaler.com`. Which of the following steps occur during this iterative walk?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The resolver queries a Root Nameserver (`.` zone), which responds with a referral (NS records) to the `.com` Top-Level Domain (TLD) nameservers along with glue records."
+          },
+          {
+            "id": "B",
+            "text": "The resolver queries the `.com` TLD nameserver, which responds with a referral to Scaler's authoritative nameservers (e.g., Cloudflare nameservers)."
+          },
+          {
+            "id": "C",
+            "text": "The resolver queries Scaler's authoritative nameserver, which returns the final A/AAAA record (`104.21.48.12`) with a TTL."
+          },
+          {
+            "id": "D",
+            "text": "The Root Nameserver responds with the final HTML webpage of Scaler."
+          },
+          {
+            "id": "E",
+            "text": "The recursive resolver caches intermediate NS and final A records according to their TTLs to accelerate subsequent queries from other clients."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. The iterative walk progresses: Root $\\rightarrow$ TLD referral (A) $\\rightarrow$ Authoritative referral (B) $\\rightarrow$ Final A record (C). Caching intermediate delegations accelerates future queries (E). D is absurd: Root servers handle DNS delegation records, not HTML web pages.",
+        "difficulty": "medium",
+        "subtopic": "Global Iterative DNS Resolution Walk"
+      },
+      {
+        "id": "l13-q06",
+        "type": "multi_choice",
+        "question": "How does the EDNS0 Client Subnet (ECS) extension (RFC 7871) interact with Content Delivery Networks (CDNs) during the DNS resolution phase?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Without ECS, an authoritative CDN nameserver only sees the IP address of the recursive resolver (e.g., Google 8.8.8.8), potentially returning a server edge location close to the resolver rather than the user."
+          },
+          {
+            "id": "B",
+            "text": "With ECS, the recursive resolver includes the client's network prefix (e.g., `/24`) inside the DNS query payload."
+          },
+          {
+            "id": "C",
+            "text": "The CDN's authoritative nameserver uses the client's subnet to look up its Anycast Edge topology and returns the IP of the Point of Presence (PoP) nearest to the actual user."
+          },
+          {
+            "id": "D",
+            "text": "ECS completely hides the client's existence from the authoritative nameserver by encrypting the DNS query with Tor."
+          },
+          {
+            "id": "E",
+            "text": "ECS enables CDNs to deliver lower round-trip latency and higher throughput for client web assets."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Statements A, B, C, and E are correct. Without ECS, GeoDNS misroutes users if their recursive resolver is geographically distant (A). ECS forwards the user's /24 prefix (B), enabling CDNs to direct the user to the closest edge PoP (C & E). D is false: ECS exposes subnet information, which is why it has privacy implications.",
+        "difficulty": "hard",
+        "subtopic": "EDNS0 Client Subnet & CDN Geo-Routing"
+      },
+      {
+        "id": "l13-q07",
+        "type": "multi_choice",
+        "question": "During DNS resolution, if DNSSEC validation is enabled on the recursive resolver, which cryptographic checks are executed to verify the authenticity of `scaler.com`?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The resolver verifies the `RRSIG` digital signature over the A record RRset using the public Zone-Signing Key (`ZSK`) published in the zone's `DNSKEY` record."
+          },
+          {
+            "id": "B",
+            "text": "The resolver verifies the signature over the `DNSKEY` record using the Key-Signing Key (`KSK`)."
+          },
+          {
+            "id": "C",
+            "text": "The resolver verifies that a hash of the child zone's KSK matches the Delegation Signer (`DS`) record published by the parent `.com` zone."
+          },
+          {
+            "id": "D",
+            "text": "This chain of cryptographic verification continues upward until it reaches the Root Zone Trust Anchor pre-configured in the resolver software."
+          },
+          {
+            "id": "E",
+            "text": "DNSSEC decrypts the HTTPS content before the browser sees it."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. DNSSEC authenticates via a strict cryptographic chain of trust: RRSIG verified by ZSK (A), ZSK verified by KSK (B), KSK verified by parent DS record (C), terminating at the Root Trust Anchor (D). E is false: DNSSEC validates DNS records; it has nothing to do with decrypting HTTPS application content.",
+        "difficulty": "hard",
+        "subtopic": "DNSSEC Cryptographic Chain of Trust"
+      },
+      {
+        "id": "l13-q08",
+        "type": "multi_choice",
+        "question": "Once the destination IP (`104.21.48.12`) is known, the laptop's OS kernel makes a local routing decision. Which of the following statements are correct?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The kernel evaluates its local Forwarding Information Base (FIB) and determines that `104.21.48.12` does not belong to the local subnet `192.168.1.0/24`."
+          },
+          {
+            "id": "B",
+            "text": "The kernel applies Longest Prefix Match (LPM) and selects the default route: `0.0.0.0/0 via 192.168.1.1 dev wlan0`."
+          },
+          {
+            "id": "C",
+            "text": "The kernel checks its ARP cache for the MAC address of the default gateway (`192.168.1.1`)."
+          },
+          {
+            "id": "D",
+            "text": "If the gateway's MAC is missing from the ARP cache, the kernel broadcasts an ARP Request (`who-has 192.168.1.1`) and temporarily buffers the outgoing TCP SYN packet."
+          },
+          {
+            "id": "E",
+            "text": "The kernel broadcasts an ARP Request across the Internet asking for the MAC address of `104.21.48.12`."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. The kernel determines destination is remote (A), selects default route via 192.168.1.1 (B), checks ARP cache for gateway MAC (C), and buffers packet if an ARP broadcast probe is needed (D). E is false: ARP never crosses router boundaries; the host ARPs for its local default gateway, not the remote public IP.",
+        "difficulty": "medium",
+        "subtopic": "Host FIB Lookup & Gateway ARP Resolution"
       },
       {
         "id": "l13-q09",
-        "type": "single_choice",
-        "question": "In internet transit across ISP backbones, what mechanism do core routers use to perform Longest Prefix Match (LPM) lookups in nanoseconds at line rate?",
+        "type": "multi_choice",
+        "question": "As the packet traverses multiple router hops from the client laptop to the server, which of the following rules govern Layer 2 and Layer 3 header encapsulation?",
         "options": [
           {
             "id": "A",
-            "text": "Binary tree search in main DDR4 RAM"
+            "text": "The Source IP (`192.168.1.5`, prior to NAT) and Destination IP (`104.21.48.12`) remain intact across end-to-end routing."
           },
           {
             "id": "B",
-            "text": "Hardware TCAM (Ternary Content Addressable Memory) in application-specific integrated circuits (ASICs)"
+            "text": "At every intermediate router hop, the old Layer 2 Ethernet frame header is stripped, and a new Layer 2 frame header with new Source and Destination MAC addresses is synthesized."
           },
           {
             "id": "C",
-            "text": "Sequential linear search through an ASCII text file"
+            "text": "Each router decrements the IPv4 `TTL` field by at least 1; if TTL reaches 0, the packet is discarded and an `ICMP Type 11, Code 0` (Time Exceeded) message is generated."
           },
           {
             "id": "D",
-            "text": "Python dictionaries"
+            "text": "Each router recalculates the IPv4 Header Checksum because the TTL field changed."
+          },
+          {
+            "id": "E",
+            "text": "MAC addresses remain unchanged from the laptop all the way to the server."
           }
         ],
         "correctOptionIds": [
-          "B"
+          "A",
+          "B",
+          "C",
+          "D"
         ],
-        "explanation": "TCAM allows matching across 0, 1, and 'don't care' wildcard bits in parallel across all FIB entries in a single clock cycle, enabling wire-speed forwarding.",
+        "explanation": "Statements A, B, C, and D are foundational principles of packet forwarding. IPs remain end-to-end (A). L2 MAC headers are rebuilt at each hop (B). Routers decrement TTL (C) and recalculate the IPv4 header checksum (D). E is the classic misconception: MAC addresses are strictly hop-local and change at every router.",
         "difficulty": "medium",
-        "subtopic": "TCAM Hardware Forwarding"
+        "subtopic": "L2 vs L3 Hop-by-Hop Transformations"
       },
       {
-        "id": "l13-q10",
-        "type": "single_choice",
-        "question": "Which protocol governs the inter-domain path selection between the user's ISP, transit carriers (Tier-1 providers), and the web server's hosting cloud network?",
+        "id": "l13-q010",
+        "type": "multi_choice",
+        "question": "When the outgoing packet reaches the home router's WAN interface, which operations are performed by the Network Address and Port Translation (NAPT) engine?",
         "options": [
           {
             "id": "A",
-            "text": "OSPF"
+            "text": "The private Source IP `192.168.1.5` is rewritten to the router's public WAN IP address (e.g., `203.0.113.45`)."
           },
           {
             "id": "B",
-            "text": "BGP (Border Gateway Protocol)"
+            "text": "The ephemeral Source Port `52410` is mapped to an available port in the router's public pool (e.g., `18204`)."
           },
           {
             "id": "C",
-            "text": "RIPv2"
+            "text": "A bidirectional state mapping `(192.168.1.5:52410 ⟷ 203.0.113.45:18204 ⟷ 104.21.48.12:443)` is committed to the NAT table."
           },
           {
             "id": "D",
-            "text": "STP"
+            "text": "The TCP checksum is recomputed because the Source IP and Source Port in the TCP pseudo-header were rewritten."
+          },
+          {
+            "id": "E",
+            "text": "The home router drops the packet if it contains TLS encryption."
           }
         ],
         "correctOptionIds": [
-          "B"
+          "A",
+          "B",
+          "C",
+          "D"
         ],
-        "explanation": "BGP is the de-facto exterior gateway routing protocol connecting autonomous systems (ASNs) across the global internet.",
-        "difficulty": "easy",
-        "subtopic": "BGP Internet Transit"
-      },
-      {
-        "id": "l13-q11",
-        "type": "single_choice",
-        "question": "Once packets reach the web server's network and firewall, what transport layer handshake is executed to establish a reliable connection before any HTTPS data is sent?",
-        "options": [
-          {
-            "id": "A",
-            "text": "DHCP DORA 4-way exchange"
-          },
-          {
-            "id": "B",
-            "text": "TCP 3-Way Handshake (SYN, SYN-ACK, ACK)"
-          },
-          {
-            "id": "C",
-            "text": "BGP Keepalive exchange"
-          },
-          {
-            "id": "D",
-            "text": "ARP Who-has query"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "TCP establishes a full-duplex byte stream via SYN, SYN-ACK, and ACK, establishing sequence numbers and flow control buffers.",
-        "difficulty": "easy",
-        "subtopic": "TCP Connection Setup"
-      },
-      {
-        "id": "l13-q12",
-        "type": "single_choice",
-        "question": "In TLS 1.3, how many round trips (RTT) are required for the cryptographic handshake to establish encryption keys before application data can be sent?",
-        "options": [
-          {
-            "id": "A",
-            "text": "3 RTTs"
-          },
-          {
-            "id": "B",
-            "text": "2 RTTs"
-          },
-          {
-            "id": "C",
-            "text": "1 RTT (Client sends ClientHello with Key Share; Server replies with ServerHello, Certificate, and Finished)"
-          },
-          {
-            "id": "D",
-            "text": "0 RTT is mandatory for all first-time connections"
-          }
-        ],
-        "correctOptionIds": [
-          "C"
-        ],
-        "explanation": "TLS 1.3 reduced the handshake from 2 RTTs (in TLS 1.2) to just 1 RTT by combining the key share (Diffie-Hellman parameters) directly inside the initial `ClientHello` message.",
+        "explanation": "Statements A, B, C, and D are correct. NAPT rewrites Source IP (A), maps Source Port (B), stores state for return packets (C), and recomputes the L4 TCP checksum (D). E is false: NAT operates transparently on IP/TCP headers and is oblivious to encrypted payload.",
         "difficulty": "medium",
-        "subtopic": "TLS 1.3 Handshake Latency"
+        "subtopic": "NAPT / PAT Gateway Operations"
       },
       {
-        "id": "l13-q13",
-        "type": "single_choice",
-        "question": "What is the role of the Public Key Infrastructure (PKI) and Certificate Authorities (CAs) during the TLS handshake?",
+        "id": "l13-q011",
+        "type": "multi_choice",
+        "question": "Across the Internet backbone, which protocols and architectural components guide the packet between the user's ISP and Cloudflare (AS 13335)?",
         "options": [
           {
             "id": "A",
-            "text": "They assign IP addresses to web servers"
+            "text": "Within the ISP's internal network, Interior Gateway Protocols (IGP) like OSPF or IS-IS compute shortest paths across core routers."
           },
           {
             "id": "B",
-            "text": "They allow the client to cryptographically verify that the server's public key belongs legitimately to `example.com` by validating digital signatures against pre-installed Root CA certificates in the OS/browser trust store"
+            "text": "At network boundaries, Border Gateway Protocol (BGP-4) exchanges routing information between Autonomous Systems (ASNs)."
           },
           {
             "id": "C",
-            "text": "They compress the HTML before sending"
+            "text": "Traffic between ISPs frequently exchanges at Internet Exchange Points (IXPs) via settlement-free peering agreements or paid transit through Tier-1 carriers."
           },
           {
             "id": "D",
-            "text": "They maintain the router's BGP routing table"
+            "text": "BGP uses the `AS_PATH` attribute to enforce economic routing policies and guarantee loop-free inter-domain routing."
+          },
+          {
+            "id": "E",
+            "text": "The Internet backbone uses a single central computer in Washington D.C. that computes every packet's path in real time."
           }
         ],
         "correctOptionIds": [
-          "B"
+          "A",
+          "B",
+          "C",
+          "D"
         ],
-        "explanation": "The server presents a certificate signed by an intermediate CA, leading up to a trusted Root CA embedded in the client's OS trust store. This prevents Man-in-the-Middle (MITM) impersonation attacks.",
+        "explanation": "Statements A, B, C, and D accurately describe Internet WAN routing. Intra-ISP uses OSPF/IS-IS (A). Inter-AS uses BGP (B). Traffic exchanges at IXPs and Tier-1 transit backbones (C). BGP uses `AS_PATH` to prevent loops and enforce commercial policies (D). E is absurd.",
         "difficulty": "medium",
-        "subtopic": "PKI & Certificate Validation"
+        "subtopic": "Autonomous Systems & BGP Routing"
       },
       {
-        "id": "l13-q14",
-        "type": "single_choice",
-        "question": "Why does TLS use asymmetric public-key cryptography (like ECDHE) ONLY during the initial handshake, switching to symmetric cryptography (like AES-GCM or ChaCha20) for actual HTTP payload data?",
+        "id": "l13-q012",
+        "type": "multi_choice",
+        "question": "Cloudflare announces the IP address `104.21.48.12` using BGP Anycast. Which of the following statements regarding Anycast routing are correct?",
         "options": [
           {
             "id": "A",
-            "text": "Symmetric encryption is orders of magnitude faster and computationally cheaper on CPU hardware than asymmetric public-key operations"
+            "text": "The exact same IP prefix (`104.21.48.0/24`) is announced simultaneously from over 300 physical data centers around the world."
           },
           {
             "id": "B",
-            "text": "Asymmetric encryption cannot encrypt text, only numbers"
+            "text": "Upstream BGP routers route client packets to the topologically closest data center based on BGP metrics (such as shortest `AS_PATH`)."
           },
           {
             "id": "C",
-            "text": "Symmetric encryption keys are publicly visible on DNS servers"
+            "text": "Anycast naturally distributes Distributed Denial of Service (DDoS) attack traffic across hundreds of edge locations, absorbing volumetric floods close to the attack source."
           },
           {
             "id": "D",
-            "text": "Asymmetric encryption does not work over Wi-Fi"
+            "text": "Anycast requires that every data center worldwide have an identical physical MAC address."
+          },
+          {
+            "id": "E",
+            "text": "If a specific Anycast data center goes offline, withdrawing its BGP route advertisement causes global Internet routers to automatically converge to the next-closest healthy data center."
           }
         ],
         "correctOptionIds": [
-          "A"
+          "A",
+          "B",
+          "C",
+          "E"
         ],
-        "explanation": "Asymmetric cryptography involves heavy modular arithmetic, which would overwhelm server CPUs at gigabit speeds. Hence, asymmetric keys are used only to securely negotiate a shared symmetric key, which AES hardware instructions encrypt in nanoseconds.",
-        "difficulty": "medium",
-        "subtopic": "Asymmetric vs Symmetric Encryption"
-      },
-      {
-        "id": "l13-q15",
-        "type": "single_choice",
-        "question": "What is the purpose of the 'Host' header sent in an HTTP/1.1 request (e.g. `Host: www.example.com`)?",
-        "options": [
-          {
-            "id": "A",
-            "text": "It tells the router which gateway to use"
-          },
-          {
-            "id": "B",
-            "text": "It allows a single web server with one IP address to host hundreds of different websites (Virtual Hosting), routing requests to the correct virtual host"
-          },
-          {
-            "id": "C",
-            "text": "It specifies the user's MAC address"
-          },
-          {
-            "id": "D",
-            "text": "It disables TLS encryption"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "Without the `Host` header, a web server hosting multiple domains on the same IP wouldn't know which website the client wanted. RFC 2616 made `Host` mandatory for virtual hosting.",
-        "difficulty": "easy",
-        "subtopic": "HTTP Virtual Hosting"
-      },
-      {
-        "id": "l13-q16",
-        "type": "single_choice",
-        "question": "What HTTP response header instructs the browser to cache an image asset locally for 1 year without re-requesting it from the origin server?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Cache-Control: public, max-age=31536000, immutable"
-          },
-          {
-            "id": "B",
-            "text": "Set-Cookie: session=active; ttl=31536000"
-          },
-          {
-            "id": "C",
-            "text": "Connection: keep-alive"
-          },
-          {
-            "id": "D",
-            "text": "Content-Encoding: gzip"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "`Cache-Control: max-age=31536000` sets the browser cache expiry to 31,536,000 seconds (1 year). The `immutable` attribute signals that the resource will never change, eliminating conditional revalidation requests.",
-        "difficulty": "medium",
-        "subtopic": "HTTP Caching Headers"
-      },
-      {
-        "id": "l13-q17",
-        "type": "single_choice",
-        "question": "When the browser receives the raw HTML response body, what critical parsing operations occur to turn text into pixels on the user's screen?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Generating the DOM (Document Object Model), CSSOM (CSS Object Model), combining them into a Render Tree, executing Layout (reflow), and Painting pixels to the screen"
-          },
-          {
-            "id": "B",
-            "text": "Writing the HTML directly into the router's ARP cache"
-          },
-          {
-            "id": "C",
-            "text": "Transmitting an ICMP Echo Reply to the DNS root"
-          },
-          {
-            "id": "D",
-            "text": "Converting the HTML into a BGP advertisement"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "The browser parsing pipeline: Tokenize HTML -> DOM Tree; Parse CSS -> CSSOM Tree; Combine -> Render Tree -> Layout (compute geometry) -> Paint (rasterize pixels to GPU).",
-        "difficulty": "easy",
-        "subtopic": "Browser Rendering Pipeline"
-      },
-      {
-        "id": "l13-q18",
-        "type": "single_choice",
-        "question": "What major performance advantage did HTTP/2 introduce over HTTP/1.1 to eliminate Head-of-Line (HoL) blocking at the application layer?",
-        "options": [
-          {
-            "id": "A",
-            "text": "Binary framing and multiplexing of multiple concurrent request/response streams over a single shared TCP connection"
-          },
-          {
-            "id": "B",
-            "text": "Switching from IP to MAC routing"
-          },
-          {
-            "id": "C",
-            "text": "Eliminating all TLS encryption"
-          },
-          {
-            "id": "D",
-            "text": "Increasing maximum packet MTU to 9000 bytes"
-          }
-        ],
-        "correctOptionIds": [
-          "A"
-        ],
-        "explanation": "HTTP/1.1 required multiple parallel TCP connections or serial pipelining. HTTP/2 introduces binary streams, interleaving frames of multiple requests and responses concurrently over one TCP pipe.",
-        "difficulty": "medium",
-        "subtopic": "HTTP/2 Multiplexing"
-      },
-      {
-        "id": "l13-q19",
-        "type": "single_choice",
-        "question": "Why did HTTP/3 shift its underlying transport layer from TCP to QUIC (running over UDP)?",
-        "options": [
-          {
-            "id": "A",
-            "text": "To make web pages load without internet access"
-          },
-          {
-            "id": "B",
-            "text": "To eliminate TCP-level Head-of-Line blocking (where one dropped packet stalls all multiplexed streams), and to combine the transport and cryptographic handshake into 0-RTT/1-RTT"
-          },
-          {
-            "id": "C",
-            "text": "Because UDP is more secure than TCP"
-          },
-          {
-            "id": "D",
-            "text": "Because TCP ports are deprecated by ICANN"
-          }
-        ],
-        "correctOptionIds": [
-          "B"
-        ],
-        "explanation": "In HTTP/2 over TCP, if a single packet drops, TCP's in-order guarantee freezes all streams until retransmission completes. QUIC solves this by implementing independent stream loss recovery on top of UDP.",
+        "explanation": "Statements A, B, C, and E are correct. Anycast announces the same IP from hundreds of locations (A), BGP routes to the topologically closest PoP (B), absorbs DDoS across the edge (C), and provides automatic failover upon BGP route withdrawal (E). D is false: MAC addresses are link-local and have zero relationship with BGP Anycast routing.",
         "difficulty": "hard",
-        "subtopic": "HTTP/3 & QUIC"
+        "subtopic": "BGP Anycast Mechanics"
       },
       {
-        "id": "l13-q20",
-        "type": "single_choice",
-        "question": "When the browser finishes receiving all assets and the user closes the tab, how is the underlying TCP connection cleanly terminated?",
+        "id": "l13-q013",
+        "type": "multi_choice",
+        "question": "When the client establishes a TCP connection to the server on port 443, which of the following events take place during the TCP Three-Way Handshake?",
         "options": [
           {
             "id": "A",
-            "text": "The computer powers off"
+            "text": "The client transmits a TCP segment with `Flags: [SYN]`, an initial sequence number `Seq = X`, and options including MSS (1460), Window Scale, and SACK-Permitted."
           },
           {
             "id": "B",
-            "text": "Via a 4-way handshake (FIN -> ACK, FIN -> ACK), and the socket enters TIME_WAIT to ensure all delayed duplicate packets drain"
+            "text": "The server replies with `Flags: [SYN, ACK]`, `Seq = Y`, and cumulative acknowledgment `Ack = X + 1`."
           },
           {
             "id": "C",
-            "text": "The switch clears its CAM table"
+            "text": "The client completes the handshake by transmitting `Flags: [ACK]`, with `Ack = Y + 1`, transitioning the socket to `ESTABLISHED`."
           },
           {
             "id": "D",
-            "text": "An ARP broadcast is sent to clear DNS records"
+            "text": "In modern TLS 1.3 implementations, the client's final TCP ACK segment can piggyback the TLS `ClientHello` payload in the same physical packet to save time."
+          },
+          {
+            "id": "E",
+            "text": "The TCP handshake completes in exactly zero seconds because TCP operates at the speed of sound."
           }
         ],
         "correctOptionIds": [
-          "B"
+          "A",
+          "B",
+          "C",
+          "D"
         ],
-        "explanation": "The full lifecycle concludes with TCP's full-duplex teardown: both sides independently send FIN and acknowledge with ACK, with the active closer waiting out the TIME_WAIT interval.",
-        "difficulty": "easy",
-        "subtopic": "End-to-End Teardown"
+        "explanation": "Statements A, B, C, and D accurately represent modern TCP handshake mechanics. SYN sent with options (A). SYN-ACK received with Ack=X+1 (B). Final ACK establishes connection (C). In TLS 1.3, the client can piggyback its ClientHello on the ACK packet (D). E is absurd.",
+        "difficulty": "medium",
+        "subtopic": "TCP Handshake & Piggybacking"
+      },
+      {
+        "id": "l13-q014",
+        "type": "multi_choice",
+        "question": "Which of the following statements accurately characterize the TLS 1.3 Handshake (RFC 8446) compared to legacy TLS 1.2?",
+        "options": [
+          {
+            "id": "A",
+            "text": "TLS 1.3 completes full cryptographic negotiation, server authentication, and key exchange in exactly **1 RTT** (down from 2 RTTs in TLS 1.2)."
+          },
+          {
+            "id": "B",
+            "text": "In the `ClientHello`, the client includes a `Key Share` containing its ephemeral Diffie-Hellman public key (e.g., using curve X25519) alongside supported cipher suites and SNI."
+          },
+          {
+            "id": "C",
+            "text": "The server selects a cipher suite (e.g., `TLS_AES_256_GCM_SHA384`), replies with `ServerHello` containing its own `Key Share`, and immediately begins encrypting subsequent handshake messages."
+          },
+          {
+            "id": "D",
+            "text": "All handshake messages following `ServerHello` (including the EncryptedExtensions, Server Certificate, CertificateVerify, and Finished) are encrypted under handshake traffic keys."
+          },
+          {
+            "id": "E",
+            "text": "TLS 1.3 requires the client to upload its private key to the server for escrow."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D are correct. TLS 1.3 cuts handshake latency to 1 RTT (A). Client speculates on curve and sends Key Share in first message (B). Server responds with its Key Share (C) and encrypts all subsequent handshake messages including certificates (D). E is false: Private keys are NEVER shared.",
+        "difficulty": "hard",
+        "subtopic": "TLS 1.3 1-RTT Handshake Architecture"
+      },
+      {
+        "id": "l13-q015",
+        "type": "multi_choice",
+        "question": "How does Ephemeral Elliptic Curve Diffie-Hellman (ECDHE) provide **Forward Secrecy** in TLS 1.3?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Both client and server generate temporary (ephemeral) private scalars ($a$ and $b$) specifically for this unique session and discard them immediately after key derivation."
+          },
+          {
+            "id": "B",
+            "text": "Both sides independently compute the identical shared secret point $K = a \\cdot B = b \\cdot A$ on the elliptic curve without ever transmitting the secret across the wire."
+          },
+          {
+            "id": "C",
+            "text": "An adversary eavesdropping on the network sees only public points $A$ and $B$, but cannot compute $K$ without solving the Elliptic Curve Discrete Logarithm Problem (ECDLP)."
+          },
+          {
+            "id": "D",
+            "text": "Even if the server's long-term RSA/ECDSA private signing key is stolen by an attacker years later, past recorded encrypted sessions CANNOT be decrypted."
+          },
+          {
+            "id": "E",
+            "text": "Forward secrecy allows the client to predict the server's future IP addresses."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D describe the mathematical foundation of Forward Secrecy. Ephemeral keys are discarded after session derivation (A). Both sides derive the shared secret $K$ via ECDH (B). Eavesdroppers cannot compute $K$ due to the hardness of ECDLP (C). Compromise of the long-term identity certificate does not expose past session keys (D). E is nonsense.",
+        "difficulty": "hard",
+        "subtopic": "ECDHE Cryptography & Forward Secrecy"
+      },
+      {
+        "id": "l13-q016",
+        "type": "multi_choice",
+        "question": "Once TLS is established, the application exchanges web data. Compare the transmission mechanics of HTTP/2 vs HTTP/3 (QUIC):",
+        "options": [
+          {
+            "id": "A",
+            "text": "In HTTP/2, requests and responses are split into binary frames (HEADERS, DATA) multiplexed across independent streams over a single TCP socket."
+          },
+          {
+            "id": "B",
+            "text": "HTTP/2 uses HPACK compression to index and compress repeated HTTP header fields."
+          },
+          {
+            "id": "C",
+            "text": "In HTTP/2, if a single TCP packet is dropped, all streams stall (TCP Head-of-Line blocking) until the lost packet is retransmitted and acknowledged."
+          },
+          {
+            "id": "D",
+            "text": "HTTP/3 runs over QUIC (UDP port 443), where individual streams are truly independent at the transport layer, completely eliminating Head-of-Line blocking."
+          },
+          {
+            "id": "E",
+            "text": "HTTP/3 supports 0-RTT connection resumption and connection migration via 64-bit Connection IDs when shifting from Wi-Fi to cellular data."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) are technically correct! HTTP/2 uses binary frames (A) and HPACK (B), but suffers from TCP Head-of-Line blocking upon packet drops (C). HTTP/3 over QUIC uses UDP to provide true stream independence (D), 0-RTT resumption, and Connection ID migration across networks (E).",
+        "difficulty": "hard",
+        "subtopic": "HTTP/2 vs HTTP/3 QUIC Synthesis"
+      },
+      {
+        "id": "l13-q017",
+        "type": "multi_choice",
+        "question": "At Cloudflare's Edge Point of Presence (PoP), the incoming request reaches an edge reverse proxy. Which of the following operations take place?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The Edge server terminates the client's TCP connection and TLS session (SSL Offloading)."
+          },
+          {
+            "id": "B",
+            "text": "The proxy inspects the request path and query parameters against its edge cache (Cache Hit vs. Cache Miss)."
+          },
+          {
+            "id": "C",
+            "text": "On a cache miss, the proxy forwards the request over a persistent backend tunnel to Scaler's origin infrastructure."
+          },
+          {
+            "id": "D",
+            "text": "The proxy injects provenance headers, including `X-Forwarded-For: <Client_Public_IP>` and `X-Forwarded-Proto: https`, so backend services know the real client identity."
+          },
+          {
+            "id": "E",
+            "text": "The reverse proxy permanently deletes the user's hard drive."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D represent standard edge reverse proxy architecture. The proxy terminates TLS (A), checks edge cache (B), forwards cache misses to origin (C), and enriches headers with `X-Forwarded-For` and `X-Forwarded-Proto` (D). E is absurd.",
+        "difficulty": "medium",
+        "subtopic": "Edge Reverse Proxy & Header Enrichment"
+      },
+      {
+        "id": "l13-q018",
+        "type": "multi_choice",
+        "question": "Inside the origin data center, the request enters a Kubernetes cluster. Which of the following components participate in fulfilling the request?",
+        "options": [
+          {
+            "id": "A",
+            "text": "An Ingress Controller (e.g., Envoy or NGINX) terminates origin TLS and routes traffic based on Layer 7 path rules (`/courses`)."
+          },
+          {
+            "id": "B",
+            "text": "A Service Mesh sidecar proxy (e.g., Istio Envoy) handles internal mutual TLS (mTLS), observability tracing, and traffic routing to target application pods."
+          },
+          {
+            "id": "C",
+            "text": "The application pod queries an in-memory distributed cache (Redis / Memcached) for course metadata, achieving sub-millisecond read latency on cache hits."
+          },
+          {
+            "id": "D",
+            "text": "On cache misses, the application executes parameterized SQL queries against a primary/replica relational database (e.g., PostgreSQL)."
+          },
+          {
+            "id": "E",
+            "text": "Kubernetes requires that all database tables be written in raw binary assembly language."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "Statements A, B, C, and D accurately represent modern containerized microservice architectures. Ingress routes by L7 path (A). Service mesh provides mTLS and tracing (B). Redis provides fast cache hits (C), with PostgreSQL handling durable queries on miss (D). E is false.",
+        "difficulty": "medium",
+        "subtopic": "Kubernetes Ingress & Microservice Plumbing"
+      },
+      {
+        "id": "l13-q019",
+        "type": "multi_choice",
+        "question": "As response bytes return to the client browser, which of the following stages occur during the Critical Rendering Path?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The browser kernel reconstructs the in-order byte stream via TCP reassembly and decrypts TLS records using hardware AES-NI instructions."
+          },
+          {
+            "id": "B",
+            "text": "The browser decompressor decodes the compressed HTML byte stream (e.g., Brotli or gzip)."
+          },
+          {
+            "id": "C",
+            "text": "The HTML tokenizer incrementally parses tags, constructing the Document Object Model (DOM) tree."
+          },
+          {
+            "id": "D",
+            "text": "External stylesheets are fetched and parsed into the CSS Object Model (CSSOM) tree; DOM and CSSOM are merged to construct the Render Tree."
+          },
+          {
+            "id": "E",
+            "text": "The browser executes Layout (calculating box geometry) and Paint/Composite, rasterizing pixels onto GPU surfaces."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) accurately trace the client rendering pipeline! TCP reassembly & TLS decryption (A), Brotli decompression (B), HTML tokenization to DOM (C), CSSOM generation & Render Tree assembly (D), and Layout/Paint/Composite to screen pixels (E).",
+        "difficulty": "hard",
+        "subtopic": "Critical Rendering Path & HTML Pipeline"
+      },
+      {
+        "id": "l13-q020",
+        "type": "multi_choice",
+        "question": "When the user closes the browser tab or the server keep-alive idle timer expires, which of the following actions gracefully terminate the session?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The client initiates a 4-Way TCP connection teardown by transmitting a segment with the `FIN` control flag set."
+          },
+          {
+            "id": "B",
+            "text": "The server acknowledges the client's FIN with an `ACK`, entering the `CLOSE_WAIT` state while the client enters `FIN_WAIT_2`."
+          },
+          {
+            "id": "C",
+            "text": "The server closes its half of the connection by transmitting its own `FIN`, which the client acknowledges with a final `ACK`."
+          },
+          {
+            "id": "D",
+            "text": "The client enters the `TIME_WAIT` state for $2\\text{MSL} = 60\\text{ seconds}$ to ensure late-arriving packets dissipate and the final ACK was reliably delivered."
+          },
+          {
+            "id": "E",
+            "text": "The home router's stateful NAT table cleans up and reaps the ephemeral port mapping entry."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "explanation": "ALL FIVE statements (A, B, C, D, and E) are correct! Active close starts with FIN (A). Server replies with ACK entering CLOSE_WAIT (B). Server sends FIN, client ACKs (C). Initiator waits in TIME_WAIT for 2MSL (D). Router NAT table entry is reaped (E).",
+        "difficulty": "hard",
+        "subtopic": "Connection Teardown & Lifecycle Completion"
       }
     ]
   }

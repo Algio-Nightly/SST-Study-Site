@@ -1,0 +1,334 @@
+"""
+Lecture 12 Quiz: Network Troubleshooting & Performance Diagnostics
+20 Advanced Multi-Correct MCQs (5 options each, 2 to 5 correct answers)
+"""
+
+QUIZ_L12 = {
+    "topicId": "lecture-12",
+    "lectureNumber": 12,
+    "title": "Network Troubleshooting & Diagnostics Master Quiz",
+    "description": "20 rigorous multi-correct questions covering troubleshooting cognitive models, ICMP packet dissection, PMTUD black holes & MSS clamping, ping jitter (mdev), traceroute mechanisms (UDP/ICMP/TCP SYN), asymmetric routing, mtr interpretation, ss Netlink inspection, ethtool hardware diagnostics, and BPF packet filters.",
+    "estimatedMinutes": 35,
+    "questions": [
+        {
+            "id": "l12-q01",
+            "type": "multi_choice",
+            "question": "Which of the following statements regarding network troubleshooting philosophies and cognitive models are accurate?",
+            "options": [
+                {"id": "A", "text": "Bottom-Up troubleshooting validates Layer 1 physical links and cables first before systematically progressing upward through Link, Network, Transport, and Application layers."},
+                {"id": "B", "text": "Top-Down troubleshooting begins at Layer 7 by inspecting application errors, HTTP status codes, and server logs, working downward toward physical infrastructure."},
+                {"id": "C", "text": "In the Divide-and-Conquer (Bisection) approach, an engineer executes an initial Layer 3/4 probe (e.g., `ping 8.8.8.8` or `curl`); if it succeeds, Layers 1, 2, and 3 are instantly eliminated from suspicion."},
+                {"id": "D", "text": "If `ping 8.8.8.8` succeeds but `ping google.com` fails, the issue is isolated to DNS resolution (Layer 7) rather than underlying routing or physical connectivity."},
+                {"id": "E", "text": "Top-Down troubleshooting is always mathematically superior to Bottom-Up troubleshooting in data center cable installation projects."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D accurately represent systematic network troubleshooting. Bottom-Up starts at L1 (A). Top-Down starts at L7 (B). Divide-and-Conquer bisects the stack at L3/L4 (C). Pinging an IP proves L1-L3 works; hostname failure pinpoints DNS (D). E is false: In physical wiring and hardware installation, Bottom-Up is the industry standard because physical defects are the primary fault mode.",
+            "difficulty": "medium",
+            "subtopic": "Troubleshooting Cognitive Models"
+        },
+        {
+            "id": "l12-q02",
+            "type": "multi_choice",
+            "question": "In the binary packet architecture of the Internet Control Message Protocol (ICMPv4 - RFC 792), which of the following statements are correct?",
+            "options": [
+                {"id": "A", "text": "ICMP messages possess a fixed 8-byte header starting with an 8-bit Type, an 8-bit Code, and a 16-bit Checksum."},
+                {"id": "B", "text": "ICMP error messages (such as Destination Unreachable and Time Exceeded) MUST encapsulate the original IPv4 header plus at least the first 8 bytes of the offending payload."},
+                {"id": "C", "text": "The first 8 bytes of the offending payload returned in an ICMP error allow the originating OS kernel to identify the source and destination TCP/UDP port numbers and demultiplex the error to the exact user process socket."},
+                {"id": "D", "text": "ICMP packets run directly inside Ethernet frames without an IPv4 header (using EtherType `0x0800`)."},
+                {"id": "E", "text": "In IPv4, ICMP is identified by IP Protocol Number `1`, whereas in IPv6, ICMPv6 is identified by Protocol Number `58`."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "E"],
+            "explanation": "Statements A, B, C, and E are correct. ICMP has an 8-byte header (A), encapsulates the original IP header + first 8 bytes of payload (B), allowing socket demuxing via L4 port numbers (C). IP protocol numbers are 1 for ICMPv4 and 58 for ICMPv6 (E). D is false: ICMP is encapsulated inside an IP packet (`Protocol: 1`), not directly inside Ethernet.",
+            "difficulty": "hard",
+            "subtopic": "ICMP Header Anatomy & Error Reflection"
+        },
+        {
+            "id": "l12-q03",
+            "type": "multi_choice",
+            "question": "Which of the following ICMP Type and Code assignments and their diagnostic meanings are correct?",
+            "options": [
+                {"id": "A", "text": "Type 0, Code 0: Echo Reply (response to `ping`)."},
+                {"id": "B", "text": "Type 3, Code 1: Host Unreachable (router has a route to the subnet, but ARP request timed out because the host is off or disconnected)."},
+                {"id": "C", "text": "Type 3, Code 3: Port Unreachable (destination host received a UDP datagram on a closed port with no listening process)."},
+                {"id": "D", "text": "Type 3, Code 4: Fragmentation Needed and DF Set (critical signal used in Path MTU Discovery)."},
+                {"id": "E", "text": "Type 11, Code 0: Time-to-Live (TTL) Expired in Transit (core signal used by `traceroute` to detect intermediate hops)."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D", "E"],
+            "explanation": "ALL FIVE statements (A, B, C, D, and E) are accurate standard ICMP definitions! Type 0 is Echo Reply (A). Type 3 Code 1 is Host Unreachable via ARP failure (B). Type 3 Code 3 is Port Unreachable on UDP (C). Type 3 Code 4 is Frag Needed with DF set for PMTUD (D). Type 11 Code 0 is TTL Expired in Transit (E).",
+            "difficulty": "hard",
+            "subtopic": "ICMP Taxonomy of Types & Codes"
+        },
+        {
+            "id": "l12-q04",
+            "type": "multi_choice",
+            "question": "A cloud engineer deploys a WireGuard VPN tunnel (MTU 1420) between a client and a web server. Client users report that small SSH and curl requests succeed, but loading a large webpage hangs indefinitely. Which of the following describe this 'PMTUD Black Hole' phenomenon?",
+            "options": [
+                {"id": "A", "text": "The sender sets the `DF=1` (Don't Fragment) bit in the IPv4 header of all outgoing TCP segments."},
+                {"id": "B", "text": "The initial TCP three-way handshake segments are small ($\\approx 60\\text{ bytes}$) and easily pass through the 1420-byte MTU tunnel without issues."},
+                {"id": "C", "text": "When the server transmits a full-size HTTP response ($1500\\text{ bytes}$), the ingress tunnel router drops the packet because it exceeds $1420\\text{ bytes}$ and cannot be fragmented."},
+                {"id": "D", "text": "The router generates an `ICMP Type 3, Code 4` error informing the server of `Next-Hop MTU = 1420`, but an overly aggressive firewall drops all inbound ICMP."},
+                {"id": "E", "text": "Because the server never receives the ICMP notification, it repeatedly retransmits the $1500\\text{ byte}$ segment until the connection times out, leaving the client hanging."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D", "E"],
+            "explanation": "ALL FIVE statements (A, B, C, D, and E) accurately describe the classic PMTUD Black Hole! DF=1 is set (A). Small handshakes pass (B). Large data packets exceed tunnel MTU and get dropped (C). Router sends ICMP Type 3 Code 4, but firewalls drop ICMP (D). Server retransmits forever, causing client connections to hang indefinitely (E).",
+            "difficulty": "hard",
+            "subtopic": "PMTUD Black Hole Mechanics"
+        },
+        {
+            "id": "l12-q05",
+            "type": "multi_choice",
+            "question": "How does TCP MSS Clamping mitigate the PMTUD Black Hole problem without requiring changes to client operating systems or remote firewalls?",
+            "options": [
+                {"id": "A", "text": "A firewall or router at the network boundary intercepts TCP SYN and SYN-ACK packets traversing the tunnel."},
+                {"id": "B", "text": "It inspects the Maximum Segment Size (MSS) option in the TCP header and clamps (rewrites) it down to $\\text{Tunnel MTU} - 40\\text{ bytes}$ (accounting for IP and TCP headers)."},
+                {"id": "C", "text": "In Linux, this is achieved using the iptables rule: `iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu`."},
+                {"id": "D", "text": "Both endpoints are tricked into negotiating a smaller MSS, ensuring that no TCP segment transmitted by either host ever exceeds the tunnel MTU."},
+                {"id": "E", "text": "TCP MSS Clamping eliminates the need for IP addresses by converting all TCP streams into raw Bluetooth frames."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D are correct. MSS Clamping rewrites the MSS option in TCP SYN packets (A & B) using iptables/nftables (C), preventing hosts from ever sending segments exceeding path MTU (D). E is absurd.",
+            "difficulty": "hard",
+            "subtopic": "TCP MSS Clamping"
+        },
+        {
+            "id": "l12-q06",
+            "type": "multi_choice",
+            "question": "When interpreting the summary output of `ping`: `rtt min/avg/max/mdev = 12.1/14.5/45.2/8.4 ms`, which of the following statements are technically correct?",
+            "options": [
+                {"id": "A", "text": "`min` represents the physical baseline propagation delay of speed-of-light in the medium plus minimal router queuing."},
+                {"id": "B", "text": "`max` typically reflects transient buffer queuing (bufferbloat) or packet reordering bursts along the path."},
+                {"id": "C", "text": "`mdev` stands for Mean Deviation, representing the standard deviation or jitter (variability) of Round-Trip Time across the sample set."},
+                {"id": "D", "text": "A high `mdev` relative to `avg` indicates an unstable or congested path, common in bufferbloated uplinks or radio interference on Wi-Fi/cellular links."},
+                {"id": "E", "text": "`mdev` represents the millisecond countdown before the local network card enters power-saving sleep mode."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D are correct. Min reflects physical speed of light (A). Max reflects queue peaks (B). `mdev` measures mean deviation / jitter: $\\frac{1}{N}\\sum |RTT_i - \\overline{RTT}|$ (C), with high mdev signaling jitter/congestion/interference (D). E is nonsense.",
+            "difficulty": "medium",
+            "subtopic": "Ping Metrics & Jitter (mdev)"
+        },
+        {
+            "id": "l12-q07",
+            "type": "multi_choice",
+            "question": "What is the 'Ping Fallacy' (Control Plane Rate Limiting), and why can intermediate packet loss reported by `ping` or `traceroute` be misleading?",
+            "options": [
+                {"id": "A", "text": "Modern high-speed core routers forward user data traffic in dedicated hardware ASICs (Data Plane) at line rate."},
+                {"id": "B", "text": "Responding to an ICMP Echo Request requires sending the packet from the ASIC to the router's central management CPU (Control Plane)."},
+                {"id": "C", "text": "To protect their control plane CPUs from denial-of-service exhaustion, routers apply strict token-bucket rate limiters on ICMP generation."},
+                {"id": "D", "text": "If an intermediate router shows $30\\%$ packet loss to ping, but the ultimate destination shows $0\\%$ loss, transit traffic is NOT experiencing any packet loss at all."},
+                {"id": "E", "text": "If any intermediate hop shows packet loss, all web and database traffic traversing that hop is degraded by exactly that same percentage."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D are correct. ASICs handle data forwarding (A) while ICMP responses require CPU intervention (B). Rate limiters drop control plane ICMP probes (C). If downstream hops and destination report 0% loss, forwarding is 100% healthy (D). E is the exact false assumption known as the Ping Fallacy.",
+            "difficulty": "hard",
+            "subtopic": "The Ping Fallacy & Control Plane Rate Limiting"
+        },
+        {
+            "id": "l12-q08",
+            "type": "multi_choice",
+            "question": "How do Linux `traceroute`, Windows `tracert`, and TCP SYN traceroute differ in their protocol mechanics?",
+            "options": [
+                {"id": "A", "text": "Linux `traceroute` defaults to sending UDP datagrams to high ephemeral ports (starting at 33434) with incrementing TTL values."},
+                {"id": "B", "text": "Windows `tracert` defaults to sending ICMP Echo Request packets (Type 8) with incrementing TTL values."},
+                {"id": "C", "text": "Linux UDP traceroute recognizes that it has reached the destination when it receives an `ICMP Type 3, Code 3` (Port Unreachable) error from the target host."},
+                {"id": "D", "text": "TCP SYN traceroute (`traceroute -T -p 443`) sends TCP SYN packets to port 443; intermediate hops still return `ICMP Time Exceeded`, but the destination replies with `SYN-ACK` or `RST`."},
+                {"id": "E", "text": "Windows `tracert` uses DNS queries exclusively to discover routers."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D are correct. Linux defaults to UDP high ports (A) and detects destination via ICMP Port Unreachable (C). Windows defaults to ICMP Echo (B). TCP SYN traceroute punches through corporate firewalls by targeting port 443 (D). E is false.",
+            "difficulty": "hard",
+            "subtopic": "Traceroute Protocol Variations"
+        },
+        {
+            "id": "l12-q09",
+            "type": "multi_choice",
+            "question": "A network administrator runs `traceroute` to an external host and observes the following output:\n```\n 3  10.20.0.1 (10.20.0.1)  4.1 ms  4.0 ms  4.1 ms\n 4  * * *\n 5  142.250.214.34 (142.250.214.34)  12.3 ms  12.2 ms  12.3 ms\n```\nWhich of the following interpretations are correct?",
+            "options": [
+                {"id": "A", "text": "Hop 4 is completely down and has severed the network connection."},
+                {"id": "B", "text": "Hop 4 is successfully forwarding transit IP packets; otherwise, probe packets could never have reached Hop 5."},
+                {"id": "C", "text": "Hop 4's router is configured to drop or ignore unprompted UDP/ICMP probe packets or suppress ICMP Time Exceeded generation."},
+                {"id": "D", "text": "An intermediate firewall between Hop 3 and Hop 4 is selectively filtering ICMP Time Exceeded responses sent by Hop 4."},
+                {"id": "E", "text": "Asterisks (`* * *`) at an intermediate hop do NOT indicate a network failure if subsequent hops respond normally."}
+            ],
+            "correctOptionIds": ["B", "C", "D", "E"],
+            "explanation": "Statements B, C, D, and E are correct. If Hop 5 responded in 12 ms, Hop 4 is actively forwarding traffic (B & E). Asterisks simply mean the router did not generate or return an ICMP Time Exceeded message (C & D). A is the classic beginner mistake.",
+            "difficulty": "medium",
+            "subtopic": "Interpreting Traceroute Asterisks"
+        },
+        {
+            "id": "l12-q010",
+            "type": "multi_choice",
+            "question": "In internet routing diagnostics, what is 'Asymmetric Routing', and how can it create an illusion of latency spikes in `traceroute`?",
+            "options": [
+                {"id": "A", "text": "Asymmetric routing occurs when packets from host A to host B traverse a different physical sequence of Autonomous Systems and links than packets returning from B to A."},
+                {"id": "B", "text": "Traceroute can only measure Round-Trip Time (RTT: forward probe + reverse ICMP response); it cannot isolate forward latency from return latency."},
+                {"id": "C", "text": "A sudden latency jump of $+120\\text{ ms}$ at Hop 4 may not reflect a slow forward link; it frequently indicates that the return path from Hop 4 entered an alternative, higher-latency transoceanic path."},
+                {"id": "D", "text": "BGP hot-potato routing frequently induces asymmetric routing between ISPs because each provider hands off traffic to its peer as early as possible."},
+                {"id": "E", "text": "Asymmetric routing violates TCP specifications and causes all TCP handshakes to fail."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D are correct. Forward and reverse paths frequently diverge across the global Internet (A), traceroute measures RTT (B), latency jumps often reflect return path asymmetry (C), and hot-potato BGP routing causes asymmetric flow (D). E is false: IP and TCP are completely indifferent to path symmetry.",
+            "difficulty": "hard",
+            "subtopic": "Asymmetric Routing Phenomena"
+        },
+        {
+            "id": "l12-q011",
+            "type": "multi_choice",
+            "question": "Which of the following principles govern the correct interpretation of multi-hop diagnostics using `mtr` (My Traceroute)?",
+            "options": [
+                {"id": "A", "text": "The Golden Rule of MTR: Genuine network packet loss MUST persist across all subsequent downstream hops."},
+                {"id": "B", "text": "If Hop 3 reports $30\\%$ loss, but Hop 4 and Hop 5 report $0\\%$ loss, Hop 3 is healthy and merely rate-limiting ICMP responses."},
+                {"id": "C", "text": "If Hop 4 reports $25\\%$ loss, and Hops 5, 6, and 7 continue to report $25\\%$ loss or higher, real packet loss began at Hop 4."},
+                {"id": "D", "text": "A sudden permanent elevation in latency that starts at Hop $K$ and continues through all subsequent hops indicates that the bottleneck link is between Hop $K-1$ and Hop $K$."},
+                {"id": "E", "text": "`mtr` requires that every intermediate router run the Linux operating system to compute packet loss."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D are foundational rules of MTR analysis. Real loss propagates forward (A & C). Non-propagating loss is ICMP rate limiting (B). Latency shifts propagating through all subsequent hops isolate the bottleneck link (D). E is false: MTR works across any vendor's routers (Cisco, Juniper, Arista, etc.).",
+            "difficulty": "hard",
+            "subtopic": "MTR Real-Time Path Analysis"
+        },
+        {
+            "id": "l12-q012",
+            "type": "multi_choice",
+            "question": "Why has `netstat` been deprecated in modern Linux distributions in favor of `ss` (Socket Statistics)?",
+            "options": [
+                {"id": "A", "text": "`netstat` parses `/proc/net/tcp` line-by-line as text, acquiring kernel locks that can freeze systems hosting tens of thousands of active sockets."},
+                {"id": "B", "text": "`ss` communicates directly with the kernel via Netlink sockets (`NETLINK_INET_DIAG`), dumping binary socket data in zero-copy chunks."},
+                {"id": "C", "text": "`ss` executes in $O(1)$ constant time or rapid batching, avoiding user-space string formatting overhead."},
+                {"id": "D", "text": "`ss` can query internal TCP transmission parameters (such as `cwnd`, `rtt`, `rto`, and pacing rate) that `netstat` cannot display."},
+                {"id": "E", "text": "`netstat` only supports IPv4, whereas `ss` is the only tool that supports TCP."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D are accurate. `netstat` parsed `/proc/net/tcp` with kernel locks and high overhead (A). `ss` uses Netlink zero-copy binary sockets (B & C) and exposes rich TCP stack internals via `ss -ti` (D). E is false.",
+            "difficulty": "medium",
+            "subtopic": "ss Netlink Subsystem vs Deprecated netstat"
+        },
+        {
+            "id": "l12-q013",
+            "type": "multi_choice",
+            "question": "An SRE executes `ss -tulpn` on a busy production server and reviews the `Recv-Q` and `Send-Q` columns. Which of the following interpretations are correct?",
+            "options": [
+                {"id": "A", "text": "For a socket in the `LISTEN` state, `Send-Q` displays the maximum size of the accept backlog queue."},
+                {"id": "B", "text": "For a socket in the `LISTEN` state, `Recv-Q` displays the count of fully-handshaked connections waiting in the accept queue for the application to call `accept()`."},
+                {"id": "C", "text": "If a listening socket has `Recv-Q > Send-Q`, the accept queue has overflowed, and incoming client connections will experience dropped SYN-ACKs or connection resets."},
+                {"id": "D", "text": "For a socket in the `ESTABLISHED` state, `Recv-Q` represents received bytes waiting in kernel memory that have not yet been consumed by the application via `read()`."},
+                {"id": "E", "text": "For a socket in the `ESTABLISHED` state, a persistently high `Send-Q` indicates that the remote receiver is fast and the network is completely clear."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D are correct. Dual meaning of Recv-Q and Send-Q: In LISTEN, Send-Q is max backlog and Recv-Q is pending connections (A & B); Recv-Q > Send-Q indicates accept queue overflow (C). In ESTABLISHED, Recv-Q is unread bytes (D). E is false: High Send-Q in ESTABLISHED means outbound bytes are stuck unacknowledged, indicating remote client is slow or network path is dropping packets.",
+            "difficulty": "hard",
+            "subtopic": "ss Recv-Q and Send-Q Semantics"
+        },
+        {
+            "id": "l12-q014",
+            "type": "multi_choice",
+            "question": "Running `ss -ti` displays the following kernel TCP parameters for an established socket:\n`cubic wscale:7,7 rto:220 rtt:18.2/0.4 ato:40 mss:1460 rcvspace:14600 cwnd:10 ssthresh:24 retrans:0/2`\nWhich of the following statements are correct?",
+            "options": [
+                {"id": "A", "text": "The smoothed Round-Trip Time (`rtt`) is $18.2\\text{ ms}$ with a jitter (variation) of $0.4\\text{ ms}$."},
+                {"id": "B", "text": "The sender's Congestion Window (`cwnd`) currently permits 10 segments in-flight."},
+                {"id": "C", "text": "`retrans:0/2` indicates that 0 segments are currently being retransmitted, out of 2 total retransmissions experienced across the lifetime of the connection."},
+                {"id": "D", "text": "Because `cwnd:10` is strictly less than `ssthresh:24`, the connection is currently operating in Congestion Avoidance mode."},
+                {"id": "E", "text": "`wscale:7,7` indicates that both sender and receiver negotiated a Window Scale factor of 7 (multiplying advertised window values by $2^7 = 128$)."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "E"],
+            "explanation": "Statements A, B, C, and E are correct. `rtt:18.2/0.4` gives SRTT and jitter (A). `cwnd:10` is window in segments (B). `retrans:0/2` tracks current/total retransmissions (C). `wscale:7,7` represents $2^7 = 128$ scaling (E). D is false: When `cwnd < ssthresh` ($10 < 24$), the connection is in Slow Start mode, NOT Congestion Avoidance.",
+            "difficulty": "hard",
+            "subtopic": "Kernel TCP Internals via ss -ti"
+        },
+        {
+            "id": "l12-q015",
+            "type": "multi_choice",
+            "question": "When diagnosing physical and link-layer network interface problems using `ethtool`, which of the following statements are correct?",
+            "options": [
+                {"id": "A", "text": "An Auto-negotiation mismatch where one end is configured for Full-Duplex and the other end is Half-Duplex causes severe throughput collapse, late collisions, and frame drops."},
+                {"id": "B", "text": "A high counter for `rx_crc_errors` in `ethtool -S <interface>` indicates physical layer degradation: damaged copper patch cables, electromagnetic noise, or dirty fiber optic transceivers."},
+                {"id": "C", "text": "A high counter for `rx_missed_errors` or `rx_dropped` indicates that the NIC's hardware DMA ring buffer overflowed because the CPU could not service interrupts fast enough."},
+                {"id": "D", "text": "Hardware ring buffer overflows can be mitigated by increasing the RX ring buffer size via `ethtool -G <interface> rx 4096`."},
+                {"id": "E", "text": "`ethtool` can only be executed on wireless Wi-Fi interfaces and fails on physical Ethernet cards."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D are standard L1/L2 engineering diagnostics. Duplex mismatches cause collisions and collapse (A). `rx_crc_errors` indicates bad cables/optics (B). `rx_missed_errors` indicates ring buffer exhaustion (C), solvable by expanding ring buffers via `ethtool -G` (D). E is false: `ethtool` is the canonical diagnostic tool for physical Ethernet NICs.",
+            "difficulty": "hard",
+            "subtopic": "Hardware & NIC Diagnostics via ethtool"
+        },
+        {
+            "id": "l12-q016",
+            "type": "multi_choice",
+            "question": "Which of the following principles govern the Berkeley Packet Filter (BPF) engine utilized by `tcpdump`?",
+            "options": [
+                {"id": "A", "text": "BPF compiles filter expressions into bytecode executed inside an in-kernel register-based virtual machine."},
+                {"id": "B", "text": "Packets that do not match the filter are discarded immediately in kernel space, eliminating costly copying and context switches to user-space memory."},
+                {"id": "C", "text": "In modern Linux kernels, BPF filter bytecode is JIT-compiled into native host CPU machine instructions for maximum packet-filtering performance."},
+                {"id": "D", "text": "BPF requires that every packet be decrypted and printed in ASCII before any filtering can occur."},
+                {"id": "E", "text": "BPF filters can inspect arbitrary packet bytes at specific byte offsets within protocol headers (e.g., `tcp[13]` for TCP flags)."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "E"],
+            "explanation": "Statements A, B, C, and E accurately describe BPF. Bytecode virtual machine in-kernel (A). Discards non-matching packets in kernel space before context switches (B). JIT-compiled to machine code (C). Supports offset byte masking like `tcp[13]` (E). D is false: Filtering is done on raw binary in kernel memory before userspace receives anything.",
+            "difficulty": "hard",
+            "subtopic": "BPF Architecture in tcpdump"
+        },
+        {
+            "id": "l12-q017",
+            "type": "multi_choice",
+            "question": "Which of the following `tcpdump` commands and Berkeley Packet Filters are constructed accurately for their stated diagnostic goals?",
+            "options": [
+                {"id": "A", "text": "Capture only TCP SYN packets (new connection establishment): `sudo tcpdump -nn 'tcp[tcpflags] & tcp-syn != 0 and tcp[tcpflags] & tcp-ack == 0'`."},
+                {"id": "B", "text": "Capture TCP connection resets: `sudo tcpdump -nn 'tcp[tcpflags] & tcp-rst != 0'`."},
+                {"id": "C", "text": "Capture all DNS traffic on UDP or TCP port 53 without resolving hostnames: `sudo tcpdump -nn port 53`."},
+                {"id": "D", "text": "High-speed packet capture to a ring buffer of 5 files of 100MB each with a 4MB kernel buffer: `sudo tcpdump -nn -i eth0 -s 0 -B 4096 -w /tmp/cap.pcap -W 5 -C 100`."},
+                {"id": "E", "text": "Capture ICMP Fragmentation Needed packets: `sudo tcpdump -nn 'icmp and icmp[0] == 3 and icmp[1] == 4'`."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D", "E"],
+            "explanation": "ALL FIVE commands (A, B, C, D, and E) are syntactically and semantically correct production recipes! SYN filter excludes ACKs (A). RST filter catches resets (B). Port 53 captures DNS (C). Ring buffer `-W 5 -C 100` with `-B 4096` prevents drops during high-speed traffic (D). ICMP Type 3 Code 4 filter catches PMTUD drops (E).",
+            "difficulty": "hard",
+            "subtopic": "Advanced tcpdump Recipes & BPF Filters"
+        },
+        {
+            "id": "l12-q018",
+            "type": "multi_choice",
+            "question": "When analyzing packet captures in Wireshark, which of the following interpretations of the Expert Information engine are correct?",
+            "options": [
+                {"id": "A", "text": "`[TCP Retransmission]`: Sender's Retransmission Timer (RTO) expired without receiving an ACK for previously sent bytes."},
+                {"id": "B", "text": "`[TCP Fast Retransmission]`: Sender received 3 duplicate ACKs and retransmitted the missing segment before the RTO expired."},
+                {"id": "C", "text": "`[TCP ZeroWindow]`: The receiving host's socket buffer is 100% full, warning the sender to halt transmission."},
+                {"id": "D", "text": "`[TCP Window Update]`: The receiving application consumed bytes from its socket buffer, advertising restored receive capacity."},
+                {"id": "E", "text": "`[TCP Spurious Retransmission]`: Indicates that the sender retransmitted data that the receiver had already acknowledged."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D", "E"],
+            "explanation": "ALL FIVE statements (A, B, C, D, and E) are correct Wireshark Expert Info definitions! Retransmission indicates RTO timeout (A). Fast Retransmit follows 3 dup ACKs (B). ZeroWindow signals receiver buffer exhaustion (C). Window Update resumes stream (D). Spurious retransmission indicates unnecessary retransmit due to delayed ACK (E).",
+            "difficulty": "medium",
+            "subtopic": "Wireshark Expert Info Analysis"
+        },
+        {
+            "id": "l12-q019",
+            "type": "multi_choice",
+            "question": "A newly deployed web service runs on a Linux host, but external clients receive 'Connection Refused' (`ECONNREFUSED` / TCP RST) when attempting to connect. Which of the following are valid diagnostic steps and likely causes?",
+            "options": [
+                {"id": "A", "text": "Run `ss -tulpn | grep :8080`; if the socket is bound to `127.0.0.1:8080`, it will refuse all external incoming connections."},
+                {"id": "B", "text": "If bound to `127.0.0.1`, reconfigure the service config to bind to `0.0.0.0:8080` (or `:::8080` for IPv6) to listen on all interfaces."},
+                {"id": "C", "text": "Run `sudo iptables -L -n -v` or `nft list ruleset` to verify that local host firewall rules are not rejecting inbound packets on port 8080."},
+                {"id": "D", "text": "Run `tcpdump -nn -i eth0 port 8080` to observe if incoming SYN packets arrive at the physical network interface."},
+                {"id": "E", "text": "Connection Refused proves that the DNS server failed to resolve the domain name."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D are valid troubleshooting steps. Binding to 127.0.0.1 rejects non-loopback connections (A & B). Host firewalls can reject packets (C). Tcpdump verifies whether SYNs reach the NIC (D). E is false: Connection Refused means a TCP RST was received from an IP; DNS resolution had already succeeded.",
+            "difficulty": "medium",
+            "subtopic": "SRE Runbook: Connection Refused Diagnostics"
+        },
+        {
+            "id": "l12-q020",
+            "type": "multi_choice",
+            "question": "Which of the following statements regarding end-to-end network troubleshooting tools and diagnostics are true?",
+            "options": [
+                {"id": "A", "text": "`curl -Iv https://example.com` outputs HTTP status codes, response headers, TLS certificate details, and timing handshakes."},
+                {"id": "B", "text": "`dig +trace example.com` outputs the full hierarchical iterative resolution walk starting from the Root nameservers down to the authoritative answer."},
+                {"id": "C", "text": "`ip route get 8.8.8.8` asks the Linux kernel to simulate a FIB routing lookup and outputs the exact egress interface, source IP, and gateway chosen for that destination."},
+                {"id": "D", "text": "`nc -zv 10.0.0.5 443` rapidly probes whether TCP port 443 is reachable and listening without initiating a full application-layer session."},
+                {"id": "E", "text": "Executing `ping` automatically fixes all broken Ethernet cables using electromagnetic self-repair."}
+            ],
+            "correctOptionIds": ["A", "B", "C", "D"],
+            "explanation": "Statements A, B, C, and D are essential networking CLI tools. `curl -Iv` inspects HTTP/TLS headers (A). `dig +trace` displays root-to-auth iterative walk (B). `ip route get` shows FIB route decision (C). `nc -zv` tests raw L4 socket port connectivity (D). E is humorous and false.",
+            "difficulty": "medium",
+            "subtopic": "Network Troubleshooting CLI Toolkit"
+        }
+    ]
+}

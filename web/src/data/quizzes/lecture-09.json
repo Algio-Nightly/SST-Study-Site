@@ -1,593 +1,730 @@
 {
   "topicId": "lecture-09",
   "lectureNumber": 9,
-  "title": "DNS & Internet Applications Quiz",
-  "description": "20 questions covering DNS hierarchy, query resolution, record types (A, AAAA, CNAME, MX, TXT, PTR), URL parsing, HTTP protocol, status codes, and cookies.",
-  "estimatedMinutes": 25,
+  "title": "DNS & Internet Applications Master Quiz",
+  "description": "20 rigorous multi-correct questions covering DNS binary headers, zone apex CNAME constraints, Kaminsky cache poisoning, DNSSEC cryptographic chains, DoT/DoH, EDNS0, HTTP/1.1 vs HTTP/2 vs HTTP/3, and web security headers.",
+  "estimatedMinutes": 35,
   "questions": [
     {
       "id": "l09-q01",
-      "type": "single_choice",
-      "question": "What is the primary motivation for using the Domain Name System (DNS) instead of relying directly on hardcoded IP addresses?",
+      "type": "multi_choice",
+      "question": "Which of the following statements regarding the global DNS root architecture and query resolution models are correct?",
       "options": [
         {
           "id": "A",
-          "text": "DNS encrypts all web traffic by default using TLS"
+          "text": "The 13 logical root server identities (a.root-servers.net to m.root-servers.net) are announced via BGP Anycast from over 1,700 physical instances across the globe."
         },
         {
           "id": "B",
-          "text": "Domain names decouple service identity from volatile physical IP addresses, enabling load balancing and seamless IP renumbering"
+          "text": "In a recursive query, the contacted server assumes the burden of iteratively walking the DNS hierarchy until the final answer or an error is returned to the client."
         },
         {
           "id": "C",
-          "text": "IP addresses cannot be routed across continental fiber lines"
+          "text": "If a recursive resolver at 8.8.8.8 becomes unreachable, the client OS stub resolver automatically assumes the iterative resolution burden and walks root servers directly."
         },
         {
           "id": "D",
-          "text": "Domain names eliminate the need for Layer 3 IP routing"
+          "text": "Root nameservers do not hold authoritative records for second-level domain names like scaler.com; they return referrals to the appropriate Top-Level Domain (TLD) nameservers."
+        },
+        {
+          "id": "E",
+          "text": "In an iterative query, if the queried server does not know the answer, it returns a delegation pointing to another nameserver lower in the hierarchy."
         }
       ],
       "correctOptionIds": [
-        "B"
+        "A",
+        "B",
+        "D",
+        "E"
       ],
-      "explanation": "DNS decouples human-readable identifiers from underlying numeric IP addresses. This allows servers to migrate IPs, distribute traffic across geo-distributed servers (CDNs), and provide failover without breaking bookmarks or client code.",
-      "difficulty": "easy",
-      "subtopic": "DNS Motivation"
+      "explanation": "Statements A, B, D, and E are correct. A: BGP Anycast broadcasts the 13 logical IP addresses from hundreds of locations. B: A recursive query delegates full resolution to the resolver. D: Root servers only maintain delegations to TLD nameservers (and glue records). E: Iterative queries return referrals (delegations). C is false: Standard OS stub resolvers (like Linux getaddrinfo or Windows DNS Client) lack iterative walk logic; if their configured recursive resolver fails, resolution fails unless an alternative resolver IP is configured.",
+      "difficulty": "hard",
+      "subtopic": "DNS Hierarchy & Resolution"
     },
     {
       "id": "l09-q02",
-      "type": "single_choice",
-      "question": "In the hierarchical DNS tree structure, which tier is responsible for knowing the authoritative nameservers of Top-Level Domains like .com, .org, and .edu?",
+      "type": "multi_choice",
+      "question": "In the 12-byte fixed binary DNS message header (RFC 1035), which of the following bitfields and their interpretations are correct?",
       "options": [
         {
           "id": "A",
-          "text": "Authoritative Nameservers"
+          "text": "The `QR` (Query/Response) bit is set to 0 for a query and set to 1 for a response."
         },
         {
           "id": "B",
-          "text": "Root Nameservers (represented by the trailing dot '.')"
+          "text": "The `AA` (Authoritative Answer) bit is only valid in responses and indicates that the responding server is authoritative for the queried domain zone."
         },
         {
           "id": "C",
-          "text": "Local Recursive Resolvers"
+          "text": "The `TC` (Truncation) bit is set when the response length exceeds the transport limit (512 bytes for classical UDP), prompting the client to retry over TCP."
         },
         {
           "id": "D",
-          "text": "Client OS Stub Resolvers"
+          "text": "The `RD` (Recursion Desired) bit is set by the authoritative nameserver to indicate that it resolved the query recursively on behalf of the client."
+        },
+        {
+          "id": "E",
+          "text": "An `RCODE` of 3 indicates `NXDOMAIN` (Non-Existent Domain), signifying that the domain name does not exist according to the authoritative server."
         }
       ],
       "correctOptionIds": [
-        "B"
+        "A",
+        "B",
+        "C",
+        "E"
       ],
-      "explanation": "The Root Nameservers sit at the apex of the DNS hierarchy (denoted by the invisible trailing dot in fully qualified domain names like `example.com.`). They maintain delegations to the TLD nameservers.",
-      "difficulty": "easy",
-      "subtopic": "DNS Hierarchy"
+      "explanation": "Statements A, B, C, and E are correct. A: QR=0 query, QR=1 response. B: AA=1 proves the answer came from an authoritative source, not a cached relay. C: TC=1 signals UDP packet truncation (>512 bytes without EDNS0), instructing the client to fall back to TCP port 53. E: RCODE 3 is NXDOMAIN. D is false: The RD bit is set by the *client* in the query to request recursion; the server indicates whether recursion was provided using the `RA` (Recursion Available) bit.",
+      "difficulty": "hard",
+      "subtopic": "DNS Header Anatomy"
     },
     {
       "id": "l09-q03",
-      "type": "single_choice",
-      "question": "How are the 13 logical root server IP addresses (a.root-servers.net through m.root-servers.net) scaled globally to handle billions of queries without collapsing?",
+      "type": "multi_choice",
+      "question": "According to RFC 1034 / RFC 2181, why can a CNAME record NOT coexist with other record types at the zone apex (`scaler.com`), and how do modern DNS providers work around this limitation?",
       "options": [
         {
           "id": "A",
-          "text": "Using BGP Anycast routing to broadcast the same 13 IP addresses from hundreds of physical data centers worldwide"
+          "text": "A CNAME record mandates that no other record type (such as SOA, NS, or MX) can exist for that exact node name."
         },
         {
           "id": "B",
-          "text": "By storing all internet domain records on a single quantum supercomputer in Virginia"
+          "text": "Because the zone apex must contain SOA and NS records to be a valid DNS zone, placing a CNAME at the apex violates RFC specifications."
         },
         {
           "id": "C",
-          "text": "By forcing client web browsers to execute DNS root queries locally"
+          "text": "Cloudflare and Route 53 implement synthetic proprietary records (e.g., CNAME Flattening, ANAME, or ALIAS) that resolve the target dynamically and serve synthesized A/AAAA records at the apex."
         },
         {
           "id": "D",
-          "text": "By assigning each root server a unique 64-bit IPv8 address"
+          "text": "CNAME records at the apex are forbidden because BGP routers cannot parse text strings during FIB lookup."
+        },
+        {
+          "id": "E",
+          "text": "If an apex had a CNAME and an MX record, mail delivery servers might look up the CNAME target and deliver mail to the wrong host entirely."
         }
       ],
       "correctOptionIds": [
-        "A"
+        "A",
+        "B",
+        "C",
+        "E"
       ],
-      "explanation": "Through BGP Anycast, the same 13 logical IP addresses are announced by over 1,500 physical server instances distributed across the globe. Border routers direct DNS queries to the topologically nearest physical instance.",
-      "difficulty": "medium",
-      "subtopic": "DNS Root & Anycast"
+      "explanation": "Statements A, B, C, and E are correct. RFC 1034 Section 3.6.2 dictates that if a CNAME exists at a node, no other data may exist at that node. Because every zone apex MUST have SOA and NS records, a standard CNAME cannot legally exist at the apex (A and B). Modern DNS providers bypass this using CNAME Flattening / ALIAS records, where the nameserver queries the canonical alias on the backend and returns synthesized A/AAAA records to the client (C). Without this, mail lookups for the apex would follow the CNAME instead of evaluating MX records (E). D is false because BGP operates at Layer 3 and does not process DNS records.",
+      "difficulty": "hard",
+      "subtopic": "Zone Apex & CNAME Mechanics"
     },
     {
       "id": "l09-q04",
-      "type": "single_choice",
-      "question": "What is the fundamental difference between a 'Recursive Query' and an 'Iterative Query' in DNS resolution?",
+      "type": "multi_choice",
+      "question": "Which of the following are technically accurate regarding reverse DNS lookups and PTR records?",
       "options": [
         {
           "id": "A",
-          "text": "Recursive queries use TCP; iterative queries use UDP"
+          "text": "For IPv4 address `192.0.2.45`, the corresponding reverse DNS query domain is `45.2.0.192.in-addr.arpa`."
         },
         {
           "id": "B",
-          "text": "In a recursive query, the contacted server assumes responsibility to find the final answer; in an iterative query, the server returns the best referral (next nameserver) it knows"
+          "text": "The octets are reversed because DNS trees are evaluated from right to left (broadest to narrowest), whereas IP addresses are written from left to right (network to host)."
         },
         {
           "id": "C",
-          "text": "Recursive queries only resolve IPv6 addresses; iterative queries resolve IPv4"
+          "text": "For IPv6 addresses, PTR lookups reverse every individual hexadecimal nibble (separated by dots) under the `ip6.arpa` domain."
         },
         {
           "id": "D",
-          "text": "Iterative queries repeat infinitely until the client manually interrupts them"
+          "text": "SMTP mail transfer agents (MTAs) frequently reject incoming email if the sender's IP address does not have a matching valid reverse PTR record (Forward-Confirmed reverse DNS)."
+        },
+        {
+          "id": "E",
+          "text": "A PTR record query is handled directly by the client's local ARP cache without making network requests."
         }
       ],
       "correctOptionIds": [
-        "B"
+        "A",
+        "B",
+        "C",
+        "D"
       ],
-      "explanation": "A recursive query asks the resolver: 'Please do whatever work is necessary to bring me the final IP.' An iterative query asks: 'If you don't know the exact answer, give me the IP of the next nameserver down the tree who might know.'",
+      "explanation": "Statements A, B, C, and D are correct. A & B: IPv4 reverse lookups reverse octets under `in-addr.arpa` so hierarchical DNS delegation matches IP subnetting. C: IPv6 reverses each 4-bit nibble under `ip6.arpa`. D: FCrDNS is a foundational anti-spam mechanism used by major mail providers (Gmail, Outlook). E is false: ARP maps IP to MAC at Layer 2 on a local broadcast domain, whereas PTR is a Layer 7 DNS query traversing the global DNS tree.",
       "difficulty": "medium",
-      "subtopic": "Recursive vs Iterative Queries"
+      "subtopic": "Reverse DNS & PTR Records"
     },
     {
       "id": "l09-q05",
-      "type": "single_choice",
-      "question": "Which DNS record type maps an IPv6 host address to a domain name?",
+      "type": "multi_choice",
+      "question": "Team A configures a DNS TTL of 30 seconds for `api.scaler.com`, while Team B configures a TTL of 86400 seconds (1 day) for `docs.scaler.com`. Which of the following consequences are true?",
       "options": [
         {
           "id": "A",
-          "text": "A record"
+          "text": "When Team A migrates their API to a new public IP, the vast majority of clients worldwide will discover the new IP address within ~30 seconds."
         },
         {
           "id": "B",
-          "text": "AAAA record (Quad-A)"
+          "text": "Team B's authoritative nameservers will experience significantly lower query volume than Team A's nameservers for an equivalent number of active users."
         },
         {
           "id": "C",
-          "text": "CNAME record"
+          "text": "Team B's web visitors will suffer slower page load times on every repeat visit because of the high TTL."
         },
         {
           "id": "D",
-          "text": "PTR record"
+          "text": "If Team B suffers a catastrophic server failure and updates their DNS record, many clients will continue attempting to connect to the dead IP address for up to 24 hours."
+        },
+        {
+          "id": "E",
+          "text": "The DNS TTL directly dictates how long the client's browser maintains its TCP socket in the ESTABLISHED state."
         }
       ],
       "correctOptionIds": [
-        "B"
+        "A",
+        "B",
+        "D"
       ],
-      "explanation": "An 'A' record maps a hostname to a 32-bit IPv4 address, whereas a 'AAAA' (Quad-A) record maps a hostname to a 128-bit IPv6 address.",
-      "difficulty": "easy",
-      "subtopic": "DNS Record Types"
+      "explanation": "Statements A, B, and D are correct. A low TTL allows rapid failover and IP migration (A), but generates massive query load on authoritative nameservers (B). A high TTL caches answers extensively, making emergency migrations slow to propagate (D). C is false: High TTL improves client performance on repeat visits because cached DNS lookups take 0 ms. E is false: DNS TTL governs caching of the name-to-IP binding; it has zero relationship with TCP Keep-Alive or socket lifecycle.",
+      "difficulty": "medium",
+      "subtopic": "DNS TTL & Caching Dynamics"
     },
     {
       "id": "l09-q06",
-      "type": "single_choice",
-      "question": "Why is it forbidden by RFC standards to define a CNAME record at the root apex of a domain (e.g. at 'example.com' without a subdomain prefix)?",
+      "type": "multi_choice",
+      "question": "In the landmark Dan Kaminsky DNS Cache Poisoning attack (2008), how did the attacker overcome the historical limitations of traditional DNS spoofing?",
       "options": [
         {
           "id": "A",
-          "text": "Because CNAME records cannot coexist with other essential record types like SOA and NS at the zone apex"
+          "text": "The attacker queried pseudo-random nonexistent subdomains (e.g., `random123.target.com`) to guarantee recursive cache misses on every attempt."
         },
         {
           "id": "B",
-          "text": "Because CNAME records exceed 1500 bytes"
+          "text": "Because each query was for a unique name, the target resolver immediately forwarded an iterative query upstream, eliminating the need to wait for the TTL to expire."
         },
         {
           "id": "C",
-          "text": "Because CNAME records can only point to numeric IP addresses"
+          "text": "The attacker flooded the resolver with forged responses containing a guessed 16-bit Transaction ID along with malicious NS delegation records in the Authority section."
         },
         {
           "id": "D",
-          "text": "Because root apex names can only contain letters, not dots"
+          "text": "Once a forged response matching the Transaction ID was accepted, the resolver cached the attacker's nameserver as authoritative for the entire `target.com` zone."
+        },
+        {
+          "id": "E",
+          "text": "The attack succeeded by cracking the RSA-4096 private key of the ICANN Root Zone."
         }
       ],
       "correctOptionIds": [
-        "A"
+        "A",
+        "B",
+        "C",
+        "D"
       ],
-      "explanation": "RFC 1034 states that if a CNAME record exists for a node, no other data records can exist for that node. Because a zone apex MUST contain SOA and NS records, a CNAME cannot be placed at the naked apex domain.",
+      "explanation": "Statements A, B, C, and D accurately describe Kaminsky DNS cache poisoning. Prior to Kaminsky, attackers had to wait for a cached record's TTL to expire before attempting to spoof it. Kaminsky queried nonexistent names (`rand1.bank.com`, `rand2.bank.com`), triggering continuous iterative upstream queries while flooding forged responses with candidate Transaction IDs and fake Authority/Additional NS glue records (A, B, C). Winning the race poisoned the entire domain delegation (D). E is completely false; DNS at the time was unencrypted and unsigned, requiring no cryptographic cracking.",
       "difficulty": "hard",
-      "subtopic": "CNAME & Apex Restriction"
+      "subtopic": "Kaminsky DNS Cache Poisoning"
     },
     {
       "id": "l09-q07",
-      "type": "single_choice",
-      "question": "Which DNS record type is specifically used by mail transfer agents (MTAs) to route emails to the destination organization's mail servers?",
+      "type": "multi_choice",
+      "question": "Which of the following mechanisms serve as direct defensive countermeasures against DNS Cache Poisoning attacks?",
       "options": [
         {
           "id": "A",
-          "text": "TXT record"
+          "text": "Source Port Randomization (SPR): Randomizing the client UDP source port across ~64,000 ephemeral ports increases the attacker's search space from $2^{16}$ to $\\approx 2^{32}$ combinations."
         },
         {
           "id": "B",
-          "text": "MX record"
+          "text": "DNS Bailiwick Rules: Resolvers strictly reject out-of-domain records (e.g., rejecting an authoritative NS record for `bank.com` returned by a nameserver authoritative only for `attacker.com`)."
         },
         {
           "id": "C",
-          "text": "PTR record"
+          "text": "0x20 Bit Encoding: Randomizing upper and lower case letters in the queried domain name (e.g., `sCaLeR.cOm`) and requiring the response to mirror the exact casing."
         },
         {
           "id": "D",
-          "text": "SRV record"
+          "text": "Deploying DNSSEC to cryptographically sign resource record sets with digital signatures."
+        },
+        {
+          "id": "E",
+          "text": "Increasing the Ethernet MTU to 9000 bytes to force all DNS queries over IPv6."
         }
       ],
       "correctOptionIds": [
-        "B"
+        "A",
+        "B",
+        "C",
+        "D"
       ],
-      "explanation": "MX (Mail Exchanger) records specify the mail servers responsible for accepting emails for a domain, along with priority values for failover.",
-      "difficulty": "easy",
-      "subtopic": "DNS Record Types"
+      "explanation": "Statements A, B, C, and D are authentic defensive measures against DNS cache poisoning. SPR (RFC 5452) combines a 16-bit Transaction ID with ~16 bits of ephemeral port entropy, requiring $\\approx 4\\text{ billion}$ spoofed packets to win (A). Bailiwick rules prevent rogue delegations (B). 0x20 encoding adds entropy via case preservation (C). DNSSEC provides unforgeable cryptographic authenticity (D). E is irrelevant and unrelated to DNS security.",
+      "difficulty": "hard",
+      "subtopic": "DNS Spoofing Countermeasures"
     },
     {
       "id": "l09-q08",
       "type": "multi_choice",
-      "question": "For what security and verification purposes are DNS TXT records widely utilized in modern cloud infrastructure? (Select ALL that apply)",
+      "question": "Which of the following statements correctly describe the cryptographic architecture of DNSSEC (RFC 4033 - RFC 4035)?",
       "options": [
         {
           "id": "A",
-          "text": "SPF (Sender Policy Framework) to prevent email spoofing"
+          "text": "DNSSEC encrypts DNS query and response payloads so that on-path eavesdroppers cannot inspect domain names."
         },
         {
           "id": "B",
-          "text": "DKIM (DomainKeys Identified Mail) public cryptographic key publication"
+          "text": "Resource Record Sets (RRsets) of the same name and type are bundled together and digitally signed with a Zone-Signing Key (ZSK) to produce an `RRSIG` record."
         },
         {
           "id": "C",
-          "text": "Domain ownership verification for SSL/TLS certificates and Google Search Console"
+          "text": "The public Zone-Signing Key (ZSK) is signed by the Key-Signing Key (KSK) within the zone's `DNSKEY` record."
         },
         {
           "id": "D",
-          "text": "Translating MAC addresses into IPv4 addresses"
+          "text": "A cryptographic hash of the child zone's public KSK is published in the parent zone as a Delegation Signer (`DS`) record, establishing the chain of trust."
+        },
+        {
+          "id": "E",
+          "text": "The Root Zone KSK serves as the global Trust Anchor pre-configured into validating recursive resolvers."
+        }
+      ],
+      "correctOptionIds": [
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "explanation": "Statements B, C, D, and E are correct. DNSSEC secures integrity and authentication via a hierarchical chain of trust: RRsets are signed by ZSK to create RRSIG (B); ZSK is signed by KSK (C); parent zones store the DS hash of the child KSK (D); the Root KSK is the Trust Anchor (E). A is completely false: DNSSEC does NOT provide confidentiality or encryption; DNS payloads remain in plaintext.",
+      "difficulty": "hard",
+      "subtopic": "DNSSEC Architecture"
+    },
+    {
+      "id": "l09-q09",
+      "type": "multi_choice",
+      "question": "How do NSEC and NSEC3 records solve the problem of 'Authenticated Denial of Existence' in DNSSEC without requiring online private key signing for every nonexistent domain?",
+      "options": [
+        {
+          "id": "A",
+          "text": "An `NSEC` record defines a signed range asserting that no names exist lexicographically between two existing domain records (e.g., asserting no record exists between `alpha.example.com` and `charlie.example.com`)."
+        },
+        {
+          "id": "B",
+          "text": "A major vulnerability of classical `NSEC` is 'Zone Walking', which allows adversaries to enumerate every subdomain in a private zone simply by following consecutive NSEC links."
+        },
+        {
+          "id": "C",
+          "text": "An `NSEC3` record prevents zone enumeration by hashing domain names using salted iterations of SHA-1 before creating the signed range."
+        },
+        {
+          "id": "D",
+          "text": "NSEC records automatically decrypt TLS traffic passing through recursive resolvers."
+        },
+        {
+          "id": "E",
+          "text": "Both NSEC and NSEC3 allow validating resolvers to cryptographically verify that an `NXDOMAIN` response was genuinely authorized by the zone owner."
         }
       ],
       "correctOptionIds": [
         "A",
         "B",
-        "C"
+        "C",
+        "E"
       ],
-      "explanation": "TXT records hold arbitrary text attributes, commonly used for email validation (SPF, DKIM, DMARC) and verifying administrative domain ownership. Translating MAC to IP is handled by ARP/RARP, not DNS TXT.",
-      "difficulty": "medium",
-      "subtopic": "DNS TXT Applications"
-    },
-    {
-      "id": "l09-q09",
-      "type": "single_choice",
-      "question": "What is the function of the TTL (Time to Live) field returned in a DNS resource record?",
-      "options": [
-        {
-          "id": "A",
-          "text": "It specifies the number of router hops the packet can survive before being dropped"
-        },
-        {
-          "id": "B",
-          "text": "It dictates the number of seconds intermediate recursive resolvers and clients may cache the record before querying authoritative servers again"
-        },
-        {
-          "id": "C",
-          "text": "It defines the server's session timeout in minutes"
-        },
-        {
-          "id": "D",
-          "text": "It specifies the lifespan of the domain registration at the registrar"
-        }
-      ],
-      "correctOptionIds": [
-        "B"
-      ],
-      "explanation": "DNS TTL tells caching resolvers how long (in seconds) the answer remains fresh. A lower TTL allows faster propagation of IP changes during migrations, while a higher TTL reduces DNS query traffic.",
-      "difficulty": "easy",
-      "subtopic": "DNS Caching & TTL"
+      "explanation": "Statements A, B, C, and E are correct. Because nameservers cannot sign non-existent names offline in advance, NSEC provides signed spans of lexicographical gaps (A). However, this permits zone walking (B). NSEC3 mitigates zone walking by hashing domain names (C). Validating resolvers verify NXDOMAIN authenticity using these signed proofs (E). D is nonsense.",
+      "difficulty": "hard",
+      "subtopic": "DNSSEC Authenticated Denial of Existence"
     },
     {
       "id": "l09-q10",
-      "type": "single_choice",
-      "question": "In the URL `https://api.scaler.com:8443/v1/students?sort=desc#results`, what constitutes the 'query string' component?",
+      "type": "multi_choice",
+      "question": "Compare DNS over TLS (DoT - RFC 7858) and DNS over HTTPS (DoH - RFC 8484). Which of the following statements are technically accurate?",
       "options": [
         {
           "id": "A",
-          "text": "api.scaler.com"
+          "text": "DoT runs over dedicated TCP port 853, making it straightforward for enterprise firewalls to inspect, permit, or block."
         },
         {
           "id": "B",
-          "text": ":8443"
+          "text": "DoH encapsulates DNS queries inside HTTP/2 or HTTP/3 streams over standard TCP/UDP port 443, making it blend seamlessly with regular encrypted web traffic."
         },
         {
           "id": "C",
-          "text": "sort=desc"
+          "text": "Both DoT and DoH provide end-to-end transport confidentiality and integrity, preventing local network eavesdroppers from viewing queried domains."
         },
         {
           "id": "D",
-          "text": "#results"
+          "text": "Neither DoT nor DoH prevents the upstream recursive resolver (e.g., Cloudflare or Google) from logging client queries."
+        },
+        {
+          "id": "E",
+          "text": "DoT eliminates the need for TCP handshakes by operating exclusively over raw ICMP."
         }
       ],
       "correctOptionIds": [
-        "C"
+        "A",
+        "B",
+        "C",
+        "D"
       ],
-      "explanation": "The URL anatomy is: scheme (`https`), host (`api.scaler.com`), port (`8443`), path (`/v1/students`), query string (`sort=desc`, starting after `?`), and fragment identifier (`results`, starting after `#`).",
-      "difficulty": "easy",
-      "subtopic": "URL Decomposition"
+      "explanation": "Statements A, B, C, and D are correct. DoT operates on port 853 (A), while DoH blends over port 443 (B). Both encrypt the last mile between client and resolver, preventing local sniffing/tampering (C), but the upstream resolver itself still sees all queries in plaintext unless Oblivious DoH (ODoH) is deployed (D). E is false; DoT uses TCP and TLS.",
+      "difficulty": "medium",
+      "subtopic": "Encrypted DNS: DoT & DoH"
     },
     {
       "id": "l09-q11",
-      "type": "single_choice",
-      "question": "Why is the fragment identifier (e.g. `#section2` in `https://example.com/docs#section2`) NEVER transmitted over the wire to the web server in an HTTP GET request?",
+      "type": "multi_choice",
+      "question": "Which of the following are true regarding the EDNS0 Client Subnet (ECS) extension (RFC 7871)?",
       "options": [
         {
           "id": "A",
-          "text": "Because HTTP headers cannot contain the '#' character"
+          "text": "ECS enables recursive resolvers to append the client's network prefix (typically a /24 for IPv4 or /56 for IPv6) to the query sent to authoritative nameservers."
         },
         {
           "id": "B",
-          "text": "Because fragments are strictly client-side browser instructions to scroll to or anchor on a specific element after parsing the HTML"
+          "text": "Authoritative nameservers for CDNs use ECS data to return an Anycast or Edge IP address topologically closest to the client rather than the resolver."
         },
         {
           "id": "C",
-          "text": "Because TLS encryption strips fragment identifiers for security reasons"
+          "text": "ECS completely resolves all privacy concerns because it replaces the client's MAC address with a random UUID."
         },
         {
           "id": "D",
-          "text": "Because routers drop packets with hashtag symbols"
+          "text": "ECS reduces the cache efficiency of public recursive resolvers because identical queries from clients on different subnets generate separate cached entries."
+        },
+        {
+          "id": "E",
+          "text": "ECS operates as an option inside an OPT pseudo-resource record, expanding standard DNS capabilities without breaking backward compatibility."
         }
       ],
       "correctOptionIds": [
-        "B"
+        "A",
+        "B",
+        "D",
+        "E"
       ],
-      "explanation": "Fragment identifiers designate internal anchors within a resource. The web browser processes them locally after receiving the full document; hence, the browser omits the fragment when making the HTTP request.",
-      "difficulty": "medium",
-      "subtopic": "URL Fragments"
+      "explanation": "Statements A, B, D, and E are correct. ECS transmits client subnet prefixes to authoritative nameservers (A), allowing CDNs to optimize routing for the user instead of the resolver's location (B). However, this increases cache fragmentation on resolvers (D) and introduces privacy trade-offs. ECS utilizes the EDNS0 OPT record (E). C is false; ECS transmits IP prefix information, which actually raises privacy concerns rather than eliminating them.",
+      "difficulty": "hard",
+      "subtopic": "EDNS0 Client Subnet (ECS)"
     },
     {
       "id": "l09-q12",
-      "type": "single_choice",
-      "question": "What is the fundamental difference between an HTTP method being 'Safe' versus being 'Idempotent'?",
+      "type": "multi_choice",
+      "question": "A Start of Authority (SOA) record contains several critical timing parameters. Which of the following mappings and behavioral rules are correct?",
       "options": [
         {
           "id": "A",
-          "text": "Safe methods use HTTPS; idempotent methods use HTTP"
+          "text": "`Serial`: A revision number that secondary nameservers compare against their local copy; an incremented serial triggers zone transfer (AXFR/IXFR)."
         },
         {
           "id": "B",
-          "text": "Safe methods do not alter server state (read-only); Idempotent methods can alter state, but executing them multiple times produces the identical side-effect as executing them once"
+          "text": "`Refresh`: The interval at which secondary nameservers poll the primary nameserver to inspect the serial number."
         },
         {
           "id": "C",
-          "text": "Idempotent methods are read-only; safe methods can delete records"
+          "text": "`Retry`: The time a secondary nameserver waits before re-attempting a failed zone refresh."
         },
         {
           "id": "D",
-          "text": "Safe methods run in O(1) time; idempotent methods run in O(N) time"
+          "text": "`Minimum TTL`: Under RFC 2308, this field defines the duration that downstream resolvers may cache a negative response (NXDOMAIN / NODATA)."
+        },
+        {
+          "id": "E",
+          "text": "`Expire`: The time after which a secondary nameserver drops its cached zone records if it cannot establish contact with the primary."
         }
       ],
       "correctOptionIds": [
-        "B"
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
       ],
-      "explanation": "Safe methods (like GET, HEAD) do not mutate resource state. Idempotent methods (like PUT, DELETE, GET) can modify state, but repeating identical requests N times leaves the server in the exact same state as 1 request.",
-      "difficulty": "medium",
-      "subtopic": "HTTP Method Semantics"
+      "explanation": "ALL FIVE statements (A, B, C, D, and E) are technically correct! The SOA record governs secondary zone replication and negative caching. Serial tracks versions (A), Refresh sets polling cadence (B), Retry dictates retry timing on failure (C), Minimum TTL dictates RFC 2308 negative caching (D), and Expire dictates when secondary zone data becomes invalid if primary remains unreachable (E).",
+      "difficulty": "hard",
+      "subtopic": "SOA Record Anatomy"
     },
     {
       "id": "l09-q13",
       "type": "multi_choice",
-      "question": "Which of the following HTTP methods are classified as Idempotent according to RFC 9110? (Select ALL that apply)",
+      "question": "Which of the following are valid rules regarding DNS Mail Exchange (MX) records?",
       "options": [
         {
           "id": "A",
-          "text": "GET"
+          "text": "Each MX record contains a numeric preference value (priority); lower numeric values indicate higher priority."
         },
         {
           "id": "B",
-          "text": "PUT"
+          "text": "An MX record must point directly to a canonical domain name with an A or AAAA record, NOT directly to an IP address or a CNAME alias."
         },
         {
           "id": "C",
-          "text": "DELETE"
+          "text": "If two MX records have identical priority values, sending mail servers must perform round-robin or randomized load sharing between them."
         },
         {
           "id": "D",
-          "text": "POST"
+          "text": "Higher numeric priority MX records are contacted first, and lower numbers serve strictly as fallbacks."
+        },
+        {
+          "id": "E",
+          "text": "If a domain has no MX record, sending MTAs fall back to querying the domain's A record directly."
         }
       ],
       "correctOptionIds": [
         "A",
         "B",
-        "C"
+        "C",
+        "E"
       ],
-      "explanation": "GET (safe and idempotent), PUT (replacing a resource repeatedly yields the same resource state), and DELETE (deleting resource X repeatedly leaves it deleted) are idempotent. POST is typically NOT idempotent (e.g. creating new orders).",
+      "explanation": "Statements A, B, C, and E are correct. A & D: Lower numbers have higher priority (e.g., priority 10 is preferred over priority 20; D is false). B: RFC 2181 Section 10.3 mandates MX targets must point to domain names with A/AAAA records, never CNAMEs or raw IPs. C: Equal priority values share traffic. E: Standard SMTP fallback attempts delivery to the domain's A record if no MX records exist.",
       "difficulty": "medium",
-      "subtopic": "HTTP Idempotence"
+      "subtopic": "MX Record Protocol Rules"
     },
     {
       "id": "l09-q14",
-      "type": "single_choice",
-      "question": "What is the key difference between HTTP PUT and HTTP PATCH?",
+      "type": "multi_choice",
+      "question": "Which of the following security mechanisms utilize DNS TXT records to authenticate and protect email domains?",
       "options": [
         {
           "id": "A",
-          "text": "PUT is for web pages; PATCH is for mobile apps"
+          "text": "Sender Policy Framework (SPF): Lists authorized IP addresses and subnets permitted to send email on behalf of the domain (e.g., `v=spf1 ip4:198.51.100.0/24 -all`)."
         },
         {
           "id": "B",
-          "text": "PUT replaces the entire target resource with the uploaded payload; PATCH applies partial modifications/deltas to the existing resource"
+          "text": "DomainKeys Identified Mail (DKIM): Publishes the sender's public cryptographic key under a selector subdomain so receiving MTAs can verify digital signatures on email headers."
         },
         {
           "id": "C",
-          "text": "PUT is non-idempotent; PATCH is strictly idempotent"
+          "text": "Domain-based Message Authentication, Reporting, and Conformance (DMARC): Specifies enforcement policies (`p=reject`, `p=quarantine`) when SPF or DKIM alignment checks fail."
         },
         {
           "id": "D",
-          "text": "PUT requires authentication; PATCH is anonymous"
+          "text": "Certificate Authority Authorization (CAA): Published as TXT records to specify which CAs can issue SSL certificates."
+        },
+        {
+          "id": "E",
+          "text": "Google Site Verification: Proves administrative ownership of a domain to search engines and cloud platforms via arbitrary verification tokens."
         }
       ],
       "correctOptionIds": [
-        "B"
+        "A",
+        "B",
+        "C",
+        "E"
       ],
-      "explanation": "PUT represents a full replacement: any omitted fields are typically cleared or set to defaults. PATCH provides instructions to partially mutate only specific fields without modifying the rest.",
-      "difficulty": "easy",
-      "subtopic": "PUT vs PATCH"
+      "explanation": "Statements A, B, C, and E are correct. SPF, DKIM, and DMARC form the email authentication triad and all use DNS TXT records (A, B, C). Domain verification tokens also rely on TXT records (E). D is false: While CAA governs certificate issuance, it has its own dedicated DNS Resource Record type (Type 257 - CAA), not a TXT record.",
+      "difficulty": "medium",
+      "subtopic": "TXT Records & Email Security"
     },
     {
       "id": "l09-q15",
-      "type": "single_choice",
-      "question": "What does an HTTP 301 Moved Permanently status code instruct a web browser and search engine crawler to do differently compared to a 302 Found?",
+      "type": "multi_choice",
+      "question": "Which major architectural enhancements were introduced in HTTP/1.1 (RFC 2616 / RFC 7230) compared to legacy HTTP/1.0?",
       "options": [
         {
           "id": "A",
-          "text": "301 instructs clients and search engines to permanently cache the redirect and update links/SEO rankings to the new URI; 302 is temporary and should not be cached permanently"
+          "text": "Mandatory `Host` header: Allows multiple virtual hosts with distinct domain names to share a single public IP address."
         },
         {
           "id": "B",
-          "text": "301 means the page has an error; 302 means the page is successful"
+          "text": "Persistent Connections (`Connection: keep-alive` by default): Allows multiple HTTP request/response cycles over a single underlying TCP connection."
         },
         {
           "id": "C",
-          "text": "301 disables TLS encryption on the new location"
+          "text": "Chunked Transfer Encoding (`Transfer-Encoding: chunked`): Allows streaming dynamically generated responses without knowing the `Content-Length` upfront."
         },
         {
           "id": "D",
-          "text": "301 requires entering a new username and password"
+          "text": "Binary framing layer that splits messages into interleaved frames with 31-bit stream identifiers."
+        },
+        {
+          "id": "E",
+          "text": "Pipelining: Allowing clients to send multiple requests without waiting for intermediate responses (though limited by Head-of-Line blocking)."
         }
       ],
       "correctOptionIds": [
-        "A"
+        "A",
+        "B",
+        "C",
+        "E"
       ],
-      "explanation": "301 signifies permanent relocation; browsers cache it aggressively and search engines transfer page rank to the new URL. 302 is a temporary redirection, so search engines keep indexing the original URL.",
+      "explanation": "Statements A, B, C, and E are hallmark features introduced in HTTP/1.1. Host headers enabled modern multi-tenant virtual hosting (A). Keep-Alive became default (B). Chunked transfer enabled dynamic streaming (C). Pipelining was introduced (E). D is false: Binary framing with interleaved stream identifiers was introduced in HTTP/2, not HTTP/1.1.",
       "difficulty": "medium",
-      "subtopic": "HTTP Status Codes"
+      "subtopic": "HTTP/1.1 Core Enhancements"
     },
     {
       "id": "l09-q16",
-      "type": "single_choice",
-      "question": "What is the architectural difference between an HTTP 401 Unauthorized and an HTTP 403 Forbidden status code?",
+      "type": "multi_choice",
+      "question": "How does HTTP/2 (RFC 7540 / RFC 9113) fundamentally overcome the application-layer limitations of HTTP/1.1?",
       "options": [
         {
           "id": "A",
-          "text": "401 means the client must provide authentication credentials (unauthenticated); 403 means the identity is known but the user lacks permission to access the resource (unauthorized)"
+          "text": "It introduces a binary framing layer, breaking communication into discrete frames (e.g., HEADERS, DATA, SETTINGS, RST_STREAM)."
         },
         {
           "id": "B",
-          "text": "401 is a server error; 403 is a client error"
+          "text": "It multiplexes multiple independent bidirectional streams concurrently over a single TCP connection, eliminating application-layer Head-of-Line blocking."
         },
         {
           "id": "C",
-          "text": "401 is returned only over HTTP; 403 is returned only over HTTPS"
+          "text": "It compresses header fields using HPACK, maintaining static and dynamic indexing tables between client and server to eliminate redundant header transmission."
         },
         {
           "id": "D",
-          "text": "401 indicates that the server's database is offline"
+          "text": "It replaces TCP with UDP at the transport layer to eliminate transport packet loss."
+        },
+        {
+          "id": "E",
+          "text": "It supports stream prioritization and server push, allowing servers to send critical assets before the client explicitly parses and requests them."
         }
       ],
       "correctOptionIds": [
-        "A"
+        "A",
+        "B",
+        "C",
+        "E"
       ],
-      "explanation": "401 implies 'who are you? Please log in.' 403 implies 'I know who you are, but you do not have permission to touch this resource.'",
-      "difficulty": "medium",
-      "subtopic": "HTTP Status Codes"
+      "explanation": "Statements A, B, C, and E are correct. HTTP/2 uses binary framing (A), multiplexes streams across a single TCP socket (B), compresses headers via HPACK (C), and supports stream dependencies and server push (E). D is false: HTTP/2 still runs strictly over TCP; replacing TCP with UDP is the defining innovation of HTTP/3 (QUIC).",
+      "difficulty": "hard",
+      "subtopic": "HTTP/2 Binary Framing & Multiplexing"
     },
     {
       "id": "l09-q17",
-      "type": "single_choice",
-      "question": "What is the critical security vulnerability prevented by setting the 'HttpOnly' flag on a Set-Cookie header?",
+      "type": "multi_choice",
+      "question": "Despite HTTP/2's application-layer multiplexing, what transport-layer limitations motivated the development of HTTP/3 over QUIC (RFC 9000 / RFC 9114)?",
       "options": [
         {
           "id": "A",
-          "text": "Man-in-the-middle sniffing of packets over open Wi-Fi"
+          "text": "TCP Head-of-Line (HoL) Blocking: If a single TCP segment is dropped on a lossy connection, the kernel TCP stack stalls ALL interleaved HTTP/2 streams until the missing segment is retransmitted."
         },
         {
           "id": "B",
-          "text": "Session hijacking via Cross-Site Scripting (XSS) where malicious JavaScript accesses `document.cookie`"
+          "text": "Slow Connection Establishment: Establishing an HTTPS session over TCP requires 1 RTT for TCP SYN/ACK plus 1 RTT for TLS 1.3 (total 2 RTTs), whereas QUIC completes transport and cryptographic negotiation in 1 RTT (or 0-RTT)."
         },
         {
           "id": "C",
-          "text": "SQL Injection attacks on the backend database"
+          "text": "Connection Migration: When a mobile device shifts between Wi-Fi and 5G cellular, its IP address changes; TCP drops the connection, whereas QUIC uses a 64-bit Connection ID to persist the session without interruption."
         },
         {
           "id": "D",
-          "text": "Denial of Service attacks against the web server"
+          "text": "Middlebox Ossification: Routers and firewalls that drop unknown TCP options or interfere with TCP headers can be bypassed because QUIC encapsulates its transport state entirely inside encrypted UDP payloads."
+        },
+        {
+          "id": "E",
+          "text": "QUIC eliminates the need for congestion control algorithms, allowing clients to send unlimited data without packet drops."
         }
       ],
       "correctOptionIds": [
-        "B"
+        "A",
+        "B",
+        "C",
+        "D"
       ],
-      "explanation": "The `HttpOnly` flag prevents client-side scripts (like JavaScript running via XSS) from reading the cookie via `document.cookie`, mitigating cookie theft and session hijacking.",
-      "difficulty": "medium",
-      "subtopic": "Cookie Security Flags"
+      "explanation": "Statements A, B, C, and D accurately summarize the engineering imperatives behind QUIC and HTTP/3. TCP packet loss stalls all multiplexed streams at the kernel layer (A). TCP+TLS handshakes require sequential round-trips (B). IP changes break TCP 4-tuples, while QUIC Connection IDs survive network changes (C). UDP encapsulation evades legacy middlebox tampering (D). E is completely false: QUIC implements robust congestion control (Cubic, BBR, NewReno) in userspace.",
+      "difficulty": "hard",
+      "subtopic": "HTTP/3 & QUIC Protocol Imperatives"
     },
     {
       "id": "l09-q18",
-      "type": "single_choice",
-      "question": "What is the purpose of the 'SameSite=Strict' cookie attribute?",
+      "type": "multi_choice",
+      "question": "Which of the following statements regarding HTTP Cookie security attributes are technically correct?",
       "options": [
         {
           "id": "A",
-          "text": "It forces the cookie to only be transmitted over HTTPS connections"
+          "text": "The `HttpOnly` flag prevents client-side scripts from reading the cookie via `document.cookie`, mitigating credential theft via Cross-Site Scripting (XSS)."
         },
         {
           "id": "B",
-          "text": "It prevents the browser from sending the cookie on ANY cross-site request (mitigating Cross-Site Request Forgery / CSRF)"
+          "text": "The `Secure` flag instructs the browser to transmit the cookie only over encrypted connections (HTTPS), preventing transmission over plaintext HTTP."
         },
         {
           "id": "C",
-          "text": "It expires the cookie after strictly 5 minutes"
+          "text": "`SameSite=Strict` blocks the cookie from being sent on any cross-site request, even when a user clicks an external link navigating to the target website."
         },
         {
           "id": "D",
-          "text": "It prevents users from logging in on mobile devices"
+          "text": "`SameSite=Lax` allows the cookie to be sent on top-level safe GET navigations initiated from external sites, while blocking it on cross-site POST requests to defend against CSRF."
+        },
+        {
+          "id": "E",
+          "text": "Setting `SameSite=None` automatically enables end-to-end RSA encryption of the cookie payload."
         }
       ],
       "correctOptionIds": [
-        "B"
+        "A",
+        "B",
+        "C",
+        "D"
       ],
-      "explanation": "`SameSite=Strict` guarantees the cookie is never sent in third-party contexts (e.g. following links from external sites or embedded iframes), eliminating CSRF vulnerabilities for authenticated state.",
-      "difficulty": "hard",
-      "subtopic": "CSRF & SameSite"
+      "explanation": "Statements A, B, C, and D are correct. `HttpOnly` blocks JavaScript DOM access (A). `Secure` mandates HTTPS (B). `SameSite=Strict` suppresses the cookie on all cross-origin requests including link clicks (C). `SameSite=Lax` allows safe top-level GET navigations while preventing CSRF on state-changing requests (D). E is false: `SameSite=None` simply allows third-party cross-site transmission (and requires the `Secure` flag in modern browsers); it does not encrypt the cookie body.",
+      "difficulty": "medium",
+      "subtopic": "HTTP Cookie Security Attributes"
     },
     {
       "id": "l09-q19",
-      "type": "single_choice",
-      "question": "In a modern stateless web application using JWT (JSON Web Tokens) for sessions, where is the session state primarily stored?",
+      "type": "multi_choice",
+      "question": "Which of the following statements accurately characterize HTTP caching directives and conditional validation mechanisms?",
       "options": [
         {
           "id": "A",
-          "text": "In a centralized Redis database on the server"
+          "text": "`Cache-Control: no-cache` does NOT mean 'do not cache'; it means the client/proxy may cache the response, but MUST revalidate with the origin server before serving it."
         },
         {
           "id": "B",
-          "text": "Directly inside the cryptographically signed JWT payload held and presented by the client"
+          "text": "`Cache-Control: no-store` strictly forbids any cache (browser or intermediate proxy) from storing any part of the request or response on disk or memory."
         },
         {
           "id": "C",
-          "text": "In the router's ARP table"
+          "text": "An `ETag` (Entity Tag) acts as a content fingerprint; clients transmit it back in the `If-None-Match` header to perform conditional validation."
         },
         {
           "id": "D",
-          "text": "In the DNS SOA record"
+          "text": "When a conditional GET validation succeeds (the content has not changed), the origin server replies with `304 Not Modified` and transmits zero body payload bytes."
+        },
+        {
+          "id": "E",
+          "text": "The `Expires` header takes strict mathematical precedence over the `Cache-Control: max-age` directive in modern HTTP/1.1 and HTTP/2 clients."
         }
       ],
       "correctOptionIds": [
-        "B"
+        "A",
+        "B",
+        "C",
+        "D"
       ],
-      "explanation": "Stateless JWT tokens encode user identity and claims directly in the token payload, signed by the server's private secret. Any backend server can verify the signature without reading a centralized database.",
+      "explanation": "Statements A, B, C, and D are correct. A: `no-cache` forces revalidation. B: `no-store` bans caching entirely for sensitive data. C: ETags enable conditional requests via `If-None-Match`. D: 304 Not Modified returns headers only with empty body, saving bandwidth. E is false: RFC 7234 Section 5.3 explicitly states that `Cache-Control: max-age` completely overrides `Expires`.",
       "difficulty": "medium",
-      "subtopic": "Sessions vs JWT"
+      "subtopic": "HTTP Caching & Conditional Revalidation"
     },
     {
       "id": "l09-q20",
-      "type": "single_choice",
-      "question": "How does DNS-based Round-Robin Load Balancing distribute client requests among multiple backend web servers?",
+      "type": "multi_choice",
+      "question": "Which of the following statements regarding modern web performance, TLS termination, and application architecture are true?",
       "options": [
         {
           "id": "A",
-          "text": "The authoritative DNS server rotates the ordering of multiple IP addresses in the 'A' record answer set on each query"
+          "text": "Server Name Indication (SNI) is an extension to the TLS protocol that includes the target hostname in the ClientHello message, allowing one server IP to host multiple TLS certificates."
         },
         {
           "id": "B",
-          "text": "The client router picks the server with the lowest MAC address"
+          "text": "Encrypted Client Hello (ECH) encrypts the SNI extension using a public key published in the domain's DNS `HTTPS` / `SVCB` resource record, preventing network eavesdroppers from discovering the destination domain."
         },
         {
           "id": "C",
-          "text": "The DNS server opens TCP connections to test each backend server's CPU load"
+          "text": "HTTP Strict Transport Security (HSTS) preload lists compiled into web browsers eliminate the initial unencrypted HTTP redirect, mitigating SSL-stripping attacks."
         },
         {
           "id": "D",
-          "text": "The DNS root servers route packets through a reverse proxy"
+          "text": "SSL Offloading at an edge load balancer decrypts incoming TLS traffic, allowing backend application microservices to communicate over internal networks without cryptographic overhead."
+        },
+        {
+          "id": "E",
+          "text": "Content Delivery Networks (CDNs) employ Anycast BGP routing to terminate client TCP and TLS handshakes at topologically adjacent Edge Points of Presence (PoPs), minimizing Round-Trip Time."
         }
       ],
       "correctOptionIds": [
-        "A"
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
       ],
-      "explanation": "In Round-Robin DNS, multiple A records are configured for the same domain. The DNS server permutes the list on successive responses, distributing incoming connections across multiple IP addresses.",
-      "difficulty": "easy",
-      "subtopic": "DNS Load Balancing"
+      "explanation": "ALL FIVE statements (A, B, C, D, and E) are true! SNI allows virtual hosting on HTTPS (A). ECH encrypts SNI using DNS HTTPS records (B). HSTS preload prevents initial HTTP downgrade (C). SSL offloading terminates TLS at the edge (D). Anycast CDNs terminate TCP/TLS handshakes close to the user, drastically cutting latency (E).",
+      "difficulty": "hard",
+      "subtopic": "Web Architecture & Security Synthesis"
     }
   ]
 }
