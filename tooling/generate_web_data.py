@@ -40,7 +40,12 @@ CATEGORIES_MAP = {
         7: "Model Complexity & Regularization",
         8: "Classification & Non-Parametric Models",
         9: "Classification & Non-Parametric Models",
-        10: "Applied Industry Labs"
+        10: "Applied Industry Labs",
+        11: "Tree-Based Models & Ensembles",
+        12: "Tree-Based Models & Ensembles",
+        13: "Kernel Methods & SVMs",
+        14: "Probabilistic Classifiers",
+        15: "Unsupervised Learning & Clustering"
     }
 }
 

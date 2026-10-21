@@ -10,8 +10,8 @@ export const classicalMachineLearningMeta: SubjectMetadata = {
   iconName: 'Brain',
   accentColor: 'indigo',
   status: 'active',
-  lecturesCount: 10,
-  questionsCount: 255,
+  lecturesCount: 15,
+  questionsCount: 355,
   featuredTopics: [
     'Mitchell\'s ETP Framework & Problem Formulation',
     'Data Leakage Taxonomy & ColumnTransformer Pipelines',
@@ -22,7 +22,12 @@ export const classicalMachineLearningMeta: SubjectMetadata = {
     'Ridge (L2), Lasso (L1) & ElasticNet Regularization',
     'Log-Loss, ROC-AUC, PR Curves & Threshold Tuning',
     'K-Nearest Neighbours & Curse of Dimensionality',
-    'Industrial Churn Lab & Asymmetric Cost Matrices'
+    'Industrial Churn Lab & Asymmetric Cost Matrices',
+    'Decision Trees & Cost-Complexity Pruning',
+    'Random Forests, AdaBoost & XGBoost Dynamics',
+    'Support Vector Machines & Kernel Trick (RBF)',
+    'Naive Bayes & Generative Maximum A Posteriori',
+    'K-Means, DBSCAN & Principal Component Analysis (PCA)'
   ],
   instructors: ['Chitwan Manchanda', 'SST CML Faculty']
 };

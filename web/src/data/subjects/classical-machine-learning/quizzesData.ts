@@ -4019,7 +4019,7 @@ export const quizzesRegistry: Record<string, TopicQuiz> = {
       {
         "id": "cml-l06-q10",
         "type": "single_choice",
-        "question": "What is the philosophical and scientific principle known as 'Occam\u2019s Razor' in machine learning model selection?",
+        "question": "What is the philosophical and scientific principle known as 'Occam’s Razor' in machine learning model selection?",
         "options": [
           {
             "id": "A",
@@ -7638,6 +7638,3020 @@ export const quizzesRegistry: Record<string, TopicQuiz> = {
         "explanation": "A and B are foundational business economics principles of retention. D governs optimal threshold selection via decision theory. C is false because accuracy ignores asymmetric error costs.",
         "difficulty": "medium",
         "subtopic": "Churn Business Economics"
+      }
+    ]
+  },
+  "lecture-11": {
+    "topicId": "lecture-11",
+    "lectureNumber": 11,
+    "title": "Decision Trees: Recursive Space Partitioning & Impurity Metrics",
+    "description": "20 questions covering recursive binary splitting, Shannon Entropy, Information Gain, Gini Impurity, CART vs ID3 vs C4.5, regression trees with variance reduction, cost-complexity post-pruning, and MDI feature importance.",
+    "estimatedMinutes": 30,
+    "questions": [
+      {
+        "id": "cml-l11-q01",
+        "type": "single_choice",
+        "question": "What is the primary geometric nature of the decision boundaries constructed by standard Decision Trees (CART/ID3)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Smooth non-linear polynomial hypersurfaces"
+          },
+          {
+            "id": "B",
+            "text": "Axis-aligned, orthogonal hyperplanes partitioning the feature space into hyper-rectangles"
+          },
+          {
+            "id": "C",
+            "text": "Spherical Voronoi tessellations centered at support vectors"
+          },
+          {
+            "id": "D",
+            "text": "Arbitrary oblique hyperplanes maximizing geometric margin"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Standard decision trees split on a single feature at a time ($x_j \\le s$), which geometrically produces orthogonal, axis-aligned splits partitioning the $d$-dimensional space into hyper-rectangles.",
+        "difficulty": "easy",
+        "subtopic": "Geometric Partitioning"
+      },
+      {
+        "id": "cml-l11-q02",
+        "type": "single_choice",
+        "question": "A binary classification node contains 30 positive samples and 10 negative samples. What is the Gini Impurity of this node?",
+        "options": [
+          {
+            "id": "A",
+            "text": "0.375"
+          },
+          {
+            "id": "B",
+            "text": "0.500"
+          },
+          {
+            "id": "C",
+            "text": "0.1875"
+          },
+          {
+            "id": "D",
+            "text": "0.811"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "$p_1 = 30/40 = 0.75$, $p_2 = 10/40 = 0.25$. Gini Impurity $G = 1 - (p_1^2 + p_2^2) = 1 - (0.5625 + 0.0625) = 1 - 0.625 = 0.375$.",
+        "difficulty": "medium",
+        "subtopic": "Gini Impurity"
+      },
+      {
+        "id": "cml-l11-q03",
+        "type": "single_choice",
+        "question": "For a node with $K$ classes, what is the theoretical maximum possible value of Gini Impurity, and when is it achieved?",
+        "options": [
+          {
+            "id": "A",
+            "text": "1.0, achieved when all samples belong to a single class"
+          },
+          {
+            "id": "B",
+            "text": "$\\log_2(K)$, achieved when classes are uniformly distributed"
+          },
+          {
+            "id": "C",
+            "text": "$1 - \\frac{1}{K}$, achieved under a uniform distribution where each class has probability $p_k = 1/K$"
+          },
+          {
+            "id": "D",
+            "text": "0.5, regardless of the number of classes $K$"
+          }
+        ],
+        "correctOptionIds": [
+          "C"
+        ],
+        "explanation": "When all $K$ classes are uniformly distributed, $p_k = 1/K$. Then $G = 1 - \\sum_{k=1}^K (1/K)^2 = 1 - K(1/K^2) = 1 - 1/K$. For binary classification ($K=2$), the maximum is $0.5$.",
+        "difficulty": "medium",
+        "subtopic": "Gini Impurity"
+      },
+      {
+        "id": "cml-l11-q04",
+        "type": "single_choice",
+        "question": "Why did Quinlan introduce Gain Ratio in C4.5 to replace raw Information Gain in ID3?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Information Gain cannot be computed for continuous features"
+          },
+          {
+            "id": "B",
+            "text": "Information Gain is strongly biased toward features with many distinct categorical levels (e.g., ID numbers), creating pure but useless single-sample leaves"
+          },
+          {
+            "id": "C",
+            "text": "Information Gain requires computing natural logarithms instead of base 2"
+          },
+          {
+            "id": "D",
+            "text": "Gain Ratio eliminates the need for recursive tree splitting"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Raw Information Gain maximizes the reduction in entropy, which artificially favors features with high cardinality (e.g., CustomerID), creating leaves with 1 point and zero entropy. Gain Ratio penalizes high-branching features by dividing by the Split Information (intrinsic entropy of the split).",
+        "difficulty": "medium",
+        "subtopic": "Gain Ratio"
+      },
+      {
+        "id": "cml-l11-q05",
+        "type": "single_choice",
+        "question": "In CART regression trees, what prediction is assigned to any test instance falling into a terminal leaf region $R_m$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The median of all training targets in $R_m$"
+          },
+          {
+            "id": "B",
+            "text": "The arithmetic mean $\\bar{y}_{R_m} = \\frac{1}{N_m} \\sum_{i \\in R_m} y_i$ of the training targets in that leaf"
+          },
+          {
+            "id": "C",
+            "text": "The linear OLS regression prediction fitted solely on points in $R_m$"
+          },
+          {
+            "id": "D",
+            "text": "The mode of the target distribution in $R_m$"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Standard CART regression trees minimize squared error loss $\\sum (y_i - c_m)^2$. Setting the derivative with respect to $c_m$ to zero yields the arithmetic mean $\\hat{c}_m = \\bar{y}_{R_m}$.",
+        "difficulty": "easy",
+        "subtopic": "Regression Trees"
+      },
+      {
+        "id": "cml-l11-q06",
+        "type": "single_choice",
+        "question": "In Cost-Complexity Post-Pruning (Minimal Cost-Complexity Pruning), what is the objective function being minimized over subtrees $T \\subseteq T_0$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$R_\\alpha(T) = R(T) + \\alpha |T|$, where $R(T)$ is training error, $|T|$ is the number of terminal leaves, and $\\alpha \\ge 0$ is the complexity penalty"
+          },
+          {
+            "id": "B",
+            "text": "$R_\\alpha(T) = R(T) \\times \\alpha^{|T|}$"
+          },
+          {
+            "id": "C",
+            "text": "$R_\\alpha(T) = \\frac{R(T)}{\\alpha |T|}$"
+          },
+          {
+            "id": "D",
+            "text": "$R_\\alpha(T) = R(T) + \\frac{1}{\\alpha} \\sum_{j} w_j^2$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Cost-complexity pruning uses the regularized cost function $R_\\alpha(T) = R(T) + \\alpha |T|$. When $\\alpha = 0$, the full tree $T_0$ is chosen; as $\\alpha \\to \\infty$, the tree collapses to the single root node.",
+        "difficulty": "hard",
+        "subtopic": "Cost-Complexity Pruning"
+      },
+      {
+        "id": "cml-l11-q07",
+        "type": "single_choice",
+        "question": "What is the computational time complexity for evaluating all candidate binary split thresholds on a single continuous feature with $n$ training instances?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\mathcal{O}(n^2)$ using brute-force search"
+          },
+          {
+            "id": "B",
+            "text": "$\\mathcal{O}(n \\log n)$ by sorting the feature once and updating impurity running counts in $\\mathcal{O}(n)$"
+          },
+          {
+            "id": "C",
+            "text": "$\\mathcal{O}(1)$ independent of dataset size"
+          },
+          {
+            "id": "D",
+            "text": "$\\mathcal{O}(2^n)$ because all subsets must be evaluated"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Sorting the $n$ continuous values takes $\\mathcal{O}(n \\log n)$. Once sorted, we scan adjacent pairs in linear $\\mathcal{O}(n)$ time by maintaining cumulative class frequency histograms, giving total time $\\mathcal{O}(n \\log n)$.",
+        "difficulty": "medium",
+        "subtopic": "Continuous Splitting Algorithm"
+      },
+      {
+        "id": "cml-l11-q08",
+        "type": "single_choice",
+        "question": "How is the Mean Decrease in Impurity (MDI) feature importance calculated for a feature $X_j$ in a Decision Tree?",
+        "options": [
+          {
+            "id": "A",
+            "text": "By counting how many leaves classify instances using feature $X_j$"
+          },
+          {
+            "id": "B",
+            "text": "By summing the impurity reductions $\\Delta I(t) = I(t) - \\frac{N_L}{N_t}I(t_L) - \\frac{N_R}{N_t}I(t_R)$ weighted by node sample proportions across all internal nodes where $X_j$ was used as the splitting attribute"
+          },
+          {
+            "id": "C",
+            "text": "By measuring the correlation between $X_j$ and the target $y$"
+          },
+          {
+            "id": "D",
+            "text": "By shuffling feature $X_j$ and computing the degradation in test accuracy"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "MDI (Gini Importance) sums the impurity decrease across all nodes $t$ split on $X_j$, weighted by the fraction of training samples passing through $t$: $Importance(X_j) = \\sum_{t \\text{ splits on } X_j} \\frac{N_t}{N} \\Delta I(t)$.",
+        "difficulty": "hard",
+        "subtopic": "Feature Importance (MDI)"
+      },
+      {
+        "id": "cml-l11-q09",
+        "type": "single_choice",
+        "question": "Why are unpruned Decision Trees notorious for having high variance (overfitting)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Because they cannot model non-linear boundaries"
+          },
+          {
+            "id": "B",
+            "text": "Because recursive splitting can continue until every training sample is isolated into its own pure leaf, capturing idiosyncratic noise"
+          },
+          {
+            "id": "C",
+            "text": "Because they require strict feature normalization"
+          },
+          {
+            "id": "D",
+            "text": "Because gradient descent diverges on piecewise constant step functions"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Without constraints, a tree can grow until $H(T) = 0$ with 1 sample per leaf, achieving 100% training accuracy but massive generalization error due to extreme variance.",
+        "difficulty": "easy",
+        "subtopic": "Tree Overfitting"
+      },
+      {
+        "id": "cml-l11-q10",
+        "type": "single_choice",
+        "question": "Which of the following preprocessing steps is completely UNNECESSARY when training a standard CART Decision Tree?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Monotonic feature scaling or normalization (e.g., StandardScaler or MinMaxScaler)"
+          },
+          {
+            "id": "B",
+            "text": "Handling missing target values"
+          },
+          {
+            "id": "C",
+            "text": "Limiting maximum depth to prevent overfitting"
+          },
+          {
+            "id": "D",
+            "text": "Selecting an impurity criterion"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Decision trees split based on monotonic order ($x_j \\le s$), making them completely invariant to strictly monotonic feature scaling. Scaling features by multiplying by 1000 or taking logs does not change split ordering.",
+        "difficulty": "easy",
+        "subtopic": "Scale Invariance"
+      },
+      {
+        "id": "cml-l11-q11",
+        "type": "multi_choice",
+        "question": "Which of the following are valid Pre-Pruning (early stopping) hyperparameter controls in Scikit-Learn's `DecisionTreeClassifier`? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "`max_depth` (limiting maximum tree depth)"
+          },
+          {
+            "id": "B",
+            "text": "`min_samples_split` (minimum samples required to split an internal node)"
+          },
+          {
+            "id": "C",
+            "text": "`min_samples_leaf` (minimum samples required at a leaf node)"
+          },
+          {
+            "id": "D",
+            "text": "`max_leaf_nodes` (grow tree in best-first fashion up to a leaf budget)"
+          },
+          {
+            "id": "E",
+            "text": "`learning_rate` (shrinking individual leaf predictions)"
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "A, B, C, and D are all pre-pruning stopping hyperparameters for a single decision tree. `learning_rate` belongs to Gradient Boosted Trees, not a standalone DecisionTreeClassifier.",
+        "difficulty": "medium",
+        "subtopic": "Pre-Pruning Hyperparameters"
+      },
+      {
+        "id": "cml-l11-q12",
+        "type": "multi_choice",
+        "question": "Which statements correctly compare Shannon Entropy and Gini Impurity? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Both metrics equal 0 when a node is 100% pure (all samples belong to one class)."
+          },
+          {
+            "id": "B",
+            "text": "Gini Impurity is computationally faster to calculate because it avoids logarithmic evaluations ($\\log_2$)."
+          },
+          {
+            "id": "C",
+            "text": "Shannon Entropy penalizes mixed states slightly more heavily than Gini Impurity."
+          },
+          {
+            "id": "D",
+            "text": "Entropy can produce negative values, whereas Gini Impurity is always positive."
+          },
+          {
+            "id": "E",
+            "text": "In practice, both metrics lead to virtually identical tree topologies in over 98% of splits."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Both equal 0 at pure nodes. Gini requires only multiplications and additions ($1 - \\sum p_k^2$), avoiding costly log calls. Both are strictly non-negative for probability distributions ($p_k \\le 1 \\implies -p_k \\log_2 p_k \\ge 0$). They yield nearly identical trees in empirical studies.",
+        "difficulty": "hard",
+        "subtopic": "Entropy vs Gini"
+      },
+      {
+        "id": "cml-l11-q13",
+        "type": "multi_choice",
+        "question": "Why is a Decision Tree highly sensitive to small perturbations in the training data (high structural instability)? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "A tiny change near the root split changes which samples travel to left vs right subtrees."
+          },
+          {
+            "id": "B",
+            "text": "Hierarchical greediness: Errors and sub-optimal splits cascade and propagate down the entire tree hierarchy."
+          },
+          {
+            "id": "C",
+            "text": "Gradient descent step sizes oscillate near local saddle points."
+          },
+          {
+            "id": "D",
+            "text": "The tree cannot backtrack on a suboptimal split made earlier."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "D"
+        ],
+        "explanation": "Decision trees use greedy top-down recursive partitioning without backtracking. Changing a few points can flip the top-level split, causing radically different subtrees downstream. Decision trees do not use gradient descent.",
+        "difficulty": "medium",
+        "subtopic": "Structural Instability"
+      },
+      {
+        "id": "cml-l11-q14",
+        "type": "multi_choice",
+        "question": "Which of the following are known drawbacks or vulnerabilities of Mean Decrease in Impurity (MDI / Gini Importance)? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "MDI is computed exclusively on the training set, so it inflates the importance of features that the tree overfitted on."
+          },
+          {
+            "id": "B",
+            "text": "MDI strongly biases toward high-cardinality features (e.g., continuous variables or categories with many unique levels) because they offer more split opportunities."
+          },
+          {
+            "id": "C",
+            "text": "When two features are perfectly collinear, MDI splits their importance arbitrarily between them."
+          },
+          {
+            "id": "D",
+            "text": "MDI cannot be computed for classification problems."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": "MDI's major flaws are: (1) in-sample evaluation reflecting overfitting, (2) severe bias towards high-cardinality continuous features, and (3) dilution over collinear pairs. Permutation Feature Importance is preferred to overcome these flaws.",
+        "difficulty": "hard",
+        "subtopic": "Feature Importance (MDI)"
+      },
+      {
+        "id": "cml-l11-q15",
+        "type": "multi_choice",
+        "question": "How does the CART algorithm handle continuous-valued attributes when finding the optimal split? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "It sorts the distinct continuous values in ascending order: $v_1 < v_2 < \\dots < v_m$."
+          },
+          {
+            "id": "B",
+            "text": "Candidate split thresholds are evaluated at midpoints $s_i = \\frac{v_i + v_{i+1}}{2}$."
+          },
+          {
+            "id": "C",
+            "text": "It converts continuous values to Fourier frequency harmonics."
+          },
+          {
+            "id": "D",
+            "text": "It selects the threshold $s^*$ that maximizes the weighted impurity reduction (Information Gain or Gini Gain)."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "D"
+        ],
+        "explanation": "CART sorts values, tests midpoints between adjacent distinct values, and picks the split threshold that maximizes impurity reduction.",
+        "difficulty": "medium",
+        "subtopic": "Continuous Splitting Algorithm"
+      },
+      {
+        "id": "cml-l11-q16",
+        "type": "single_choice",
+        "question": "What is the entropy $H(S)$ of a node where all 50 samples belong to Class A?",
+        "options": [
+          {
+            "id": "A",
+            "text": "1.0 bit"
+          },
+          {
+            "id": "B",
+            "text": "0.0 bits"
+          },
+          {
+            "id": "C",
+            "text": "0.5 bits"
+          },
+          {
+            "id": "D",
+            "text": "Undefined due to $\\log_2(0)$"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "$p_A = 1.0, p_{\\text{other}} = 0$. $H(S) = -1 \\log_2(1) = 0$. By mathematical convention, $0 \\log_2(0) = 0$. Zero entropy signifies complete certainty/purity.",
+        "difficulty": "easy",
+        "subtopic": "Shannon Entropy"
+      },
+      {
+        "id": "cml-l11-q17",
+        "type": "single_choice",
+        "question": "A parent node has entropy $H(D) = 1.0$. A split divides 100 samples into Left (60 samples, $H(D_L) = 0.4$) and Right (40 samples, $H(D_R) = 0.8$). What is the Information Gain of this split?",
+        "options": [
+          {
+            "id": "A",
+            "text": "0.44 bits"
+          },
+          {
+            "id": "B",
+            "text": "0.56 bits"
+          },
+          {
+            "id": "C",
+            "text": "0.20 bits"
+          },
+          {
+            "id": "D",
+            "text": "0.60 bits"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Weighted child entropy $= \\frac{60}{100}(0.4) + \\frac{40}{100}(0.8) = 0.24 + 0.32 = 0.56$. Information Gain $= 1.0 - 0.56 = 0.44$ bits.",
+        "difficulty": "medium",
+        "subtopic": "Information Gain"
+      },
+      {
+        "id": "cml-l11-q18",
+        "type": "multi_choice",
+        "question": "Which of the following are inherent strengths of Decision Trees compared to Linear Regression or Support Vector Machines? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "White-box interpretability: Decisions can be easily visualized and converted into human-readable IF-THEN rules."
+          },
+          {
+            "id": "B",
+            "text": "Natural handling of non-linear relationships without needing explicit polynomial feature transformations or kernels."
+          },
+          {
+            "id": "C",
+            "text": "Total immunity to feature scale; no feature normalization or standardization is required."
+          },
+          {
+            "id": "D",
+            "text": "Smooth and accurate extrapolation far outside the bounding box of training feature ranges."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": "A, B, and C are classic advantages of Decision Trees. D is false: decision trees predict piecewise constant values and completely fail to extrapolate trends outside the training feature domain.",
+        "difficulty": "medium",
+        "subtopic": "Decision Tree Characteristics"
+      },
+      {
+        "id": "cml-l11-q19",
+        "type": "single_choice",
+        "question": "In Regression Trees, what metric is typically minimized when choosing split points?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Cross-Entropy"
+          },
+          {
+            "id": "B",
+            "text": "Gini Impurity"
+          },
+          {
+            "id": "C",
+            "text": "Variance Reduction (or Sum of Squared Errors: $\\sum (y_i - \\bar{y}_L)^2 + \\sum (y_i - \\bar{y}_R)^2$)"
+          },
+          {
+            "id": "D",
+            "text": "ROC-AUC Score"
+          }
+        ],
+        "correctOptionIds": [
+          "C"
+        ],
+        "explanation": "Regression trees use variance reduction (or mean squared error reduction), seeking splits that minimize the sum of squared deviations from the leaf means.",
+        "difficulty": "easy",
+        "subtopic": "Regression Trees"
+      },
+      {
+        "id": "cml-l11-q20",
+        "type": "multi_choice",
+        "question": "Which algorithmic differences distinguish CART from ID3? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "CART builds strictly binary trees (each node has exactly 2 branches), whereas ID3 can create multi-way branches for categorical attributes."
+          },
+          {
+            "id": "B",
+            "text": "CART supports regression as well as classification; ID3 supports only classification."
+          },
+          {
+            "id": "C",
+            "text": "CART natively handles continuous numeric attributes; original ID3 supports only discrete categorical features."
+          },
+          {
+            "id": "D",
+            "text": "CART uses Gini Impurity by default; ID3 uses Shannon Entropy / Information Gain."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "All four statements accurately describe the architectural advancements of Breiman's CART (1984) over Quinlan's original ID3 (1986).",
+        "difficulty": "hard",
+        "subtopic": "CART vs ID3"
+      }
+    ]
+  },
+  "lecture-12": {
+    "topicId": "lecture-12",
+    "lectureNumber": 12,
+    "title": "Ensemble Learning: Bagging, Random Forests, AdaBoost & Gradient Boosting",
+    "description": "20 questions covering Condorcet's Jury Theorem, Bootstrap Aggregation (Bagging), Out-Of-Bag (OOB) error estimation, Random Forest variance reduction, AdaBoost sample weight updates, Gradient Boosting optimization in function space, and XGBoost 2nd-order Taylor expansions.",
+    "estimatedMinutes": 30,
+    "questions": [
+      {
+        "id": "cml-l12-q01",
+        "type": "single_choice",
+        "question": "According to Condorcet's Jury Theorem, what condition must hold for an ensemble of $B$ independent classifiers (voting by simple majority) to approach zero error probability as $B \\to \\infty$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Each individual classifier must have accuracy $p = 1.0$"
+          },
+          {
+            "id": "B",
+            "text": "Each individual classifier must perform strictly better than random guessing ($p > 0.5$) and make statistically independent errors"
+          },
+          {
+            "id": "C",
+            "text": "The classifiers must be trained on identical subsets of data"
+          },
+          {
+            "id": "D",
+            "text": "The number of features must exceed the number of samples"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Condorcet's Jury Theorem proves that if each voter has probability $p > 0.5$ of being correct and errors are independent, the collective majority probability approaches 1 as the ensemble size $B \\to \\infty$.",
+        "difficulty": "easy",
+        "subtopic": "Condorcet Jury Theorem"
+      },
+      {
+        "id": "cml-l12-q02",
+        "type": "single_choice",
+        "question": "In standard Bootstrap Aggregation (Bagging) with a training set of size $n$, what is the asymptotic percentage of original training instances that appear in a single bootstrap sample drawn with replacement?",
+        "options": [
+          {
+            "id": "A",
+            "text": "50.0%"
+          },
+          {
+            "id": "B",
+            "text": "63.2% (approx $1 - 1/e$)"
+          },
+          {
+            "id": "C",
+            "text": "36.8% (approx $1/e$)"
+          },
+          {
+            "id": "D",
+            "text": "100.0%"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "The probability that a specific point is NOT chosen in $n$ draws with replacement is $(1 - 1/n)^n \\to e^{-1} \\approx 0.368$. Hence, the probability of being selected at least once is $1 - e^{-1} \\approx 0.632$ (63.2%).",
+        "difficulty": "medium",
+        "subtopic": "Bootstrap Sampling & OOB"
+      },
+      {
+        "id": "cml-l12-q03",
+        "type": "single_choice",
+        "question": "What is the primary benefit of the Out-Of-Bag (OOB) samples in Bagging and Random Forests?",
+        "options": [
+          {
+            "id": "A",
+            "text": "They provide an honest validation estimate of generalization error without requiring a separate validation split or $k$-fold cross-validation"
+          },
+          {
+            "id": "B",
+            "text": "They speed up the tree construction algorithm by skipping splits"
+          },
+          {
+            "id": "C",
+            "text": "They eliminate the need for pruning individual decision trees"
+          },
+          {
+            "id": "D",
+            "text": "They guarantee that trees are completely uncorrelated"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Because roughly 36.8% of training points are never seen by each base tree, each sample can be evaluated using only those trees for which it was out-of-bag, providing an unbiased validation metric 'for free'.",
+        "difficulty": "easy",
+        "subtopic": "OOB Evaluation"
+      },
+      {
+        "id": "cml-l12-q04",
+        "type": "single_choice",
+        "question": "Consider an ensemble of $B$ trees, each with variance $\\sigma^2$ and pairwise correlation $\\rho$. What is the variance of the ensemble mean prediction?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\rho \\sigma^2 + \\frac{1 - \\rho}{B} \\sigma^2$"
+          },
+          {
+            "id": "B",
+            "text": "$\\frac{\\sigma^2}{B}$"
+          },
+          {
+            "id": "C",
+            "text": "$\\rho \\cdot B \\cdot \\sigma^2$"
+          },
+          {
+            "id": "D",
+            "text": "$(1 - \\rho) \\sigma^2$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "By the variance formula for correlated variables: $\\text{Var}(\\frac{1}{B}\\sum T_b) = \\rho \\sigma^2 + \\frac{1-\\rho}{B}\\sigma^2$. As $B \\to \\infty$, the second term goes to 0, leaving an asymptotic lower bound of $\\rho \\sigma^2$.",
+        "difficulty": "hard",
+        "subtopic": "Variance Reduction Math"
+      },
+      {
+        "id": "cml-l12-q05",
+        "type": "single_choice",
+        "question": "How does Random Forest fundamentally improve upon basic Bagged Decision Trees?",
+        "options": [
+          {
+            "id": "A",
+            "text": "By building deeper trees with larger leaf node minimums"
+          },
+          {
+            "id": "B",
+            "text": "By forcing trees to split only on a random subset of $m \\approx \\sqrt{p}$ features at each node, de-correlating the trees and reducing $\\rho$"
+          },
+          {
+            "id": "C",
+            "text": "By weighting trees inversely to their training errors"
+          },
+          {
+            "id": "D",
+            "text": "By training trees sequentially to correct past errors"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "If a few features are dominant, all bagged trees choose them at the root, remaining highly correlated. Random Forests sample $m = \\sqrt{p}$ features at each node split, de-correlating the trees (reducing $\\rho$), which lowers total ensemble variance $\\rho \\sigma^2$.",
+        "difficulty": "medium",
+        "subtopic": "Random Forest Mechanism"
+      },
+      {
+        "id": "cml-l12-q06",
+        "type": "single_choice",
+        "question": "What is the fundamental theoretical difference between Bagging and Boosting?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Bagging targets bias reduction using sequential weak learners; Boosting targets variance reduction using parallel strong learners"
+          },
+          {
+            "id": "B",
+            "text": "Bagging targets variance reduction by averaging independent high-variance models; Boosting targets bias reduction by sequentially fitting models to correct predecessor errors"
+          },
+          {
+            "id": "C",
+            "text": "Bagging is only for classification; Boosting is only for regression"
+          },
+          {
+            "id": "D",
+            "text": "Bagging uses neural networks, while Boosting uses linear regression"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Bagging trains high-capacity, low-bias models (deep trees) in parallel to reduce variance. Boosting trains low-capacity, high-bias models (stumps/shallow trees) sequentially to reduce bias.",
+        "difficulty": "easy",
+        "subtopic": "Bagging vs Boosting"
+      },
+      {
+        "id": "cml-l12-q07",
+        "type": "single_choice",
+        "question": "In the AdaBoost algorithm, what learner weight $\\alpha_t$ is assigned to a weak hypothesis $h_t$ with weighted error rate $\\epsilon_t = 0.1$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\frac{1}{2} \\ln(9) \\approx 1.099$"
+          },
+          {
+            "id": "B",
+            "text": "$\\ln(0.1) \\approx -2.302$"
+          },
+          {
+            "id": "C",
+            "text": "$0.90$"
+          },
+          {
+            "id": "D",
+            "text": "$0.5$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "AdaBoost learner weight formula: $\\alpha_t = \\frac{1}{2} \\ln\\left(\\frac{1 - \\epsilon_t}{\\epsilon_t}\\right) = \\frac{1}{2} \\ln\\left(\\frac{0.9}{0.1}\\right) = \\frac{1}{2} \\ln(9) \\approx 1.0986$.",
+        "difficulty": "medium",
+        "subtopic": "AdaBoost Mathematics"
+      },
+      {
+        "id": "cml-l12-q08",
+        "type": "single_choice",
+        "question": "How does AdaBoost update the sample distribution weights $w_i^{(t+1)}$ after training weak learner $h_t$ on binary targets $y_i \\in \\{-1, +1\\}$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$w_i^{(t+1)} = w_i^{(t)} \\cdot \\frac{\\exp(-\\alpha_t y_i h_t(\\mathbf{x}_i))}{Z_t}$"
+          },
+          {
+            "id": "B",
+            "text": "$w_i^{(t+1)} = w_i^{(t)} + \\alpha_t (y_i - h_t(\\mathbf{x}_i))$"
+          },
+          {
+            "id": "C",
+            "text": "$w_i^{(t+1)} = w_i^{(t)} \\cdot (1 - \\epsilon_t)$"
+          },
+          {
+            "id": "D",
+            "text": "$w_i^{(t+1)} = \\frac{1}{n}$ resetting weights to uniform"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "If $y_i = h_t(\\mathbf{x}_i)$ (correct), $y_i h_t = 1$, weight multiplied by $e^{-\\alpha_t} < 1$ (downweighted). If misclassified, $y_i h_t = -1$, weight multiplied by $e^{\\alpha_t} > 1$ (upweighted). $Z_t$ is the normalization factor.",
+        "difficulty": "hard",
+        "subtopic": "AdaBoost Mathematics"
+      },
+      {
+        "id": "cml-l12-q09",
+        "type": "single_choice",
+        "question": "In Gradient Boosting Machine (GBM) for arbitrary differentiable loss $\\mathcal{L}(y, f(\\mathbf{x}))$, what target value does each subsequent tree $h_m(\\mathbf{x})$ fit against?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The ground truth label $y_i$"
+          },
+          {
+            "id": "B",
+            "text": "The negative gradient of the loss function evaluated at current predictions: $r_{im} = -\\left[\\frac{\\partial \\mathcal{L}(y_i, f(\\mathbf{x}_i))}{\\partial f(\\mathbf{x}_i)}\\right]_{f = f_{m-1}}$ (pseudo-residuals)"
+          },
+          {
+            "id": "C",
+            "text": "The original features transformed by PCA"
+          },
+          {
+            "id": "D",
+            "text": "The classification margin $y_i f_{m-1}(\\mathbf{x}_i)$"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "GBM performs gradient descent directly in function space. Each new base learner fits the negative gradient (pseudo-residuals) of the loss function with respect to the ensemble's current predictions.",
+        "difficulty": "medium",
+        "subtopic": "Gradient Boosting Dynamics"
+      },
+      {
+        "id": "cml-l12-q10",
+        "type": "single_choice",
+        "question": "For Mean Squared Error loss $\\mathcal{L}(y, f(\\mathbf{x})) = \\frac{1}{2}(y - f(\\mathbf{x}))^2$, what are the pseudo-residuals in Gradient Boosting?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The exact standard residuals: $r_i = y_i - f(\\mathbf{x}_i)$"
+          },
+          {
+            "id": "B",
+            "text": "The absolute differences: $|y_i - f(\\mathbf{x}_i)|$"
+          },
+          {
+            "id": "C",
+            "text": "The squared errors: $(y_i - f(\\mathbf{x}_i))^2$"
+          },
+          {
+            "id": "D",
+            "text": "The signs of the errors: $\\text{sign}(y_i - f(\\mathbf{x}_i))$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "$-\\frac{\\partial}{\\partial f} \\left[\\frac{1}{2}(y - f)^2\\right] = -(y - f)(-1) = y - f$. For MSE loss, pseudo-residuals coincide exactly with ordinary residuals.",
+        "difficulty": "easy",
+        "subtopic": "Gradient Boosting Dynamics"
+      },
+      {
+        "id": "cml-l12-q11",
+        "type": "single_choice",
+        "question": "What key mathematical enhancement does XGBoost introduce over traditional Friedman Gradient Boosting when approximating the objective function?",
+        "options": [
+          {
+            "id": "A",
+            "text": "It uses a 2nd-order Taylor expansion incorporating both first-order gradients ($g_i$) and second-order Hessians ($h_i$)"
+          },
+          {
+            "id": "B",
+            "text": "It uses cubic spline interpolation"
+          },
+          {
+            "id": "C",
+            "text": "It discards gradient evaluation and uses genetic algorithms"
+          },
+          {
+            "id": "D",
+            "text": "It replaces trees with kernel SVMs"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "XGBoost approximates the objective via 2nd-order Taylor expansion: $\\mathcal{L}^{(t)} \\approx \\sum [g_i f_t(\\mathbf{x}_i) + \\frac{1}{2} h_i f_t^2(\\mathbf{x}_i)] + \\Omega(f_t)$, allowing closed-form leaf weights and split scoring with curvature information.",
+        "difficulty": "hard",
+        "subtopic": "XGBoost Architecture"
+      },
+      {
+        "id": "cml-l12-q12",
+        "type": "single_choice",
+        "question": "In XGBoost, given leaf instance gradients $G_j = \\sum_{i \\in I_j} g_i$, Hessians $H_j = \\sum_{i \\in I_j} h_i$, and L2 leaf regularization $\\lambda$, what is the optimal leaf weight $w_j^*$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$w_j^* = -\\frac{G_j}{H_j + \\lambda}$"
+          },
+          {
+            "id": "B",
+            "text": "$w_j^* = -\\frac{H_j}{G_j + \\lambda}$"
+          },
+          {
+            "id": "C",
+            "text": "$w_j^* = -\\frac{G_j^2}{2(H_j + \\lambda)}$"
+          },
+          {
+            "id": "D",
+            "text": "$w_j^* = \\frac{G_j + \\lambda}{H_j}$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Differentiating the leaf objective $G_j w_j + \\frac{1}{2}(H_j + \\lambda)w_j^2$ with respect to $w_j$ yields $G_j + (H_j + \\lambda)w_j = 0 \\implies w_j^* = -\\frac{G_j}{H_j + \\lambda}$.",
+        "difficulty": "hard",
+        "subtopic": "XGBoost Architecture"
+      },
+      {
+        "id": "cml-l12-q13",
+        "type": "multi_choice",
+        "question": "Which of the following techniques are used in Random Forests to decorrelate individual trees? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Bootstrap row sampling with replacement (sampling samples)"
+          },
+          {
+            "id": "B",
+            "text": "Feature subsampling at each candidate split (evaluating only $m = \\sqrt{p}$ features)"
+          },
+          {
+            "id": "C",
+            "text": "Fitting each tree on the residuals of previous trees"
+          },
+          {
+            "id": "D",
+            "text": "Growing deep unpruned trees to maintain individual diversity"
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "D"
+        ],
+        "explanation": "Row bagging, column feature subsampling, and deep unpruned growth maximize diversity and decorrelation. Fitting on residuals (C) is Boosting, not Random Forests.",
+        "difficulty": "medium",
+        "subtopic": "Random Forest Mechanism"
+      },
+      {
+        "id": "cml-l12-q14",
+        "type": "multi_choice",
+        "question": "What happens when you increase the number of trees ($n\\_estimators$) in a Random Forest? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "The model eventually overfits the training data if $n\\_estimators$ exceeds 10,000."
+          },
+          {
+            "id": "B",
+            "text": "The test error stabilizes and asymptotes to a constant lower bound $\\rho \\sigma^2$."
+          },
+          {
+            "id": "C",
+            "text": "Computational training and inference time scale linearly with $n\\_estimators$."
+          },
+          {
+            "id": "D",
+            "text": "Variance decreases monotonically without increasing model bias."
+          }
+        ],
+        "correctOptionIds": [
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "By the Strong Law of Large Numbers, Random Forests DO NOT overfit simply by increasing $n\\_estimators$. The variance approaches its theoretical limit $\\rho \\sigma^2$, bias remains constant, and computation scales linearly.",
+        "difficulty": "medium",
+        "subtopic": "Ensemble Properties"
+      },
+      {
+        "id": "cml-l12-q15",
+        "type": "multi_choice",
+        "question": "Which of the following regularizations and hyperparameter controls help prevent overfitting in Gradient Boosted Trees (GBM / XGBoost)? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Shrinkage / Learning rate $\\eta < 0.1$ to scale step size"
+          },
+          {
+            "id": "B",
+            "text": "Subsample ratio $< 1.0$ (Stochastic Gradient Boosting)"
+          },
+          {
+            "id": "C",
+            "text": "Max tree depth limit (e.g., `max_depth` = 3 to 6)"
+          },
+          {
+            "id": "D",
+            "text": "Setting `n_estimators` to $\\infty$ without early stopping"
+          },
+          {
+            "id": "E",
+            "text": "Minimum split loss threshold $\\gamma$ (complexity control)"
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "E"
+        ],
+        "explanation": "Shrinkage (learning rate), stochastic subsampling, shallow depth constraints, and split threshold $\\gamma$ are essential anti-overfitting mechanisms in Boosting. Unlike Random Forests, boosting CAN overfit if `n_estimators` is too large without early stopping.",
+        "difficulty": "medium",
+        "subtopic": "Boosting Regularization"
+      },
+      {
+        "id": "cml-l12-q16",
+        "type": "single_choice",
+        "question": "Why is AdaBoost particularly sensitive to label noise and extreme outliers in the dataset?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Because its exponential loss function $e^{-y f(\\mathbf{x})}$ heavily penalizes misclassified outliers, causing subsequent learners to focus all their capacity on unlearnable noise"
+          },
+          {
+            "id": "B",
+            "text": "Because AdaBoost uses L1 Lasso penalty"
+          },
+          {
+            "id": "C",
+            "text": "Because decision stumps cannot split on continuous values"
+          },
+          {
+            "id": "D",
+            "text": "Because sample weights are bounded by 1.0"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "The exponential loss function grows exponentially for large negative margins $y f(\\mathbf{x}) \\ll 0$. Mislabelled points or outliers receive gigantic sample weights, dominating subsequent rounds.",
+        "difficulty": "medium",
+        "subtopic": "Loss Functions & Outliers"
+      },
+      {
+        "id": "cml-l12-q17",
+        "type": "multi_choice",
+        "question": "Which algorithmic innovations explain why LightGBM trains significantly faster than standard XGBoost on large datasets? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Histogram-based binning of continuous features into discrete buckets (e.g., 256 bins)"
+          },
+          {
+            "id": "B",
+            "text": "GOSS (Gradient-based One-Side Sampling) retaining instances with large gradients while randomly subsampling instances with small gradients"
+          },
+          {
+            "id": "C",
+            "text": "EFB (Exclusive Feature Bundling) combining mutually exclusive sparse features"
+          },
+          {
+            "id": "D",
+            "text": "Leaf-wise (best-first) tree growth rather than depth-wise (level-wise) growth"
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "All four are key LightGBM innovations: histogram binning, GOSS, EFB, and leaf-wise splitting allow orders of magnitude faster training than naive exact-greedy split finders.",
+        "difficulty": "hard",
+        "subtopic": "Modern Boosting Frameworks"
+      },
+      {
+        "id": "cml-l12-q18",
+        "type": "single_choice",
+        "question": "In Stacking (Stacked Generalization), how is data leakage prevented when generating meta-features for the second-level blender model?",
+        "options": [
+          {
+            "id": "A",
+            "text": "By evaluating base models on their own training data"
+          },
+          {
+            "id": "B",
+            "text": "By using out-of-fold cross-validation predictions from base models to form the training set for the meta-learner"
+          },
+          {
+            "id": "C",
+            "text": "By running PCA on the base model predictions"
+          },
+          {
+            "id": "D",
+            "text": "By standardizing the features using MinMaxScaler"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "If base models predict on the data they trained on, meta-features reflect overfitting. Stacking uses $K$-fold cross-validation so each base prediction fed to the meta-model is strictly out-of-fold.",
+        "difficulty": "medium",
+        "subtopic": "Stacking"
+      },
+      {
+        "id": "cml-l12-q19",
+        "type": "single_choice",
+        "question": "What is the recommended default number of features to sample at each split in Scikit-Learn's `RandomForestClassifier` for a problem with $p$ features?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$p$ (all features)"
+          },
+          {
+            "id": "B",
+            "text": "$\\sqrt{p}$"
+          },
+          {
+            "id": "C",
+            "text": "$p / 3$"
+          },
+          {
+            "id": "D",
+            "text": "$\\log_2(p)$"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "For classification, the standard default is $m = \\sqrt{p}$ (`max_features='sqrt'`). For regression, the standard default is typically $p/3$.",
+        "difficulty": "easy",
+        "subtopic": "Random Forest Hyperparameters"
+      },
+      {
+        "id": "cml-l12-q20",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding the convergence and capacity of Ensembles are TRUE? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Random Forests cannot extrapolate linear upward or downward trends beyond the maximum and minimum targets observed in training data."
+          },
+          {
+            "id": "B",
+            "text": "Boosting algorithms can approximate any continuous non-linear mapping given sufficient weak learners and small learning rate."
+          },
+          {
+            "id": "C",
+            "text": "A Random Forest can be trained completely in parallel across multiple CPU cores because trees are conditionally independent."
+          },
+          {
+            "id": "D",
+            "text": "Gradient Boosting trees must be computed strictly sequentially because each tree depends on the residuals of all previous trees."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "explanation": "All four statements are foundational truths: Trees cannot extrapolate beyond training extremes; Boosting is a universal function approximator; Bagging/RF is embarrassingly parallel; Boosting is inherently sequential.",
+        "difficulty": "hard",
+        "subtopic": "Ensemble Theory"
+      }
+    ]
+  },
+  "lecture-13": {
+    "topicId": "lecture-13",
+    "lectureNumber": 13,
+    "title": "Support Vector Machines: Maximum Margin, Duality & Kernels",
+    "description": "20 questions covering Maximum Margin Hyperplanes, geometric vs functional margins, Hard vs Soft margin QP, slack variables, KKT conditions, Wolfe Dual formulation, the Kernel Trick (Mercer's Theorem, RBF gamma), and Support Vector Regression (SVR).",
+    "estimatedMinutes": 30,
+    "questions": [
+      {
+        "id": "cml-l13-q01",
+        "type": "single_choice",
+        "question": "What is the primary optimization philosophy that distinguishes Support Vector Machines from Logistic Regression and Perceptrons?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Empirical risk minimization via squared error loss"
+          },
+          {
+            "id": "B",
+            "text": "Structural risk minimization: Finding the unique separating hyperplane that maximizes the geometric margin to the nearest training samples"
+          },
+          {
+            "id": "C",
+            "text": "Maximum likelihood estimation of Gaussian class conditional densities"
+          },
+          {
+            "id": "D",
+            "text": "Recursive partitioning of space into axis-aligned hyper-rectangles"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "SVM implements Vapnik's Structural Risk Minimization, seeking the unique decision boundary that maximizes the geometric margin $\\gamma = \\frac{2}{\\|\\mathbf{w}\\|}$, providing theoretical upper bounds on test generalization error.",
+        "difficulty": "easy",
+        "subtopic": "Maximum Margin Principle"
+      },
+      {
+        "id": "cml-l13-q02",
+        "type": "single_choice",
+        "question": "Given a separating hyperplane $\\mathbf{w}^T \\mathbf{x} + b = 0$ with normalized functional margin $\\min_i y_i(\\mathbf{w}^T \\mathbf{x}_i + b) = 1$, what is the total geometric width of the margin separating the two classes?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\frac{1}{\\|\\mathbf{w}\\|}$"
+          },
+          {
+            "id": "B",
+            "text": "$\\frac{2}{\\|\\mathbf{w}\\|}$"
+          },
+          {
+            "id": "C",
+            "text": "$\\|\\mathbf{w}\\|^2$"
+          },
+          {
+            "id": "D",
+            "text": "$2\\|\\mathbf{w}\\|$"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "The distance from the hyperplane to the closest positive point is $\\frac{1}{\\|\\mathbf{w}\\|}$, and to the closest negative point is $\\frac{1}{\\|\\mathbf{w}\\|}$. The total geometric margin between the supporting planes is $\\frac{2}{\\|\\mathbf{w}\\|}$.",
+        "difficulty": "easy",
+        "subtopic": "Geometric Margin Math"
+      },
+      {
+        "id": "cml-l13-q03",
+        "type": "single_choice",
+        "question": "Why is maximizing the geometric margin $\\frac{2}{\\|\\mathbf{w}\\|}$ equivalent to minimizing $\\frac{1}{2}\\|\\mathbf{w}\\|^2$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Maximizing $\\frac{2}{\\|\\mathbf{w}\\|}$ is equivalent to minimizing $\\|\\mathbf{w}\\|$, and squaring and multiplying by $\\frac{1}{2}$ creates a smooth, convex, quadratic objective with easy gradient computation"
+          },
+          {
+            "id": "B",
+            "text": "Because $\\|\\mathbf{w}\\|^2$ is always equal to 1"
+          },
+          {
+            "id": "C",
+            "text": "Because the margin is independent of $\\mathbf{w}$"
+          },
+          {
+            "id": "D",
+            "text": "Because linear regression uses squared loss"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Inverting the fraction converts maximization to minimization. The monotonic transformation $f(z) = \\frac{1}{2} z^2$ preserves the minimum location while yielding a strictly convex Quadratic Programming (QP) problem.",
+        "difficulty": "easy",
+        "subtopic": "Hard Margin QP Formulation"
+      },
+      {
+        "id": "cml-l13-q04",
+        "type": "single_choice",
+        "question": "In the Soft-Margin SVM formulation, what role do the slack variables $\\xi_i$ play?",
+        "options": [
+          {
+            "id": "A",
+            "text": "They represent the learning rate during gradient descent"
+          },
+          {
+            "id": "B",
+            "text": "They quantify the linear distance by which an instance $\\mathbf{x}_i$ violates the canonical margin boundary ($y_i(\\mathbf{w}^T \\mathbf{x}_i + b) \\ge 1 - \\xi_i$ with $\\xi_i \\ge 0$)"
+          },
+          {
+            "id": "C",
+            "text": "They determine the number of support vectors"
+          },
+          {
+            "id": "D",
+            "text": "They scale the kernel bandwidth"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Slack variables allow points to fall inside the margin ($0 < \\xi_i \\le 1$) or be misclassified ($\\xi_i > 1$), enabling SVM to handle non-linearly separable or noisy real-world datasets.",
+        "difficulty": "medium",
+        "subtopic": "Soft Margin & Slack"
+      },
+      {
+        "id": "cml-l13-q05",
+        "type": "single_choice",
+        "question": "What is the effect of setting a very large regularization penalty parameter $C \\to \\infty$ in Soft-Margin SVM?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The model becomes highly tolerant of misclassifications, producing a wider margin with higher bias"
+          },
+          {
+            "id": "B",
+            "text": "The penalty for margin violations becomes immense, forcing slack variables $\\xi_i \\to 0$, degenerating to a strict Hard-Margin SVM with higher risk of overfitting"
+          },
+          {
+            "id": "C",
+            "text": "The model ignores all support vectors"
+          },
+          {
+            "id": "D",
+            "text": "The decision boundary becomes spherical"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "The objective is $\\min \\frac{1}{2}\\|\\mathbf{w}\\|^2 + C \\sum \\xi_i$. High $C$ prioritizes minimizing misclassification penalty over margin width, forcing $\\xi_i \\to 0$ (narrow margin, low bias, high variance).",
+        "difficulty": "medium",
+        "subtopic": "C Parameter Tuning"
+      },
+      {
+        "id": "cml-l13-q06",
+        "type": "single_choice",
+        "question": "According to the Karush-Kuhn-Tucker (KKT) complementary slackness conditions ($\\alpha_i [y_i(\\mathbf{w}^T \\mathbf{x}_i + b) - 1 + \\xi_i] = 0$), which training instances have dual Lagrange multiplier $\\alpha_i > 0$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "All training instances in the dataset"
+          },
+          {
+            "id": "B",
+            "text": "Only the Support Vectors that lie exactly on the margin boundary or violate the margin"
+          },
+          {
+            "id": "C",
+            "text": "Only instances that are completely misclassified"
+          },
+          {
+            "id": "D",
+            "text": "Only instances located far away from the decision boundary"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "If a point is strictly outside the margin ($y_i(\\mathbf{w}^T \\mathbf{x}_i + b) > 1$ and $\\xi_i = 0$), KKT complementary slackness mandates $\\alpha_i = 0$. Only points on the margin or violating it have $\\alpha_i > 0$ (Support Vectors).",
+        "difficulty": "hard",
+        "subtopic": "KKT Conditions"
+      },
+      {
+        "id": "cml-l13-q07",
+        "type": "single_choice",
+        "question": "In the Wolfe Dual formulation of SVM, how is the weight vector $\\mathbf{w}$ expressed in terms of the support vectors?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\mathbf{w} = \\sum_{i=1}^n \\alpha_i y_i \\mathbf{x}_i$"
+          },
+          {
+            "id": "B",
+            "text": "$\\mathbf{w} = \\frac{1}{n} \\sum_{i=1}^n y_i \\mathbf{x}_i$"
+          },
+          {
+            "id": "C",
+            "text": "$\\mathbf{w} = \\sum_{i=1}^n \\frac{\\alpha_i}{\\mathbf{x}_i}$"
+          },
+          {
+            "id": "D",
+            "text": "$\\mathbf{w} = \\mathbf{X}^T (\\mathbf{X} \\mathbf{X}^T)^{-1} \\mathbf{y}$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Setting $\\nabla_{\\mathbf{w}} \\mathcal{L} = \\mathbf{w} - \\sum \\alpha_i y_i \\mathbf{x}_i = \\mathbf{0}$ yields $\\mathbf{w} = \\sum \\alpha_i y_i \\mathbf{x}_i$. The weight vector is a linear combination exclusively of the Support Vectors (where $\\alpha_i > 0$).",
+        "difficulty": "medium",
+        "subtopic": "Wolfe Dual Formulation"
+      },
+      {
+        "id": "cml-l13-q08",
+        "type": "single_choice",
+        "question": "What is the crucial insight of the Wolfe Dual that enables the 'Kernel Trick'?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The dual objective function and prediction decision rule depend exclusively on dot products between feature vectors $\\langle \\mathbf{x}_i, \\mathbf{x}_j \\rangle$, never on individual feature coordinates directly"
+          },
+          {
+            "id": "B",
+            "text": "The dual objective eliminates the need to compute dot products entirely"
+          },
+          {
+            "id": "C",
+            "text": "The dual transforms the problem from quadratic to linear programming"
+          },
+          {
+            "id": "D",
+            "text": "The dual ensures that all eigenvalues are negative"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "The dual objective is $\\max_\\alpha \\sum \\alpha_i - \\frac{1}{2}\\sum \\sum \\alpha_i \\alpha_j y_i y_j (\\mathbf{x}_i \\cdot \\mathbf{x}_j)$. Because data enters solely via inner products, we can replace $(\\mathbf{x}_i \\cdot \\mathbf{x}_j)$ with a kernel function $K(\\mathbf{x}_i, \\mathbf{x}_j) = \\langle \\phi(\\mathbf{x}_i), \\phi(\\mathbf{x}_j) \\rangle$ without ever calculating the high-dimensional mapping $\\phi(\\mathbf{x})$.",
+        "difficulty": "hard",
+        "subtopic": "The Kernel Trick"
+      },
+      {
+        "id": "cml-l13-q09",
+        "type": "single_choice",
+        "question": "What does Mercer's Theorem mathematically guarantee regarding a candidate kernel function $K(\\mathbf{x}, \\mathbf{z})$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "It guarantees that the algorithm will converge in $\\mathcal{O}(n)$ time"
+          },
+          {
+            "id": "B",
+            "text": "If the kernel matrix $\\mathbf{K}_{ij} = K(\\mathbf{x}_i, \\mathbf{x}_j)$ is symmetric positive semi-definite (PSD), there exists an implicit mapping $\\phi$ into a Hilbert space such that $K(\\mathbf{x}, \\mathbf{z}) = \\langle \\phi(\\mathbf{x}), \\phi(\\mathbf{z}) \\rangle$"
+          },
+          {
+            "id": "C",
+            "text": "It proves that the feature space is strictly finite-dimensional"
+          },
+          {
+            "id": "D",
+            "text": "It guarantees 100% test accuracy on non-linear data"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Mercer's Theorem provides the necessary and sufficient condition: Any continuous, symmetric, positive semi-definite kernel function corresponds to an inner product in some transformed Hilbert space, ensuring the convex QP optimization remains well-posed.",
+        "difficulty": "hard",
+        "subtopic": "Mercer Theorem"
+      },
+      {
+        "id": "cml-l13-q10",
+        "type": "single_choice",
+        "question": "What is the dimension of the implicit feature space $\\phi(\\mathbf{x})$ mapped by the Gaussian Radial Basis Function (RBF) kernel $K(\\mathbf{x}, \\mathbf{z}) = \\exp(-\\gamma \\|\\mathbf{x} - \\mathbf{z}\\|^2)$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$d^2$"
+          },
+          {
+            "id": "B",
+            "text": "Infinite $(\\infty)$"
+          },
+          {
+            "id": "C",
+            "text": "$2^d$"
+          },
+          {
+            "id": "D",
+            "text": "Equal to the sample size $n$"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Using Taylor series expansion: $\\exp(z) = \\sum_{k=0}^\\infty \\frac{z^k}{k!}$. The RBF kernel implicitly projects data into an infinite-dimensional reproducing kernel Hilbert space (RKHS).",
+        "difficulty": "medium",
+        "subtopic": "RBF Kernel & Infinite Dimensions"
+      },
+      {
+        "id": "cml-l13-q11",
+        "type": "single_choice",
+        "question": "What is the geometric and behavioral consequence of setting an excessively large $\\gamma$ (gamma) in an RBF kernel SVM?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The Gaussian bell curves become broad and flat, causing high bias (underfitting)"
+          },
+          {
+            "id": "B",
+            "text": "The Gaussian bell curves become extremely narrow and localized spikes around individual training points, causing the model to overfit heavily"
+          },
+          {
+            "id": "C",
+            "text": "The decision boundary becomes purely linear"
+          },
+          {
+            "id": "D",
+            "text": "All support vectors are eliminated"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Since $\\gamma = \\frac{1}{2\\sigma^2}$, high $\\gamma$ means tiny variance $\\sigma^2$. The kernel drops to zero outside tiny neighborhoods around training points, creating isolated decision islands around individual support vectors (severe overfitting).",
+        "difficulty": "medium",
+        "subtopic": "Gamma Parameter Tuning"
+      },
+      {
+        "id": "cml-l13-q12",
+        "type": "single_choice",
+        "question": "In Support Vector Regression (SVR), what is the function of the $\\epsilon$-insensitive tube ($|y - f(\\mathbf{x})| \\le \\epsilon$)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Any training prediction error smaller than $\\epsilon$ incurs zero loss penalty, creating a sparse dual solution where only points outside the tube become support vectors"
+          },
+          {
+            "id": "B",
+            "text": "It forces all target values to be between $-\\epsilon$ and $+\\epsilon$"
+          },
+          {
+            "id": "C",
+            "text": "It discards outliers larger than $\\epsilon$"
+          },
+          {
+            "id": "D",
+            "text": "It sets the maximum number of support vectors to $\\epsilon$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Vapnik's $\\epsilon$-insensitive loss is $\\mathcal{L}_\\epsilon(y, f) = \\max(0, |y - f| - \\epsilon)$. Errors within the tube are ignored, producing sparse models where points inside have $\\alpha_i = \\alpha_i^* = 0$.",
+        "difficulty": "medium",
+        "subtopic": "Support Vector Regression"
+      },
+      {
+        "id": "cml-l13-q13",
+        "type": "multi_choice",
+        "question": "Why is feature scaling (e.g. `StandardScaler`) absolutely MANDATORY before training an SVM? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "The margin $\\frac{2}{\\|\\mathbf{w}\\|}$ is geometric and relies on Euclidean distances across all feature dimensions."
+          },
+          {
+            "id": "B",
+            "text": "A feature with a huge numerical range (e.g., $10^6$) will completely dominate the dot product $\\mathbf{x}_i^T \\mathbf{x}_j$ and RBF kernel distance $\\|\\mathbf{x}_i - \\mathbf{x}_j\\|^2$."
+          },
+          {
+            "id": "C",
+            "text": "Features with small ranges (e.g., $[0, 1]$) would be effectively ignored by the quadratic optimizer."
+          },
+          {
+            "id": "D",
+            "text": "SVMs cannot compute predictions if features have negative values."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": "SVMs compute isotropic Euclidean distances and dot products. Without standardization, large-scale features dominate the norm and margin, rendering smaller-scale features inert. Negative values are completely valid.",
+        "difficulty": "easy",
+        "subtopic": "Feature Scaling in SVM"
+      },
+      {
+        "id": "cml-l13-q14",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding Support Vectors are TRUE? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Removing non-support vector training points from the dataset changes neither the optimal hyperplane $\\mathbf{w}^*$ nor the bias $b^*$."
+          },
+          {
+            "id": "B",
+            "text": "The decision function depends ONLY on the support vectors: $f(\\mathbf{x}) = \\text{sign}\\left(\\sum_{i \\in SV} \\alpha_i y_i K(\\mathbf{x}_i, \\mathbf{x}) + b\\right)$."
+          },
+          {
+            "id": "C",
+            "text": "In a dataset of 1,000,000 points, if only 50 become support vectors, test inference scales with the 50 support vectors rather than 1,000,000 points."
+          },
+          {
+            "id": "D",
+            "text": "Every training point in a linearly separable dataset is guaranteed to be a support vector."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": "A, B, and C capture the fundamental sparsity property of SVMs. D is false: only points on the margin boundaries become support vectors; all interior points have $\\alpha_i = 0$.",
+        "difficulty": "medium",
+        "subtopic": "Properties of Support Vectors"
+      },
+      {
+        "id": "cml-l13-q15",
+        "type": "multi_choice",
+        "question": "Which of the following kernel functions satisfy Mercer's condition and are commonly used in machine learning? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Linear Kernel: $K(\\mathbf{x}, \\mathbf{z}) = \\mathbf{x}^T \\mathbf{z}$"
+          },
+          {
+            "id": "B",
+            "text": "Polynomial Kernel: $K(\\mathbf{x}, \\mathbf{z}) = (\\gamma \\mathbf{x}^T \\mathbf{z} + r)^d$"
+          },
+          {
+            "id": "C",
+            "text": "Gaussian RBF Kernel: $K(\\mathbf{x}, \\mathbf{z}) = \\exp(-\\gamma \\|\\mathbf{x} - \\mathbf{z}\\|^2)$"
+          },
+          {
+            "id": "D",
+            "text": "Random Kernel: $K(\\mathbf{x}, \\mathbf{z}) = \\text{uniform}(-1, 1)$"
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": "Linear, Polynomial, and RBF (Gaussian) kernels are proven Mercer positive semi-definite kernels. A random function is not PSD and violates Mercer's theorem.",
+        "difficulty": "easy",
+        "subtopic": "Mercer Kernels"
+      },
+      {
+        "id": "cml-l13-q16",
+        "type": "single_choice",
+        "question": "What is the primary computational bottleneck when training a non-linear Kernel SVM on very large datasets ($n > 100,000$)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Linear regression underfitting"
+          },
+          {
+            "id": "B",
+            "text": "The kernel Gram matrix $\\mathbf{K} \\in \\mathbb{R}^{n \\times n}$ requires $\\mathcal{O}(n^2)$ memory and standard QP solvers scale between $\\mathcal{O}(n^2)$ and $\\mathcal{O}(n^3)$ in time"
+          },
+          {
+            "id": "C",
+            "text": "Decision trees splitting too fast"
+          },
+          {
+            "id": "D",
+            "text": "Inability to run on CPUs"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Because kernel methods compute pairwise evaluations between all training samples, memory scales as $\\mathcal{O}(n^2)$ and training time scales as $\\mathcal{O}(n^2)$ to $\\mathcal{O}(n^3)$, making kernel SVMs prohibitive for huge datasets without approximations (like Nyström or Random Fourier Features).",
+        "difficulty": "medium",
+        "subtopic": "Computational Scalability"
+      },
+      {
+        "id": "cml-l13-q17",
+        "type": "multi_choice",
+        "question": "How can multi-class classification ($K > 2$ classes) be handled using binary Support Vector Machines? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "One-vs-Rest (OvR / One-vs-All): Train $K$ distinct binary classifiers, each separating class $k$ from all other classes."
+          },
+          {
+            "id": "B",
+            "text": "One-vs-One (OvO): Train $\\frac{K(K-1)}{2}$ binary classifiers for every pair of classes, using majority voting for final prediction (Scikit-Learn `SVC` default)."
+          },
+          {
+            "id": "C",
+            "text": "Negative Feedback Loop: Randomly permuting binary labels."
+          },
+          {
+            "id": "D",
+            "text": "Crammer-Singer Multiclass Formulation: Solving a single combined optimization problem with multi-class margin constraints."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "D"
+        ],
+        "explanation": "OvR, OvO, and Crammer-Singer are the standard multi-class formulations for SVMs. Scikit-learn's `SVC` (based on LIBSVM) utilizes One-vs-One.",
+        "difficulty": "hard",
+        "subtopic": "Multiclass SVM"
+      },
+      {
+        "id": "cml-l13-q18",
+        "type": "single_choice",
+        "question": "In Soft-Margin SVM, what is the loss function implicitly minimized when written in unconstrained regularized risk form?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Hinge Loss: $\\mathcal{L}(y, f) = \\max(0, 1 - y f(\\mathbf{x}))$"
+          },
+          {
+            "id": "B",
+            "text": "Log-Loss / Cross-Entropy: $\\mathcal{L}(y, f) = \\ln(1 + e^{-y f})$"
+          },
+          {
+            "id": "C",
+            "text": "Mean Squared Error: $\\mathcal{L}(y, f) = (y - f)^2$"
+          },
+          {
+            "id": "D",
+            "text": "Exponential Loss: $\\mathcal{L}(y, f) = e^{-y f}$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Soft margin SVM minimizes $\\frac{1}{2}\\|\\mathbf{w}\\|^2 + C \\sum \\max(0, 1 - y_i(\\mathbf{w}^T \\mathbf{x}_i + b))$. The penalty $\\max(0, 1 - y f)$ is precisely the Hinge Loss.",
+        "difficulty": "medium",
+        "subtopic": "Hinge Loss Equivalence"
+      },
+      {
+        "id": "cml-l13-q19",
+        "type": "multi_choice",
+        "question": "When tuning an SVM with an RBF kernel, which parameter combinations are most likely to result in SEVERE OVERFITTING? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Extremely high $C$ (e.g., $10^5$) combined with extremely high $\\gamma$ (e.g., $100$)"
+          },
+          {
+            "id": "B",
+            "text": "Very small $C$ (e.g., $0.001$) combined with very small $\\gamma$ (e.g., $0.001$)"
+          },
+          {
+            "id": "C",
+            "text": "High $C$ punishing all slack violations coupled with localized high $\\gamma$ kernels"
+          },
+          {
+            "id": "D",
+            "text": "Linear kernel with $C = 0.01$"
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "C"
+        ],
+        "explanation": "High $C$ forbids margin violations and high $\\gamma$ creates tight localized Gaussian peaks around individual points. Together, they create complex overfitted boundaries around individual training points.",
+        "difficulty": "medium",
+        "subtopic": "Hyperparameter Interactions"
+      },
+      {
+        "id": "cml-l13-q20",
+        "type": "single_choice",
+        "question": "How does Platt Scaling enable Scikit-Learn's `SVC(probability=True)` to output calibrated probability estimates $P(Y=1 \\mid \\mathbf{X})$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "By calculating the softmax of raw distances"
+          },
+          {
+            "id": "B",
+            "text": "By fitting an additional 1D Logistic Regression model on the SVM decision function scores $f(\\mathbf{x})$ via internal 5-fold cross-validation"
+          },
+          {
+            "id": "C",
+            "text": "By multiplying the margins by the prior class probabilities"
+          },
+          {
+            "id": "D",
+            "text": "By converting the kernel into a Dirichlet distribution"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Platt Scaling fits a sigmoid $P(y=1 \\mid f) = \\frac{1}{1 + \\exp(A f(\\mathbf{x}) + B)}$ on the uncalibrated SVM margins $f(\\mathbf{x})$ using out-of-fold cross-validation.",
+        "difficulty": "hard",
+        "subtopic": "Platt Scaling Probabilities"
+      }
+    ]
+  },
+  "lecture-14": {
+    "topicId": "lecture-14",
+    "lectureNumber": 14,
+    "title": "Naive Bayes Classification: Generative Modeling & MAP Inference",
+    "description": "20 questions covering Generative vs Discriminative models, Bayes' Theorem decomposition, the Naive Conditional Independence assumption, Maximum A Posteriori (MAP) decision rules, log-space transformations, Laplace/Lidstone smoothing, and Gaussian/Multinomial/Bernoulli Naive Bayes implementations.",
+    "estimatedMinutes": 30,
+    "questions": [
+      {
+        "id": "cml-l14-q01",
+        "type": "single_choice",
+        "question": "What is the foundational theoretical distinction between Generative Classifiers (e.g., Naive Bayes) and Discriminative Classifiers (e.g., Logistic Regression)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Generative classifiers model the joint probability distribution $P(\\mathbf{X}, Y) = P(\\mathbf{X} \\mid Y) P(Y)$, whereas discriminative classifiers directly model the posterior class boundary $P(Y \\mid \\mathbf{X})$"
+          },
+          {
+            "id": "B",
+            "text": "Generative models can only be trained with gradient descent"
+          },
+          {
+            "id": "C",
+            "text": "Discriminative models cannot be used for multi-class classification"
+          },
+          {
+            "id": "D",
+            "text": "Generative models do not use probability theory"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Generative classifiers learn how the data is generated for each class ($P(\\mathbf{X} \\mid Y)$) and apply Bayes' Theorem. Discriminative classifiers focus solely on separating the classes by estimating $P(Y \\mid \\mathbf{X})$ directly.",
+        "difficulty": "easy",
+        "subtopic": "Generative vs Discriminative"
+      },
+      {
+        "id": "cml-l14-q02",
+        "type": "single_choice",
+        "question": "In Bayes' Theorem $P(Y=k \\mid \\mathbf{X}=\\mathbf{x}) = \\frac{P(\\mathbf{X}=\\mathbf{x} \\mid Y=k) P(Y=k)}{P(\\mathbf{X}=\\mathbf{x})}$, what is the technical name for the term $P(\\mathbf{X}=\\mathbf{x} \\mid Y=k)$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Prior Probability"
+          },
+          {
+            "id": "B",
+            "text": "Class-Conditional Likelihood"
+          },
+          {
+            "id": "C",
+            "text": "Marginal Evidence"
+          },
+          {
+            "id": "D",
+            "text": "Posterior Probability"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "$P(\\mathbf{X} \\mid Y=k)$ is the Class-Conditional Likelihood. $P(Y=k)$ is the Prior, $P(\\mathbf{X})$ is the Evidence / Marginal probability, and $P(Y=k \\mid \\mathbf{X})$ is the Posterior.",
+        "difficulty": "easy",
+        "subtopic": "Bayes Theorem Decomposition"
+      },
+      {
+        "id": "cml-l14-q03",
+        "type": "single_choice",
+        "question": "Why is the Marginal Evidence term $P(\\mathbf{X}=\\mathbf{x})$ routinely ignored when determining the predicted class $\\hat{y}$ under the MAP rule?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Because $P(\\mathbf{X}=\\mathbf{x})$ is always zero"
+          },
+          {
+            "id": "B",
+            "text": "Because $P(\\mathbf{X}=\\mathbf{x})$ is strictly positive and constant across all candidate classes $k \\in \\{1, \\dots, K\\}$, thus having no effect on the $\\arg\\max$"
+          },
+          {
+            "id": "C",
+            "text": "Because it violates Laplace smoothing"
+          },
+          {
+            "id": "D",
+            "text": "Because it cannot be computed in polynomial time"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Since $P(\\mathbf{X}=\\mathbf{x}) = \\sum_j P(\\mathbf{X} \\mid Y=j) P(Y=j)$ is identical for all classes $k$ for a given input $\\mathbf{x}$, it acts solely as a normalizer and does not alter the relative ranking or the $\\arg\\max$.",
+        "difficulty": "easy",
+        "subtopic": "MAP Classification Rule"
+      },
+      {
+        "id": "cml-l14-q04",
+        "type": "single_choice",
+        "question": "What is the core 'Naive' assumption in Naive Bayes classification?",
+        "options": [
+          {
+            "id": "A",
+            "text": "All features are completely uncorrelated in the unconditional sense"
+          },
+          {
+            "id": "B",
+            "text": "All features $X_1, X_2, \\dots, X_d$ are conditionally independent given the class label $Y$: $P(\\mathbf{X} \\mid Y=k) = \\prod_{j=1}^d P(X_j \\mid Y=k)$"
+          },
+          {
+            "id": "C",
+            "text": "All classes have equal prior probabilities $P(Y=k) = 1/K$"
+          },
+          {
+            "id": "D",
+            "text": "The data is linearly separable"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "The defining assumption is conditional independence of features given the class: once the class $Y=k$ is known, knowledge of feature $X_i$ provides zero information about feature $X_j$.",
+        "difficulty": "easy",
+        "subtopic": "Conditional Independence Assumption"
+      },
+      {
+        "id": "cml-l14-q05",
+        "type": "single_choice",
+        "question": "Without the conditional independence assumption, how many parameters are needed to represent a joint distribution of $d$ binary features for $K$ classes, and what does Naive Bayes reduce this to?",
+        "options": [
+          {
+            "id": "A",
+            "text": "From $\\mathcal{O}(K \\cdot 2^d)$ parameters down to linear $\\mathcal{O}(K \\cdot d)$ parameters"
+          },
+          {
+            "id": "B",
+            "text": "From $\\mathcal{O}(d)$ to $\\mathcal{O}(1)$"
+          },
+          {
+            "id": "C",
+            "text": "From $\\mathcal{O}(d^2)$ to $\\mathcal{O}(d)$"
+          },
+          {
+            "id": "D",
+            "text": "From $\\mathcal{O}(K^d)$ to $\\mathcal{O}(K)$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "A full joint table of $d$ binary features per class requires $2^d - 1$ probabilities per class, scaling exponentially as $\\mathcal{O}(K \\cdot 2^d)$. Naive conditional independence requires only $d$ independent probabilities per class: $\\mathcal{O}(K \\cdot d)$.",
+        "difficulty": "medium",
+        "subtopic": "Parameter Complexity Reduction"
+      },
+      {
+        "id": "cml-l14-q06",
+        "type": "single_choice",
+        "question": "Why is the Log-Space Transformation $\\ln P(Y=k) + \\sum_{j=1}^d \\ln P(x_j \\mid Y=k)$ mandatory when implementing Naive Bayes in production code?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Because probabilities are non-linear"
+          },
+          {
+            "id": "B",
+            "text": "To prevent catastrophic floating-point numerical underflow caused by multiplying hundreds of tiny probabilities $p \\in (0, 1)$"
+          },
+          {
+            "id": "C",
+            "text": "Because logarithms convert classification into linear regression"
+          },
+          {
+            "id": "D",
+            "text": "To eliminate the need for priors"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Multiplying many probabilities (e.g. $10^{-3} \\times 10^{-4} \\times \\dots$) quickly exceeds IEEE-754 double precision limits, underflowing to `0.0`. Working in log space replaces products with stable sums.",
+        "difficulty": "easy",
+        "subtopic": "Log-Space Transformation"
+      },
+      {
+        "id": "cml-l14-q07",
+        "type": "single_choice",
+        "question": "What is the 'Zero Probability Problem' in Naive Bayes, and what is its catastrophic consequence during classification?",
+        "options": [
+          {
+            "id": "A",
+            "text": "If a feature value never appeared in class $k$ in the training data, $P(x_j \\mid Y=k) = 0$, which multiplies through the entire product and forces the posterior probability for class $k$ to strictly 0, regardless of all other evidence"
+          },
+          {
+            "id": "B",
+            "text": "The prior probability is zero for balanced datasets"
+          },
+          {
+            "id": "C",
+            "text": "Gradient descent terminates on zero variance"
+          },
+          {
+            "id": "D",
+            "text": "The evidence term diverges to infinity"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Because likelihoods are multiplied, a single zero probability $P(x_j \\mid k) = 0$ acts as a veto, wiping out all positive evidence from thousands of other matching features.",
+        "difficulty": "medium",
+        "subtopic": "Zero Probability Problem"
+      },
+      {
+        "id": "cml-l14-q08",
+        "type": "single_choice",
+        "question": "Under Additive Laplace Smoothing (add-1 smoothing) for a vocabulary of size $V$, what is the estimated word probability $P(w \\mid c)$ given word count $N_{wc}$ and total tokens $N_c$ in class $c$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\frac{N_{wc} + 1}{N_c + V}$"
+          },
+          {
+            "id": "B",
+            "text": "$\\frac{N_{wc} + 1}{N_c + 1}$"
+          },
+          {
+            "id": "C",
+            "text": "$\\frac{N_{wc}}{N_c + V}$"
+          },
+          {
+            "id": "D",
+            "text": "$\\frac{N_{wc} + V}{N_c}$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Laplace smoothing adds a pseudocount of $\\alpha = 1$ to each word, adding $1 \\times V$ to the denominator: $\\hat{P}(w \\mid c) = \\frac{N_{wc} + 1}{N_c + V}$, ensuring all probabilities are strictly positive and sum to 1.",
+        "difficulty": "medium",
+        "subtopic": "Laplace Smoothing"
+      },
+      {
+        "id": "cml-l14-q09",
+        "type": "single_choice",
+        "question": "In Gaussian Naive Bayes, how is the continuous feature likelihood $P(x_j \\mid Y=k)$ modeled?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Using an unconstrained multi-variate Gaussian with full covariance matrix $\\mathbf{\\Sigma}_k$"
+          },
+          {
+            "id": "B",
+            "text": "Using a one-dimensional univariate Gaussian probability density: $P(x_j \\mid Y=k) = \\frac{1}{\\sqrt{2\\pi \\sigma_{jk}^2}} \\exp\\left(-\\frac{(x_j - \\mu_{jk})^2}{2\\sigma_{jk}^2}\\right)$"
+          },
+          {
+            "id": "C",
+            "text": "Using uniform histograms with equal bin widths"
+          },
+          {
+            "id": "D",
+            "text": "Using exponential decay kernels centered at zero"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Gaussian NB models each feature independently as a 1D normal distribution $\\mathcal{N}(\\mu_{jk}, \\sigma_{jk}^2)$ conditioned on class $k$. This corresponds to a multivariate Gaussian with a diagonal covariance matrix.",
+        "difficulty": "medium",
+        "subtopic": "Gaussian Naive Bayes"
+      },
+      {
+        "id": "cml-l14-q10",
+        "type": "single_choice",
+        "question": "When is Multinomial Naive Bayes the industry-standard choice compared to Bernoulli Naive Bayes?",
+        "options": [
+          {
+            "id": "A",
+            "text": "When features are continuous real numbers like temperature and pressure"
+          },
+          {
+            "id": "B",
+            "text": "When features represent discrete occurrence frequencies or word counts (e.g., Bag-of-Words / TF count vectors in NLP)"
+          },
+          {
+            "id": "C",
+            "text": "When features are strictly binary 0/1 indicator flags"
+          },
+          {
+            "id": "D",
+            "text": "When the dataset has fewer than 10 samples"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Multinomial NB is designed for integer count vectors (e.g. word token frequencies in text). Bernoulli NB is designed for binary binary presence/absence flags (0 or 1).",
+        "difficulty": "easy",
+        "subtopic": "Multinomial vs Bernoulli NB"
+      },
+      {
+        "id": "cml-l14-q11",
+        "type": "single_choice",
+        "question": "Why does Bernoulli Naive Bayes explicitly penalize the non-occurrence of words, unlike Multinomial Naive Bayes?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Because its likelihood formulation includes both the presence probability $p_{jk}^{x_j}$ and the absence probability $(1 - p_{jk})^{1 - x_j}$"
+          },
+          {
+            "id": "B",
+            "text": "Because it divides by zero when $x_j = 0$"
+          },
+          {
+            "id": "C",
+            "text": "Because Bernoulli NB only operates on spam emails"
+          },
+          {
+            "id": "D",
+            "text": "Because it uses Gaussian density functions"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Bernoulli likelihood is $P(\\mathbf{x} \\mid k) = \\prod [p_{jk}^{x_j} (1 - p_{jk})^{1 - x_j}]$. When a word is absent ($x_j = 0$), it contributes the factor $(1 - p_{jk})$, actively taking the absence of evidence into account.",
+        "difficulty": "hard",
+        "subtopic": "Bernoulli Naive Bayes"
+      },
+      {
+        "id": "cml-l14-q12",
+        "type": "single_choice",
+        "question": "What is the theoretical explanation for why Naive Bayes often achieves surprisingly competitive classification accuracy even when its conditional independence assumption is heavily violated?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Accurate classification decisions require only that the correct class has the highest rank ($\\arg\\max$), not that the predicted probability distribution is well-calibrated"
+          },
+          {
+            "id": "B",
+            "text": "Because violations of independence cancel out automatically via the Central Limit Theorem"
+          },
+          {
+            "id": "C",
+            "text": "Because Naive Bayes internally switches to an SVM when features are correlated"
+          },
+          {
+            "id": "D",
+            "text": "Because correlation between features has zero impact on joint probability"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "As proven by Domingos & Pazzani (1997), classification requires only ordinal calibration: $\\arg\\max_k P(Y=k \\mid \\mathbf{X})$. Even if correlated features push posterior probabilities to extreme overconfident values (0.9999 or 0.0001), the correct class usually remains on top.",
+        "difficulty": "hard",
+        "subtopic": "Independence Paradox"
+      },
+      {
+        "id": "cml-l14-q13",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding the behavior of Naive Bayes probability estimates are TRUE? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Naive Bayes probability estimates are notoriously uncalibrated, tending to be pushed extremely close to 0.0 or 1.0 due to redundant correlated features."
+          },
+          {
+            "id": "B",
+            "text": "Naive Bayes probabilities should not be taken as literal confidence estimates without post-hoc calibration (e.g. Isotonic Regression or Platt Scaling)."
+          },
+          {
+            "id": "C",
+            "text": "Naive Bayes probabilities are mathematically guaranteed to be perfectly calibrated under any feature distribution."
+          },
+          {
+            "id": "D",
+            "text": "The zero probability problem causes un-smoothed Naive Bayes to output exact 0.0 probabilities."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "D"
+        ],
+        "explanation": "Because independence is violated, multiplying redundant likelihoods compounds confidence, pushing probabilities to 0 and 1. They are uncalibrated and require post-processing if accurate confidence scores are needed.",
+        "difficulty": "medium",
+        "subtopic": "Probability Calibration"
+      },
+      {
+        "id": "cml-l14-q14",
+        "type": "multi_choice",
+        "question": "What happens if a continuous feature in Gaussian Naive Bayes has zero variance ($\\sigma_{jk}^2 = 0$) within a specific class? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Division by zero occurs in the Gaussian exponent $\\frac{1}{2\\sigma_{jk}^2}$."
+          },
+          {
+            "id": "B",
+            "text": "The normalizer $\\frac{1}{\\sqrt{2\\pi \\sigma_{jk}^2}}$ evaluates to division by zero."
+          },
+          {
+            "id": "C",
+            "text": "Scikit-Learn's `GaussianNB` adds an epsilon variance smoothing constant (`var_smoothing = 1e-9` times max variance) to the denominator to prevent division by zero."
+          },
+          {
+            "id": "D",
+            "text": "The model automatically converts into a Bernoulli Naive Bayes classifier."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": "Zero variance produces catastrophic division by zero in both the exponential and normalizer. Production packages apply variance smoothing (`var_smoothing`) to add a small fraction of the largest feature variance.",
+        "difficulty": "medium",
+        "subtopic": "Gaussian NB Numerical Stability"
+      },
+      {
+        "id": "cml-l14-q15",
+        "type": "multi_choice",
+        "question": "Which of the following are major advantages of Naive Bayes compared to deep neural networks and Support Vector Machines? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Extremely fast training in $\\mathcal{O}(n \\cdot d)$ time requiring only a single pass through the dataset to accumulate count and summary statistics."
+          },
+          {
+            "id": "B",
+            "text": "High resilience to irrelevant features (features with identical distributions across all classes contribute equal factors to all classes, cancelling out)."
+          },
+          {
+            "id": "C",
+            "text": "Naturally supports incremental / online learning via `partial_fit` since updating counts does not require retraining from scratch."
+          },
+          {
+            "id": "D",
+            "text": "Capable of learning non-linear feature interactions without manual feature engineering."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": "A, B, and C are major strengths of Naive Bayes. D is false: Naive Bayes fundamentally assumes features do not interact conditionally, so it cannot learn feature interactions.",
+        "difficulty": "easy",
+        "subtopic": "Advantages of Naive Bayes"
+      },
+      {
+        "id": "cml-l14-q16",
+        "type": "single_choice",
+        "question": "In Lidstone Smoothing, what parameter value $\\alpha$ is typically used relative to Laplace Smoothing?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\alpha > 10$"
+          },
+          {
+            "id": "B",
+            "text": "$0 < \\alpha < 1$ (e.g. $\\alpha = 0.1$ or $0.5$)"
+          },
+          {
+            "id": "C",
+            "text": "$\\alpha = 0$"
+          },
+          {
+            "id": "D",
+            "text": "$\\alpha = -1$"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Laplace smoothing uses $\\alpha = 1$. Lidstone smoothing generalizes this to fractional pseudocounts $0 < \\alpha < 1$, preventing over-smoothing when the vocabulary $V$ is very large.",
+        "difficulty": "easy",
+        "subtopic": "Lidstone Smoothing"
+      },
+      {
+        "id": "cml-l14-q17",
+        "type": "multi_choice",
+        "question": "Which real-world domains and problem types are classic strong use cases for Naive Bayes? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Email spam classification and sentiment analysis with Bag-of-Words text representations"
+          },
+          {
+            "id": "B",
+            "text": "Real-time streaming classification where inference latency must be under a millisecond"
+          },
+          {
+            "id": "C",
+            "text": "High-dimensional sparse text categorization with large vocabulary sizes"
+          },
+          {
+            "id": "D",
+            "text": "Self-driving car computer vision tracking bounding boxes across video frames"
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": "Text classification, spam detection, and ultra-fast real-time inference are the marquee applications of Naive Bayes. Vision tracking (D) involves complex spatial and temporal correlations requiring deep CNNs/Transformers.",
+        "difficulty": "easy",
+        "subtopic": "Applications"
+      },
+      {
+        "id": "cml-l14-q18",
+        "type": "single_choice",
+        "question": "How does Naive Bayes naturally handle missing feature values during test-time inference?",
+        "options": [
+          {
+            "id": "A",
+            "text": "It simply omits the missing feature $x_j$ from the likelihood product $\\prod_{i \\ne j} P(x_i \\mid Y=k)$, effectively marginalizing over all possible values of $x_j$"
+          },
+          {
+            "id": "B",
+            "text": "It sets the posterior probability of all classes to zero"
+          },
+          {
+            "id": "C",
+            "text": "It imputes missing values using $K$-Nearest Neighbours"
+          },
+          {
+            "id": "D",
+            "text": "It throws an unhandled exception because likelihoods require full vectors"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Because features are conditionally independent, marginalizing out a missing attribute $X_j$ corresponds to omitting $\\ln P(x_j \\mid Y=k)$ from the sum, computing the optimal decision based strictly on observed features.",
+        "difficulty": "hard",
+        "subtopic": "Missing Data Handling"
+      },
+      {
+        "id": "cml-l14-q19",
+        "type": "single_choice",
+        "question": "What is the relationship between Gaussian Naive Bayes and Logistic Regression for binary classification when all features share the same variance across both classes?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Gaussian Naive Bayes implies a posterior distribution $P(Y=1 \\mid \\mathbf{X})$ that has the EXACT parametric functional form of a Logistic Sigmoid $\\sigma(\\mathbf{w}^T \\mathbf{x} + b)$"
+          },
+          {
+            "id": "B",
+            "text": "They have opposite decision boundaries"
+          },
+          {
+            "id": "C",
+            "text": "Gaussian Naive Bayes produces a quadratic decision boundary while Logistic Regression is linear"
+          },
+          {
+            "id": "D",
+            "text": "There is no mathematical connection between them"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "As shown in Mitchell's generative-discriminative pair analysis, if features in both classes share equal variance, the log-odds ratio $\\ln\\frac{P(Y=1|X)}{P(Y=0|X)}$ is strictly linear in $\\mathbf{x}$, yielding the exact logistic sigmoid form $P(Y=1|X) = \\frac{1}{1 + e^{-(\\mathbf{w}^T \\mathbf{x} + b)}}$.",
+        "difficulty": "hard",
+        "subtopic": "Generative-Discriminative Pairs"
+      },
+      {
+        "id": "cml-l14-q20",
+        "type": "multi_choice",
+        "question": "Which steps are executed during the training (`fit`) phase of a Gaussian Naive Bayes classifier? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Compute class prior probabilities $\\hat{P}(Y=k) = \\frac{N_k}{N}$."
+          },
+          {
+            "id": "B",
+            "text": "For each feature $j$ and class $k$, compute the sample mean $\\mu_{jk} = \\frac{1}{N_k} \\sum_{i \\in C_k} x_{ij}$."
+          },
+          {
+            "id": "C",
+            "text": "For each feature $j$ and class $k$, compute the sample variance $\\sigma_{jk}^2 = \\frac{1}{N_k} \\sum_{i \\in C_k} (x_{ij} - \\mu_{jk})^2$."
+          },
+          {
+            "id": "D",
+            "text": "Run 100 epochs of stochastic gradient descent to optimize cross-entropy loss."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": "Gaussian NB has a closed-form analytic maximum likelihood solution: calculating priors, means, and variances in a single closed-form pass. No gradient descent optimization is used.",
+        "difficulty": "easy",
+        "subtopic": "Gaussian NB Implementation"
+      }
+    ]
+  },
+  "lecture-15": {
+    "topicId": "lecture-15",
+    "lectureNumber": 15,
+    "title": "Unsupervised Learning: K-Means, DBSCAN & Principal Component Analysis (PCA)",
+    "description": "20 questions covering K-Means Lloyd's algorithm, K-Means++ initialization, Elbow method, Silhouette analysis, Hierarchical clustering linkages, DBSCAN density reachability, the Curse of Dimensionality, PCA maximum variance derivation, and SVD.",
+    "estimatedMinutes": 30,
+    "questions": [
+      {
+        "id": "cml-l15-q01",
+        "type": "single_choice",
+        "question": "What is the primary characteristic that separates Unsupervised Learning from Supervised Learning?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Unsupervised learning operates without any ground-truth target labels $y$, aiming to discover latent structure, clusters, or lower-dimensional manifolds directly from feature matrix $\\mathbf{X}$"
+          },
+          {
+            "id": "B",
+            "text": "Unsupervised learning can only be run on GPU clusters"
+          },
+          {
+            "id": "C",
+            "text": "Unsupervised learning requires cross-validation with accuracy metrics"
+          },
+          {
+            "id": "D",
+            "text": "Unsupervised learning only applies to text data"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Supervised learning guides parameters using ground-truth targets $y$. Unsupervised learning has no target labels; the algorithm models the intrinsic structure, clustering, or density of the input features $\\mathbf{X}$.",
+        "difficulty": "easy",
+        "subtopic": "Unsupervised Paradigm"
+      },
+      {
+        "id": "cml-l15-q02",
+        "type": "single_choice",
+        "question": "What is the objective function (Inertia / Within-Cluster Sum of Squares) minimized by the K-Means clustering algorithm?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$J = \\sum_{k=1}^K \\sum_{\\mathbf{x}_i \\in C_k} \\|\\mathbf{x}_i - \\boldsymbol{\\mu}_k\\|_2^2$"
+          },
+          {
+            "id": "B",
+            "text": "$J = \\sum_{k=1}^K \\|\\boldsymbol{\\mu}_k - \\boldsymbol{\\mu}_{global}\\|_2$"
+          },
+          {
+            "id": "C",
+            "text": "$J = -\\sum_{i=1}^n \\log P(\\mathbf{x}_i)$"
+          },
+          {
+            "id": "D",
+            "text": "$J = \\sum_{k=1}^K \\sum_{j \\ne k} \\|\\boldsymbol{\\mu}_k - \\boldsymbol{\\mu}_j\\|_2^2$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "K-Means minimizes the within-cluster sum of squared Euclidean distances (WCSS) between each observation $\\mathbf{x}_i$ and its assigned cluster centroid $\\boldsymbol{\\mu}_k$.",
+        "difficulty": "easy",
+        "subtopic": "K-Means Objective"
+      },
+      {
+        "id": "cml-l15-q03",
+        "type": "single_choice",
+        "question": "Why is Lloyd's algorithm for K-Means guaranteed to converge in a finite number of iterations?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Because both the assignment step and the centroid update step monotonically decrease or maintain the non-negative objective $J$, and there are only a finite number ($K^n$) of possible cluster partitions"
+          },
+          {
+            "id": "B",
+            "text": "Because gradient descent has an adaptive learning rate"
+          },
+          {
+            "id": "C",
+            "text": "Because the objective function is strictly convex globally"
+          },
+          {
+            "id": "D",
+            "text": "Because the Hessian matrix is positive definite everywhere"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Lloyd's algorithm performs alternating coordinate descent on a non-negative energy surface. Since each step strictly decreases or keeps $J$ identical, and the number of partitions of $n$ points into $K$ sets is finite ($K^n$), the sequence must terminate in a local minimum.",
+        "difficulty": "medium",
+        "subtopic": "Lloyd's Algorithm Convergence"
+      },
+      {
+        "id": "cml-l15-q04",
+        "type": "single_choice",
+        "question": "How does the K-Means++ initialization algorithm choose subsequent cluster centroids after picking the first centroid $\\mu_1$ uniformly at random?",
+        "options": [
+          {
+            "id": "A",
+            "text": "It selects points with probability proportional to the squared distance $D(\\mathbf{x})^2$ to the nearest already chosen centroid: $P(\\mathbf{x}_i) = \\frac{D(\\mathbf{x}_i)^2}{\\sum_j D(\\mathbf{x}_j)^2}$"
+          },
+          {
+            "id": "B",
+            "text": "It selects the points with the smallest distance to existing centroids"
+          },
+          {
+            "id": "C",
+            "text": "It uses the eigenvectors of the covariance matrix"
+          },
+          {
+            "id": "D",
+            "text": "It samples points uniformly at random with replacement"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "K-Means++ samples next centroids with probability proportional to $D(\\mathbf{x})^2$, spreading them far apart across distinct dense clusters and guaranteeing an $\\mathcal{O}(\\log K)$ expected approximation bound.",
+        "difficulty": "medium",
+        "subtopic": "K-Means++ Initialization"
+      },
+      {
+        "id": "cml-l15-q05",
+        "type": "single_choice",
+        "question": "In Silhouette Analysis, what does a Silhouette Coefficient value of $s(i) \\approx -1$ indicate for a data point $\\mathbf{x}_i$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "The point is well-clustered inside a dense cluster"
+          },
+          {
+            "id": "B",
+            "text": "The point lies on the exact decision boundary between two clusters"
+          },
+          {
+            "id": "C",
+            "text": "The point is closer to members of a neighboring cluster than to points in its own assigned cluster, indicating a severe misclustering"
+          },
+          {
+            "id": "D",
+            "text": "The cluster has zero variance"
+          }
+        ],
+        "correctOptionIds": [
+          "C"
+        ],
+        "explanation": "$s(i) = \\frac{b(i) - a(i)}{\\max(a(i), b(i))}$. If $a(i) \\gg b(i)$ (intra-cluster distance is much larger than distance to nearest neighbor cluster), $s(i) \\to -1$, proving the point was placed in the wrong cluster.",
+        "difficulty": "medium",
+        "subtopic": "Silhouette Analysis"
+      },
+      {
+        "id": "cml-l15-q06",
+        "type": "single_choice",
+        "question": "Which of the following cluster geometries will K-Means completely FAIL to identify properly?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Concentric rings and interleaving half-moon shapes"
+          },
+          {
+            "id": "B",
+            "text": "Spherical Gaussian blobs of equal radius"
+          },
+          {
+            "id": "C",
+            "text": "Compact linearly separable convex clusters"
+          },
+          {
+            "id": "D",
+            "text": "Disjoint isotropic normal distributions"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "K-Means induces linear Voronoi decision boundaries, producing strictly convex polyhedral cells. It cannot separate non-convex geometries like concentric rings or nested spirals.",
+        "difficulty": "easy",
+        "subtopic": "K-Means Geometric Limitations"
+      },
+      {
+        "id": "cml-l15-q07",
+        "type": "single_choice",
+        "question": "In Hierarchical Agglomerative Clustering, which linkage criterion merges clusters by minimizing the increase in total within-cluster variance ($\\Delta \\text{WCSS}$)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Single Linkage"
+          },
+          {
+            "id": "B",
+            "text": "Complete Linkage"
+          },
+          {
+            "id": "C",
+            "text": "Average Linkage"
+          },
+          {
+            "id": "D",
+            "text": "Ward's Linkage"
+          }
+        ],
+        "correctOptionIds": [
+          "D"
+        ],
+        "explanation": "Ward's linkage seeks at each step to merge the pair of clusters that minimizes the increase in total within-cluster sum of squares: $\\Delta J = \\frac{|A||B|}{|A|+|B|}\\|\\boldsymbol{\\mu}_A - \\boldsymbol{\\mu}_B\\|^2$.",
+        "difficulty": "medium",
+        "subtopic": "Hierarchical Linkage Criteria"
+      },
+      {
+        "id": "cml-l15-q08",
+        "type": "single_choice",
+        "question": "What is the notorious pathology known as the 'Chaining Effect' in Hierarchical Clustering, and which linkage criterion causes it?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Complete linkage forcing clusters into chain-like elongated ellipses"
+          },
+          {
+            "id": "B",
+            "text": "Single linkage forming long string-like clusters because single intermediate noise points act as bridges between distinct clusters"
+          },
+          {
+            "id": "C",
+            "text": "Ward's linkage creating unbalanced single-sample leaves"
+          },
+          {
+            "id": "D",
+            "text": "DBSCAN failing to cluster circular points"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "Because Single Linkage evaluates minimum distance $\\min \\|\\mathbf{a} - \\mathbf{b}\\|$, a few isolated noise points between two dense clusters will bridge them together into one long spurious cluster.",
+        "difficulty": "medium",
+        "subtopic": "Hierarchical Linkage Criteria"
+      },
+      {
+        "id": "cml-l15-q09",
+        "type": "single_choice",
+        "question": "In the DBSCAN algorithm with parameters $\\epsilon$ and $\\text{MinPts} = 4$, when is a point $\\mathbf{p}$ classified as a Core Point?",
+        "options": [
+          {
+            "id": "A",
+            "text": "When the $\\epsilon$-neighborhood around $\\mathbf{p}$ contains at least 4 points (including $\\mathbf{p}$ itself)"
+          },
+          {
+            "id": "B",
+            "text": "When $\\mathbf{p}$ has the minimum distance to the origin"
+          },
+          {
+            "id": "C",
+            "text": "When $\\mathbf{p}$ is connected to at least 4 other Core points"
+          },
+          {
+            "id": "D",
+            "text": "When its Silhouette score is greater than 0.5"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "A point is a Core point in DBSCAN if its $\\epsilon$-neighborhood contains at least $\\text{MinPts}$ points: $|N_\\epsilon(\\mathbf{p})| \\ge \\text{MinPts}$.",
+        "difficulty": "easy",
+        "subtopic": "DBSCAN Point Classification"
+      },
+      {
+        "id": "cml-l15-q10",
+        "type": "single_choice",
+        "question": "How does DBSCAN classify a point that has fewer than $\\text{MinPts}$ neighbors within radius $\\epsilon$, but lies within the $\\epsilon$-neighborhood of a Core point?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Noise / Outlier point (label -1)"
+          },
+          {
+            "id": "B",
+            "text": "Border Point"
+          },
+          {
+            "id": "C",
+            "text": "Centroid Point"
+          },
+          {
+            "id": "D",
+            "text": "Medoid Point"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "A Border point has $|N_\\epsilon(\\mathbf{b})| < \\text{MinPts}$, but falls within radius $\\epsilon$ of an existing Core point. It is assigned to the cluster of that Core point.",
+        "difficulty": "easy",
+        "subtopic": "DBSCAN Point Classification"
+      },
+      {
+        "id": "cml-l15-q11",
+        "type": "single_choice",
+        "question": "What is the Distance Concentration phenomenon caused by the Curse of Dimensionality in high-dimensional feature spaces ($d \\to \\infty$)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "All points collapse to the origin"
+          },
+          {
+            "id": "B",
+            "text": "The relative contrast between the distance to the nearest neighbor and the furthest neighbor vanishes: $\\lim_{d \\to \\infty} \\frac{d_{\\max} - d_{\\min}}{d_{\\min}} \\to 0$"
+          },
+          {
+            "id": "C",
+            "text": "All eigenvalues become equal to zero"
+          },
+          {
+            "id": "D",
+            "text": "The covariance matrix becomes identity"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "In high dimensions, the volume of a hypersphere concentrates almost entirely in a thin outer shell. Every point becomes virtually equidistant from all other points, breaking distance-based metrics.",
+        "difficulty": "hard",
+        "subtopic": "Curse of Dimensionality"
+      },
+      {
+        "id": "cml-l15-q12",
+        "type": "single_choice",
+        "question": "In Principal Component Analysis (PCA), what mathematical optimization problem defines the first Principal Component direction $\\mathbf{v}_1$ for zero-centered data with covariance matrix $\\mathbf{\\Sigma}$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\max_{\\mathbf{v}_1} \\mathbf{v}_1^T \\mathbf{\\Sigma} \\mathbf{v}_1 \\quad \\text{subject to} \\quad \\|\\mathbf{v}_1\\|_2 = 1$"
+          },
+          {
+            "id": "B",
+            "text": "$\\min_{\\mathbf{v}_1} \\|\\mathbf{v}_1\\|_2 \\quad \\text{subject to} \\quad \\mathbf{v}_1^T \\mathbf{\\Sigma} \\mathbf{v}_1 = 0$"
+          },
+          {
+            "id": "C",
+            "text": "$\\max_{\\mathbf{v}_1} \\text{Tr}(\\mathbf{\\Sigma}) \\mathbf{v}_1$"
+          },
+          {
+            "id": "D",
+            "text": "$\\min_{\\mathbf{v}_1} \\det(\\mathbf{\\Sigma} - \\mathbf{v}_1)$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "PCA seeks the unit vector $\\mathbf{v}_1$ that maximizes the variance of the projected data $\\text{Var}(\\mathbf{X}_c \\mathbf{v}_1) = \\mathbf{v}_1^T \\mathbf{\\Sigma} \\mathbf{v}_1$, constrained by $\\mathbf{v}_1^T \\mathbf{v}_1 = 1$.",
+        "difficulty": "medium",
+        "subtopic": "PCA Mathematical Derivation"
+      },
+      {
+        "id": "cml-l15-q13",
+        "type": "single_choice",
+        "question": "Solving the constrained optimization $\\max_{\\mathbf{v}} \\mathbf{v}^T \\mathbf{\\Sigma} \\mathbf{v}$ s.t. $\\mathbf{v}^T \\mathbf{v} = 1$ via Lagrange multipliers leads to which fundamental linear algebra equation?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\mathbf{\\Sigma} \\mathbf{v} = \\lambda \\mathbf{v}$ (The Eigendecomposition of the Covariance Matrix)"
+          },
+          {
+            "id": "B",
+            "text": "$\\mathbf{\\Sigma}^{-1} \\mathbf{v} = \\mathbf{0}$"
+          },
+          {
+            "id": "C",
+            "text": "$\\mathbf{X}^T \\mathbf{X} \\mathbf{v} = \\mathbf{y}$"
+          },
+          {
+            "id": "D",
+            "text": "$\\nabla f(\\mathbf{v}) = \\mathbf{w}^T \\mathbf{x}$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "Differentiating Lagrangian $\\mathcal{L} = \\mathbf{v}^T \\mathbf{\\Sigma} \\mathbf{v} - \\lambda(\\mathbf{v}^T \\mathbf{v} - 1)$ yields $2\\mathbf{\\Sigma} \\mathbf{v} - 2\\lambda \\mathbf{v} = \\mathbf{0} \\implies \\mathbf{\\Sigma}\\mathbf{v} = \\lambda \\mathbf{v}$. The principal directions are the eigenvectors of $\\mathbf{\\Sigma}$.",
+        "difficulty": "medium",
+        "subtopic": "PCA Mathematical Derivation"
+      },
+      {
+        "id": "cml-l15-q14",
+        "type": "single_choice",
+        "question": "Given the Singular Value Decomposition (SVD) of centered data $\\mathbf{X}_c = \\mathbf{U} \\mathbf{S} \\mathbf{V}^T$, what is the exact relationship between the singular values $s_j$ and the eigenvalues $\\lambda_j$ of the sample covariance matrix $\\mathbf{\\Sigma} = \\frac{1}{n-1}\\mathbf{X}_c^T \\mathbf{X}_c$?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\lambda_j = \\frac{s_j^2}{n - 1}$"
+          },
+          {
+            "id": "B",
+            "text": "$\\lambda_j = s_j \\cdot (n - 1)$"
+          },
+          {
+            "id": "C",
+            "text": "$\\lambda_j = \\sqrt{s_j}$"
+          },
+          {
+            "id": "D",
+            "text": "$\\lambda_j = s_j^2$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "$\\mathbf{\\Sigma} = \\frac{1}{n-1} \\mathbf{V} \\mathbf{S}^T \\mathbf{U}^T \\mathbf{U} \\mathbf{S} \\mathbf{V}^T = \\mathbf{V} \\left(\\frac{\\mathbf{S}^2}{n-1}\\right) \\mathbf{V}^T$. Therefore, the eigenvalues equal $\\lambda_j = \\frac{s_j^2}{n-1}$.",
+        "difficulty": "hard",
+        "subtopic": "PCA and SVD Connection"
+      },
+      {
+        "id": "cml-l15-q15",
+        "type": "single_choice",
+        "question": "How is the Explained Variance Ratio (EVR) of the $k$-th Principal Component defined?",
+        "options": [
+          {
+            "id": "A",
+            "text": "$\\text{EVR}_k = \\frac{\\lambda_k}{\\sum_{j=1}^d \\lambda_j}$"
+          },
+          {
+            "id": "B",
+            "text": "$\\text{EVR}_k = \\frac{\\lambda_k}{k}$"
+          },
+          {
+            "id": "C",
+            "text": "$\\text{EVR}_k = \\sqrt{\\lambda_k}$"
+          },
+          {
+            "id": "D",
+            "text": "$\\text{EVR}_k = 1 - \\lambda_k$"
+          }
+        ],
+        "correctOptionIds": [
+          "A"
+        ],
+        "explanation": "The Explained Variance Ratio is the eigenvalue of the $k$-th component divided by the sum of all eigenvalues (total variance of the dataset).",
+        "difficulty": "easy",
+        "subtopic": "Explained Variance Ratio"
+      },
+      {
+        "id": "cml-l15-q16",
+        "type": "multi_choice",
+        "question": "Why is feature scaling (e.g., `StandardScaler`) mandatory before running PCA? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "PCA seeks directions that maximize variance; an unscaled feature with large numeric values will exhibit artificially massive variance and dominate the top principal component."
+          },
+          {
+            "id": "B",
+            "text": "Features measured in different units (e.g. Income in dollars vs Age in years) cannot be meaningfully compared by raw variance."
+          },
+          {
+            "id": "C",
+            "text": "SVD algorithms crash if features have different standard deviations."
+          },
+          {
+            "id": "D",
+            "text": "Standardizing ensures that each feature contributes equally on an unweighted baseline before orthogonal variance maximization."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "D"
+        ],
+        "explanation": "PCA is extremely sensitive to relative variance. Without standardization, high-magnitude features dominate the principal axes, even if lower-magnitude features contain vital signals. SVD algorithms do not crash on unscaled data.",
+        "difficulty": "medium",
+        "subtopic": "PCA Preprocessing"
+      },
+      {
+        "id": "cml-l15-q17",
+        "type": "multi_choice",
+        "question": "Which of the following are distinct advantages of DBSCAN over K-Means? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "The number of clusters $K$ does not need to be specified in advance."
+          },
+          {
+            "id": "B",
+            "text": "It can discover clusters of arbitrary, non-convex shapes (such as concentric rings or spirals)."
+          },
+          {
+            "id": "C",
+            "text": "It has an explicit notion of noise and is robust to outliers."
+          },
+          {
+            "id": "D",
+            "text": "It performs exceptionally well when clusters have drastically different local densities."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": "A, B, and C are key strengths of DBSCAN. D is a known weakness: because $\\epsilon$ and $\\text{MinPts}$ are global constants, DBSCAN struggles when clusters have varying densities (HDBSCAN addresses this).",
+        "difficulty": "medium",
+        "subtopic": "DBSCAN Advantages"
+      },
+      {
+        "id": "cml-l15-q18",
+        "type": "multi_choice",
+        "question": "What is the difference between Feature Selection and Feature Extraction (like PCA)? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "Feature Selection preserves the original feature identities by selecting a subset of existing columns (e.g., SelectKBest, Lasso)."
+          },
+          {
+            "id": "B",
+            "text": "Feature Extraction constructs new, synthetic composite features as combinations of the original features (e.g., PCA components $\\mathbf{z} = \\mathbf{X}\\mathbf{V}$)."
+          },
+          {
+            "id": "C",
+            "text": "Feature Extraction preserves 100% of original domain interpretability."
+          },
+          {
+            "id": "D",
+            "text": "Feature Selection discards discarded features completely, whereas PCA blends variance across all features."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "D"
+        ],
+        "explanation": "Selection chooses existing columns, keeping interpretability. Extraction creates linear combinations of all features, discarding individual column interpretability.",
+        "difficulty": "easy",
+        "subtopic": "Selection vs Extraction"
+      },
+      {
+        "id": "cml-l15-q19",
+        "type": "single_choice",
+        "question": "How should PCA be applied in a machine learning pipeline to strictly prevent Information Leakage?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Fit PCA on the entire dataset before splitting into train and test sets"
+          },
+          {
+            "id": "B",
+            "text": "Fit PCA exclusively on the training set `X_train`, and apply `transform` on both `X_train` and `X_test` using the fitted eigenvectors and mean vector"
+          },
+          {
+            "id": "C",
+            "text": "Fit separate PCA models on `X_train` and `X_test` independently"
+          },
+          {
+            "id": "D",
+            "text": "Fit PCA on the target variable $y$"
+          }
+        ],
+        "correctOptionIds": [
+          "B"
+        ],
+        "explanation": "To prevent leakage, the test set must remain completely unseen. Fitting PCA on the entire dataset leaks test set variance and means into the projection subspace.",
+        "difficulty": "medium",
+        "subtopic": "PCA Pipeline Leakage"
+      },
+      {
+        "id": "cml-l15-q20",
+        "type": "multi_choice",
+        "question": "Which of the following statements regarding Non-Linear Dimensionality Reduction are TRUE? (Select ALL that apply)",
+        "options": [
+          {
+            "id": "A",
+            "text": "PCA is a linear transformation and cannot unroll complex non-linear manifolds like the 3D Swiss Roll."
+          },
+          {
+            "id": "B",
+            "text": "t-SNE (t-Distributed Stochastic Neighbor Embedding) minimizes the Kullback-Leibler (KL) divergence between high-dimensional and low-dimensional pairwise joint probabilities."
+          },
+          {
+            "id": "C",
+            "text": "t-SNE and UMAP are primarily visualization techniques and do not yield an easily reusable parametric projection mapping for new test instances without approximations."
+          },
+          {
+            "id": "D",
+            "text": "PCA guarantees preservation of local neighborhood topology better than t-SNE."
+          }
+        ],
+        "correctOptionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": "PCA is strictly linear; t-SNE minimizes KL divergence; t-SNE/UMAP are non-parametric and excel at local neighborhood visualization on training data. PCA focuses on global variance, not local manifolds.",
+        "difficulty": "hard",
+        "subtopic": "Non-Linear Manifold Learning"
       }
     ]
   }
