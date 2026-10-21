@@ -46,7 +46,8 @@ CATEGORIES_MAP = {
         13: "Kernel Methods & SVMs",
         14: "Probabilistic Classifiers",
         15: "Unsupervised Learning & Clustering",
-        16: "Master Formula Sheet & Exam Compendium"
+        16: "Master Formula Sheet & Exam Compendium",
+        17: "Master Syntax & Code Reference"
     }
 }
 
@@ -68,6 +69,10 @@ def parse_markdown_note(file_path: Path, subject_id: str, index: int):
             lec_num = int(val) if val.is_integer() else val
         except ValueError:
             lec_num = index
+    elif "formula" in file_path.name.lower():
+        lec_num = 16
+    elif "syntax" in file_path.name.lower():
+        lec_num = 17
     else:
         lec_num = index
     
@@ -130,6 +135,10 @@ def process_subject_folder(folder_path: Path):
                 return float(val)
             except ValueError:
                 pass
+        if "formula" in f.name.lower():
+            return 16.0
+        if "syntax" in f.name.lower():
+            return 17.0
         return 999.0
 
     # Strictly filter ONLY Markdown files (.md or .markdown). Ignore all PDFs, JSON, images.
