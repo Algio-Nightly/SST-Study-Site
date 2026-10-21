@@ -10,7 +10,7 @@ export const classicalMachineLearningMeta: SubjectMetadata = {
   iconName: 'Brain',
   accentColor: 'indigo',
   status: 'active',
-  lecturesCount: 15,
+  lecturesCount: 16,
   questionsCount: 355,
   featuredTopics: [
     'Mitchell\'s ETP Framework & Problem Formulation',
@@ -27,7 +27,8 @@ export const classicalMachineLearningMeta: SubjectMetadata = {
     'Random Forests, AdaBoost & XGBoost Dynamics',
     'Support Vector Machines & Kernel Trick (RBF)',
     'Naive Bayes & Generative Maximum A Posteriori',
-    'K-Means, DBSCAN & Principal Component Analysis (PCA)'
+    'K-Means, DBSCAN & Principal Component Analysis (PCA)',
+    'CML Master Formula Sheet & SST Practice Solutions'
   ],
   instructors: ['Chitwan Manchanda', 'SST CML Faculty']
 };

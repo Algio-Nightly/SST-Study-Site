@@ -45,7 +45,8 @@ CATEGORIES_MAP = {
         12: "Tree-Based Models & Ensembles",
         13: "Kernel Methods & SVMs",
         14: "Probabilistic Classifiers",
-        15: "Unsupervised Learning & Clustering"
+        15: "Unsupervised Learning & Clustering",
+        16: "Master Formula Sheet & Exam Compendium"
     }
 }
 
