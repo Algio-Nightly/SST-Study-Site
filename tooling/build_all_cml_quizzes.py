@@ -28,6 +28,7 @@ from lecture_12 import QUIZ_L12
 from lecture_13 import QUIZ_L13
 from lecture_14 import QUIZ_L14
 from lecture_15 import QUIZ_L15
+from lecture_16 import QUIZ_L16
 
 ALL_CML_QUIZZES = {
     "lecture-01": QUIZ_L01,
@@ -45,6 +46,7 @@ ALL_CML_QUIZZES = {
     "lecture-13": QUIZ_L13,
     "lecture-14": QUIZ_L14,
     "lecture-15": QUIZ_L15,
+    "lecture-16": QUIZ_L16,
 }
 
 def main():

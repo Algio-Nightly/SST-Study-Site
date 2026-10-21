@@ -11,7 +11,7 @@ export const classicalMachineLearningMeta: SubjectMetadata = {
   accentColor: 'indigo',
   status: 'active',
   lecturesCount: 16,
-  questionsCount: 355,
+  questionsCount: 375,
   featuredTopics: [
     'Mitchell\'s ETP Framework & Problem Formulation',
     'Data Leakage Taxonomy & ColumnTransformer Pipelines',
